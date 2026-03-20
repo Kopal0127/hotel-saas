@@ -1,25 +1,31 @@
 import { NextRequest, NextResponse } from "next/server";
-import { Pool } from "pg";
+import { PrismaClient } from "@prisma/client";
 
-const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
-});
+const prisma = new PrismaClient()
 
 export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
     const hotelId = searchParams.get("hotelId");
 
-    const result = await pool.query(
-      `SELECT b.*, r.number as "roomNumber", r.type as "roomType", r.price
-       FROM "Booking" b
-       JOIN "Room" r ON b."roomId" = r.id
-       WHERE r."hotelId" = $1
-       ORDER BY b."createdAt" DESC`,
-      [hotelId]
-    );
+    const bookings = await prisma.booking.findMany({
+      where: {
+        room: { hotelId: hotelId || undefined }
+      },
+      include: {
+        room: true
+      },
+      orderBy: { createdAt: 'desc' }
+    })
 
-    return NextResponse.json({ bookings: result.rows });
+    const formattedBookings = bookings.map(b => ({
+      ...b,
+      roomNumber: b.room.number,
+      roomType: b.room.type,
+      price: b.room.price
+    }))
+
+    return NextResponse.json({ bookings: formattedBookings });
   } catch (error) {
     return NextResponse.json({ error: "Kuch galat hua!" }, { status: 500 });
   }
@@ -33,15 +39,19 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Sab fields bharo!" }, { status: 400 });
     }
 
-    const id = crypto.randomUUID();
+    const booking = await prisma.booking.create({
+      data: {
+        roomId,
+        guestName,
+        guestEmail,
+        checkIn: new Date(checkIn),
+        checkOut: new Date(checkOut),
+        status: 'CONFIRMED',
+        amount: parseFloat(amount)
+      }
+    })
 
-    await pool.query(
-      `INSERT INTO "Booking" (id, "roomId", "guestName", "guestEmail", "checkIn", "checkOut", status, amount, "createdAt")
-       VALUES ($1, $2, $3, $4, $5, $6, 'CONFIRMED', $7, NOW())`,
-      [id, roomId, guestName, guestEmail, checkIn, checkOut, parseFloat(amount)]
-    );
-
-    return NextResponse.json({ message: "Booking ho gayi!", id }, { status: 201 });
+    return NextResponse.json({ message: "Booking ho gayi!", id: booking.id }, { status: 201 });
   } catch (error) {
     console.error(error);
     return NextResponse.json({ error: "Kuch galat hua!" }, { status: 500 });

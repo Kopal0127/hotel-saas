@@ -1,21 +1,19 @@
 import { NextRequest, NextResponse } from "next/server";
-import { Pool } from "pg";
+import { PrismaClient } from "@prisma/client";
 
-const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
-});
+const prisma = new PrismaClient()
 
 export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
     const hotelId = searchParams.get("hotelId");
 
-    const result = await pool.query(
-      `SELECT * FROM "Room" WHERE "hotelId" = $1 ORDER BY "number"`,
-      [hotelId]
-    );
+    const rooms = await prisma.room.findMany({
+      where: hotelId ? { hotelId } : {},
+      orderBy: { number: 'asc' }
+    });
 
-    return NextResponse.json({ rooms: result.rows });
+    return NextResponse.json({ rooms });
   } catch (error) {
     return NextResponse.json({ error: "Kuch galat hua!" }, { status: 500 });
   }
@@ -29,14 +27,16 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Sab fields bharo!" }, { status: 400 });
     }
 
-    const id = crypto.randomUUID();
+    const room = await prisma.room.create({
+      data: {
+        number,
+        type,
+        price: parseFloat(price),
+        hotelId
+      }
+    });
 
-    await pool.query(
-      `INSERT INTO "Room" (id, number, type, price, "hotelId") VALUES ($1, $2, $3, $4, $5)`,
-      [id, number, type, parseFloat(price), hotelId]
-    );
-
-    return NextResponse.json({ message: "Room add ho gaya!", id }, { status: 201 });
+    return NextResponse.json({ message: "Room add ho gaya!", id: room.id }, { status: 201 });
   } catch (error) {
     return NextResponse.json({ error: "Kuch galat hua!" }, { status: 500 });
   }

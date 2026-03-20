@@ -1,10 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
-import { Pool } from "pg";
+import { PrismaClient } from "@prisma/client";
 
-const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
-});
+const prisma = new PrismaClient()
 
 export async function POST(req: NextRequest) {
   try {
@@ -14,31 +12,32 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Sab fields bharo!" }, { status: 400 });
     }
 
-    const existing = await pool.query(
-      `SELECT id FROM "User" WHERE email = $1`,
-      [email]
-    );
+    const existing = await prisma.user.findUnique({
+      where: { email }
+    });
 
-    if (existing.rows.length > 0) {
+    if (existing) {
       return NextResponse.json({ error: "Yeh email pehle se registered hai!" }, { status: 400 });
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
-    const id = crypto.randomUUID();
-    const hotelId = crypto.randomUUID();
 
-    await pool.query(
-      `INSERT INTO "User" (id, name, email, password, role, "createdAt") VALUES ($1, $2, $3, $4, 'HOTEL_OWNER', NOW())`,
-      [id, name, email, hashedPassword]
-    );
-
-    await pool.query(
-      `INSERT INTO "Hotel" (id, name, "userId", "createdAt") VALUES ($1, $2, $3, NOW())`,
-      [hotelId, hotelName, id]
-    );
+    const user = await prisma.user.create({
+      data: {
+        name,
+        email,
+        password: hashedPassword,
+        role: 'HOTEL_OWNER',
+        hotels: {
+          create: {
+            name: hotelName,
+          }
+        }
+      }
+    });
 
     return NextResponse.json(
-      { message: "Account ban gaya! Ab login karo.", userId: id },
+      { message: "Account ban gaya! Ab login karo.", userId: user.id },
       { status: 201 }
     );
 
