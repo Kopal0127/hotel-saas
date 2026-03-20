@@ -1,10 +1,9 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextResponse } from 'next/server'
 import { PrismaClient } from '@prisma/client'
-import jwt from 'jsonwebtoken'
 
 const prisma = new PrismaClient()
 
-async function pullBookingComBookings(channel: any) {
+async function pullBookingComBookings() {
   return [
     {
       otaBookingRef: 'BDC-' + Date.now(),
@@ -18,7 +17,7 @@ async function pullBookingComBookings(channel: any) {
   ]
 }
 
-async function pullMMTBookings(channel: any) {
+async function pullMMTBookings() {
   return [
     {
       otaBookingRef: 'MMT-' + Date.now(),
@@ -32,59 +31,57 @@ async function pullMMTBookings(channel: any) {
   ]
 }
 
-export async function POST(req: NextRequest) {
-  const token = req.headers.get('authorization')?.split(' ')[1]
-  if (!token) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+export async function POST() {
+  try {
+    const hotel = await prisma.hotel.findFirst({
+      include: { channels: { where: { isConnected: true } } }
+    })
 
-  const user = jwt.verify(token, process.env.JWT_SECRET!) as any
+    if (!hotel) return NextResponse.json({ message: '0 new bookings imported' })
 
-  const hotel = await prisma.hotel.findFirst({
-    where: { userId: user.id },
-    include: { channels: { where: { isConnected: true } } }
-  })
+    let totalImported = 0
 
-  if (!hotel) return NextResponse.json({ error: 'Hotel not found' }, { status: 404 })
+    for (const channel of hotel.channels) {
+      let bookings: any[] = []
 
-  let totalImported = 0
+      if (channel.name === 'BOOKING_COM') bookings = await pullBookingComBookings()
+      else if (channel.name === 'MAKEMYTRIP') bookings = await pullMMTBookings()
 
-  for (const channel of hotel.channels) {
-    let bookings: any[] = []
+      for (const b of bookings) {
+        const exists = await prisma.otaBooking.findFirst({
+          where: { otaBookingRef: b.otaBookingRef }
+        })
+        if (exists) continue
 
-    if (channel.name === 'BOOKING_COM') bookings = await pullBookingComBookings(channel)
-    else if (channel.name === 'MAKEMYTRIP') bookings = await pullMMTBookings(channel)
+        await prisma.otaBooking.create({
+          data: {
+            hotelId: hotel.id,
+            otaName: channel.name,
+            otaBookingRef: b.otaBookingRef,
+            guestName: b.guestName,
+            guestEmail: b.guestEmail,
+            checkIn: b.checkIn,
+            checkOut: b.checkOut,
+            amount: b.amount,
+            commission: b.commission,
+            status: 'CONFIRMED'
+          }
+        })
+        totalImported++
+      }
 
-    for (const b of bookings) {
-      const exists = await prisma.otaBooking.findFirst({
-        where: { otaBookingRef: b.otaBookingRef }
-      })
-      if (exists) continue
-
-      await prisma.otaBooking.create({
+      await prisma.syncLog.create({
         data: {
-          hotelId: hotel.id,
-          otaName: channel.name,
-          otaBookingRef: b.otaBookingRef,
-          guestName: b.guestName,
-          guestEmail: b.guestEmail,
-          checkIn: b.checkIn,
-          checkOut: b.checkOut,
-          amount: b.amount,
-          commission: b.commission,
-          status: 'CONFIRMED'
+          channelId: channel.id,
+          type: 'BOOKING_PULL',
+          status: 'SUCCESS',
+          message: `${bookings.length} bookings pulled`
         }
       })
-      totalImported++
     }
 
-    await prisma.syncLog.create({
-      data: {
-        channelId: channel.id,
-        type: 'BOOKING_PULL',
-        status: 'SUCCESS',
-        message: `${bookings.length} bookings pulled`
-      }
-    })
+    return NextResponse.json({ message: `${totalImported} new bookings imported` })
+  } catch (e: any) {
+    return NextResponse.json({ error: e.message }, { status: 500 })
   }
-
-  return NextResponse.json({ message: `${totalImported} new bookings imported` })
 }
