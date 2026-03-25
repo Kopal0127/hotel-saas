@@ -1,9 +1,12 @@
 "use client";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { Toast } from "@/components/Toast";
+import { useToast } from "@/components/useToast";
 
 export default function Dashboard() {
   const router = useRouter();
+  const { toast, showToast, hideToast } = useToast();
   const [stats, setStats] = useState({
     totalRooms: 0,
     bookingsToday: 0,
@@ -173,7 +176,15 @@ export default function Dashboard() {
           )}
         </div>
 
-      </div>
+       </div>
+
+      {toast && (
+        <Toast
+          message={toast.message}
+          type={toast.type}
+          onClose={hideToast}
+        />
+      )}
     </div>
   );
 }
