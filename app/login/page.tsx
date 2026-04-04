@@ -1,12 +1,14 @@
 "use client";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { Toast } from "@/components/Toast";
+import { useToast } from "@/components/useToast";
 
 export default function LoginPage() {
   const [isLogin, setIsLogin] = useState(true);
   const [loading, setLoading] = useState(false);
-  const [message, setMessage] = useState("");
   const router = useRouter();
+  const { toast, showToast, hideToast } = useToast();
 
   const [form, setForm] = useState({
     name: "",
@@ -19,12 +21,44 @@ export default function LoginPage() {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
+  // ✅ Validation function
+  const validate = () => {
+    if (!form.email) {
+      showToast("Email daalna zaroori hai!", "error");
+      return false;
+    }
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(form.email)) {
+      showToast("Sahi email daalo!", "error");
+      return false;
+    }
+    if (!form.password) {
+      showToast("Password daalna zaroori hai!", "error");
+      return false;
+    }
+    if (form.password.length < 6) {
+      showToast("Password kam se kam 6 characters ka hona chahiye!", "error");
+      return false;
+    }
+    if (!isLogin) {
+      if (!form.name) {
+        showToast("Naam daalna zaroori hai!", "error");
+        return false;
+      }
+      if (!form.hotelName) {
+        showToast("Hotel ka naam daalna zaroori hai!", "error");
+        return false;
+      }
+    }
+    return true;
+  };
+
   const handleSubmit = async () => {
+    if (!validate()) return;
+
     setLoading(true);
-    setMessage("");
 
     if (!isLogin) {
-      // Register
       const res = await fetch("/api/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -32,10 +66,10 @@ export default function LoginPage() {
       });
       const data = await res.json();
       if (res.ok) {
-        setMessage("✅ " + data.message);
+        showToast("Account ban gaya! Ab login karo.", "success");
         setTimeout(() => setIsLogin(true), 2000);
       } else {
-        setMessage("❌ " + data.error);
+        showToast(data.error || "Register nahi ho saka!", "error");
       }
     } else {
       const res = await fetch("/api/login", {
@@ -44,14 +78,15 @@ export default function LoginPage() {
         body: JSON.stringify({ email: form.email, password: form.password }),
       });
       const data = await res.json();
-     if (res.ok) {
-  localStorage.setItem('token', data.token);
-  setMessage("✅ Login successful! Redirecting...");
-  setTimeout(() => {
-  window.location.href = "/dashboard";
-}, 1500);
+      if (res.ok) {
+        localStorage.setItem("token", data.token);
+        localStorage.setItem("tokenExpiry", String(Date.now() + 24 * 60 * 60 * 1000));
+        showToast("Login successful! Dashboard pe ja rahe hain...", "success");
+        setTimeout(() => {
+          window.location.href = "/dashboard";
+        }, 1500);
       } else {
-        setMessage("❌ " + data.error);
+        showToast(data.error || "Login nahi ho saka!", "error");
       }
     }
     setLoading(false);
@@ -88,13 +123,6 @@ export default function LoginPage() {
             Register
           </button>
         </div>
-
-        {/* Message */}
-        {message && (
-          <div className="mb-4 p-3 rounded-lg bg-gray-50 text-sm text-center text-gray-700">
-            {message}
-          </div>
-        )}
 
         {/* Form */}
         <div className="flex flex-col gap-4">
@@ -169,6 +197,14 @@ export default function LoginPage() {
         </p>
 
       </div>
+
+      {toast && (
+        <Toast
+          message={toast.message}
+          type={toast.type}
+          onClose={hideToast}
+        />
+      )}
     </div>
   );
 }
