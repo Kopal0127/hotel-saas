@@ -1,55 +1,95 @@
 'use client'
 import { useState, useEffect } from 'react'
+import { Toast } from "@/components/Toast";
+import { useToast } from "@/components/useToast";
 
 export default function PaymentsPage() {
+  const { toast, showToast, hideToast } = useToast();
   const [payments, setPayments] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [creating, setCreating] = useState(false)
   const [form, setForm] = useState({ guestName: '', guestEmail: '', amount: '', bookingId: '' })
-  const [success, setSuccess] = useState('')
 
   useEffect(() => { fetchPayments() }, [])
 
   async function fetchPayments() {
     setLoading(true)
-    const res = await fetch('/api/payments')
-    const data = await res.json()
-    setPayments(data.payments || [])
+    try {
+      const res = await fetch('/api/payments')
+      const data = await res.json()
+      setPayments(data.payments || [])
+    } catch (error) {
+      showToast("Payments load nahi ho sake!", "error")
+    }
     setLoading(false)
   }
 
+  // ✅ Validation
+  const validate = () => {
+    if (!form.guestName.trim()) {
+      showToast("Guest ka naam daalna zaroori hai!", "error")
+      return false
+    }
+    if (!form.guestEmail.trim()) {
+      showToast("Guest ka email daalna zaroori hai!", "error")
+      return false
+    }
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    if (!emailRegex.test(form.guestEmail)) {
+      showToast("Sahi email daalo!", "error")
+      return false
+    }
+    if (!form.amount || parseFloat(form.amount) <= 0) {
+      showToast("Amount 0 se zyada honi chahiye!", "error")
+      return false
+    }
+    return true
+  }
+
   async function createPayment() {
+    if (!validate()) return
     setCreating(true)
-    const res = await fetch('/api/payments', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        guestName: form.guestName,
-        guestEmail: form.guestEmail,
-        amount: parseFloat(form.amount),
-        bookingId: form.bookingId || null,
+    try {
+      const res = await fetch('/api/payments', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          guestName: form.guestName,
+          guestEmail: form.guestEmail,
+          amount: parseFloat(form.amount),
+          bookingId: form.bookingId || null,
+        })
       })
-    })
-    const data = await res.json()
-    if (data.success) {
-      setSuccess(`✅ Payment created! Order ID: ${data.orderId}`)
-      setForm({ guestName: '', guestEmail: '', amount: '', bookingId: '' })
-      fetchPayments()
+      const data = await res.json()
+      if (data.success) {
+        showToast("Payment successfully create ho gaya! ✅", "success")
+        setForm({ guestName: '', guestEmail: '', amount: '', bookingId: '' })
+        fetchPayments()
+      } else {
+        showToast(data.error || "Payment create nahi ho saka!", "error")
+      }
+    } catch (error) {
+      showToast("Kuch galat hua, dobara try karo!", "error")
     }
     setCreating(false)
   }
 
   async function markPaid(paymentId: string) {
-    await fetch('/api/payments', {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        paymentId,
-        razorpayPaymentId: 'pay_mock_' + Date.now(),
-        status: 'success'
+    try {
+      await fetch('/api/payments', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          paymentId,
+          razorpayPaymentId: 'pay_mock_' + Date.now(),
+          status: 'success'
+        })
       })
-    })
-    fetchPayments()
+      showToast("Payment mark as paid ho gaya! ✅", "success")
+      fetchPayments()
+    } catch (error) {
+      showToast("Status update nahi ho saka!", "error")
+    }
   }
 
   function generateInvoice(payment: any) {
@@ -83,13 +123,11 @@ export default function PaymentsPage() {
             <div style="color:#666; margin-top:8px;">Date: ${new Date(payment.createdAt).toLocaleDateString('en-IN')}</div>
           </div>
         </div>
-
         <div style="margin-bottom:30px;">
           <div style="font-weight:bold; margin-bottom:8px;">Bill To:</div>
           <div>${payment.guestName}</div>
           <div style="color:#666;">${payment.guestEmail}</div>
         </div>
-
         <table>
           <thead>
             <tr>
@@ -106,14 +144,11 @@ export default function PaymentsPage() {
             </tr>
           </tbody>
         </table>
-
         <div class="total">Total: ₹${payment.amount.toLocaleString('en-IN')}</div>
-
         <div style="margin-top:30px; padding:20px; background:#f9fafb; border-radius:8px;">
           <div><strong>Payment ID:</strong> ${payment.razorpayId || payment.orderId}</div>
           <div style="margin-top:8px;"><strong>Currency:</strong> ${payment.currency}</div>
         </div>
-
         <div class="footer">
           <p>Thank you for choosing HotelPro!</p>
           <p>This is a computer generated invoice — no signature required.</p>
@@ -121,7 +156,6 @@ export default function PaymentsPage() {
       </body>
       </html>
     `
-
     const printWindow = window.open('', '_blank')
     if (printWindow) {
       printWindow.document.write(invoiceHTML)
@@ -147,9 +181,6 @@ export default function PaymentsPage() {
       {/* Create Payment Form */}
       <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm mb-8">
         <h2 className="font-semibold text-gray-800 mb-4">➕ New Payment Create Karo</h2>
-        {success && (
-          <div className="mb-4 p-3 bg-green-50 text-green-700 rounded-lg text-sm">{success}</div>
-        )}
         <div className="grid grid-cols-2 gap-4">
           <input placeholder="Guest Name *" value={form.guestName}
             onChange={e => setForm({ ...form, guestName: e.target.value })}
@@ -164,7 +195,7 @@ export default function PaymentsPage() {
             onChange={e => setForm({ ...form, bookingId: e.target.value })}
             className="border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
         </div>
-        <button onClick={createPayment} disabled={creating || !form.guestName || !form.amount}
+        <button onClick={createPayment} disabled={creating}
           className="mt-4 px-6 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 disabled:opacity-50">
           {creating ? '⏳ Creating...' : '💳 Create Payment'}
         </button>
@@ -231,6 +262,14 @@ export default function PaymentsPage() {
           </table>
         )}
       </div>
+
+      {toast && (
+        <Toast
+          message={toast.message}
+          type={toast.type}
+          onClose={hideToast}
+        />
+      )}
     </div>
   )
 }
