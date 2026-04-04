@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Toast } from "@/components/Toast";
 import { useToast } from "@/components/useToast";
+import { ConfirmDialog } from "@/components/ConfirmDialog";
 
 export default function RoomsPage() {
   const router = useRouter();
@@ -15,6 +16,10 @@ export default function RoomsPage() {
     type: "Standard",
     price: "",
     hotelId: "",
+  });
+  const [confirm, setConfirm] = useState({
+    isOpen: false,
+    roomId: "",
   });
 
   useEffect(() => {
@@ -37,7 +42,6 @@ export default function RoomsPage() {
     }
   };
 
-  // ✅ Validation
   const validate = () => {
     if (!form.number) {
       showToast("Room number daalna zaroori hai!", "error");
@@ -74,9 +78,29 @@ export default function RoomsPage() {
     setLoading(false);
   };
 
+  const handleDeleteClick = (roomId: string) => {
+    setConfirm({ isOpen: true, roomId });
+  };
+
+  const handleDeleteConfirm = async () => {
+    try {
+      const res = await fetch(`/api/rooms?id=${confirm.roomId}`, {
+        method: "DELETE",
+      });
+      if (res.ok) {
+        showToast("Room delete ho gaya! ✅", "success");
+        fetchHotelAndRooms();
+      } else {
+        showToast("Room delete nahi ho saka!", "error");
+      }
+    } catch (error) {
+      showToast("Kuch galat hua!", "error");
+    }
+    setConfirm({ isOpen: false, roomId: "" });
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Navbar */}
       <nav className="bg-white border-b border-gray-100 px-8 py-4 flex items-center justify-between">
         <h1 className="text-xl font-bold text-blue-600">HotelPro</h1>
         <div className="flex gap-4">
@@ -90,7 +114,6 @@ export default function RoomsPage() {
       </nav>
 
       <div className="max-w-5xl mx-auto px-8 py-10">
-        {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <h2 className="text-2xl font-bold text-gray-900">Room Management</h2>
           <button
@@ -101,7 +124,6 @@ export default function RoomsPage() {
           </button>
         </div>
 
-        {/* Add Room Form */}
         {showForm && (
           <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 mb-8">
             <h3 className="text-lg font-semibold text-gray-900 mb-4">Naya Room Add Karo</h3>
@@ -158,7 +180,6 @@ export default function RoomsPage() {
           </div>
         )}
 
-        {/* Rooms List */}
         {rooms.length === 0 ? (
           <div className="bg-white rounded-2xl p-12 shadow-sm border border-gray-100 text-center text-gray-400">
             <div className="text-5xl mb-4">🛏️</div>
@@ -174,12 +195,27 @@ export default function RoomsPage() {
                   <span className="bg-green-100 text-green-700 text-xs px-3 py-1 rounded-full">Available</span>
                 </div>
                 <p className="text-gray-600 text-sm mb-1">{room.type}</p>
-                <p className="text-blue-600 font-semibold">₹{room.price}/night</p>
+                <p className="text-blue-600 font-semibold mb-4">₹{room.price}/night</p>
+                <button
+                  onClick={() => handleDeleteClick(room.id)}
+                  className="w-full py-2 bg-red-50 text-red-500 rounded-lg text-sm hover:bg-red-100"
+                >
+                  🗑️ Delete Room
+                </button>
               </div>
             ))}
           </div>
         )}
       </div>
+
+      <ConfirmDialog
+        isOpen={confirm.isOpen}
+        title="Room Delete Karo?"
+        message="Yeh action undo nahi ho sakta! Kya aap sure hain?"
+        onConfirm={handleDeleteConfirm}
+        onCancel={() => setConfirm({ isOpen: false, roomId: "" })}
+        isDangerous={true}
+      />
 
       {toast && (
         <Toast
