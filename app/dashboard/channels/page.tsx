@@ -1,5 +1,7 @@
 'use client'
 import { useState, useEffect } from 'react'
+import { Toast } from "@/components/Toast";
+import { useToast } from "@/components/useToast";
 
 const OTA_LIST = [
   { name: 'BOOKING_COM', label: 'Booking.com', logo: '🏨' },
@@ -8,6 +10,7 @@ const OTA_LIST = [
 ]
 
 export default function ChannelsPage() {
+  const { toast, showToast, hideToast } = useToast();
   const [channels, setChannels] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [logs, setLogs] = useState<string[]>([])
@@ -25,47 +28,68 @@ export default function ChannelsPage() {
       const data = await res.json()
       setChannels(data.channels || [])
     } catch(e) {
-      console.error(e)
+      showToast("Channels load nahi ho sake!", "error")
     }
     setLoading(false)
   }
 
   async function connectChannel(name: string) {
-    await fetch('/api/channels', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name, ...form })
-    })
+    try {
+      const res = await fetch('/api/channels', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, ...form })
+      })
+      if (res.ok) {
+        showToast(`${OTA_LIST.find(o => o.name === name)?.label} successfully connect ho gaya! ✅`, "success")
+        addLog(`✅ ${name} connected!`)
+      } else {
+        showToast("Channel connect nahi ho saka!", "error")
+      }
+    } catch(e) {
+      showToast("Kuch galat hua, dobara try karo!", "error")
+    }
     setConnectModal(null)
     setForm({ apiKey: '', apiSecret: '', propertyId: '' })
     fetchChannels()
-    addLog(`✅ ${name} connected!`)
   }
 
   async function syncAll() {
     setSyncing(true)
+    showToast("Sync shuru ho gaya...", "info")
     addLog('🔄 Syncing...')
-    const tomorrow = new Date()
-    tomorrow.setDate(tomorrow.getDate() + 1)
-    const nextMonth = new Date()
-    nextMonth.setDate(nextMonth.getDate() + 30)
-    const res = await fetch('/api/channels/sync', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ startDate: tomorrow.toISOString(), endDate: nextMonth.toISOString() })
-    })
-    const data = await res.json()
-    data.results?.forEach((r: any) => addLog(`${r.success ? '✅' : '❌'} ${r.channel}: ${r.message}`))
+    try {
+      const tomorrow = new Date()
+      tomorrow.setDate(tomorrow.getDate() + 1)
+      const nextMonth = new Date()
+      nextMonth.setDate(nextMonth.getDate() + 30)
+      const res = await fetch('/api/channels/sync', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ startDate: tomorrow.toISOString(), endDate: nextMonth.toISOString() })
+      })
+      const data = await res.json()
+      data.results?.forEach((r: any) => addLog(`${r.success ? '✅' : '❌'} ${r.channel}: ${r.message}`))
+      showToast("Sync successfully complete ho gaya! ✅", "success")
+    } catch(e) {
+      showToast("Sync fail ho gaya!", "error")
+    }
     setSyncing(false)
     fetchChannels()
   }
 
   async function pullBookings() {
     setPulling(true)
+    showToast("Bookings pull ho rahi hain...", "info")
     addLog('📥 Pulling bookings...')
-    const res = await fetch('/api/channels/bookings', { method: 'POST' })
-    const data = await res.json()
-    addLog(`✅ ${data.message || 'Bookings pulled successfully'}`)
+    try {
+      const res = await fetch('/api/channels/bookings', { method: 'POST' })
+      const data = await res.json()
+      showToast(data.message || "Bookings successfully pull ho gayi! ✅", "success")
+      addLog(`✅ ${data.message || 'Bookings pulled successfully'}`)
+    } catch(e) {
+      showToast("Bookings pull nahi ho saki!", "error")
+    }
     setPulling(false)
   }
 
@@ -161,6 +185,14 @@ export default function ChannelsPage() {
             </div>
           </div>
         </div>
+      )}
+
+      {toast && (
+        <Toast
+          message={toast.message}
+          type={toast.type}
+          onClose={hideToast}
+        />
       )}
     </div>
   )
