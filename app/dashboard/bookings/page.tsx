@@ -1,14 +1,16 @@
 "use client";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { Toast } from "@/components/Toast";
+import { useToast } from "@/components/useToast";
 
 export default function BookingsPage() {
   const router = useRouter();
+  const { toast, showToast, hideToast } = useToast();
   const [bookings, setBookings] = useState<any[]>([]);
   const [rooms, setRooms] = useState<any[]>([]);
   const [showForm, setShowForm] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [message, setMessage] = useState("");
   const [hotelId, setHotelId] = useState("");
   const [form, setForm] = useState({
     roomId: "",
@@ -24,35 +26,82 @@ export default function BookingsPage() {
   }, []);
 
   const fetchData = async () => {
-    const res = await fetch("/api/hotels");
-    const data = await res.json();
-    if (data.hotels && data.hotels.length > 0) {
-      const hId = data.hotels[0].id;
-      setHotelId(hId);
-      const roomsRes = await fetch(`/api/rooms?hotelId=${hId}`);
-      const roomsData = await roomsRes.json();
-      setRooms(roomsData.rooms || []);
-      const bookingsRes = await fetch(`/api/bookings?hotelId=${hId}`);
-      const bookingsData = await bookingsRes.json();
-      setBookings(bookingsData.bookings || []);
+    try {
+      const res = await fetch("/api/hotels");
+      const data = await res.json();
+      if (data.hotels && data.hotels.length > 0) {
+        const hId = data.hotels[0].id;
+        setHotelId(hId);
+        const roomsRes = await fetch(`/api/rooms?hotelId=${hId}`);
+        const roomsData = await roomsRes.json();
+        setRooms(roomsData.rooms || []);
+        const bookingsRes = await fetch(`/api/bookings?hotelId=${hId}`);
+        const bookingsData = await bookingsRes.json();
+        setBookings(bookingsData.bookings || []);
+      }
+    } catch (error) {
+      showToast("Data load nahi ho saka!", "error");
     }
   };
 
+  // ✅ Validation
+  const validate = () => {
+    if (!form.roomId) {
+      showToast("Room select karna zaroori hai!", "error");
+      return false;
+    }
+    if (!form.guestName.trim()) {
+      showToast("Guest ka naam daalna zaroori hai!", "error");
+      return false;
+    }
+    if (!form.guestEmail.trim()) {
+      showToast("Guest ka email daalna zaroori hai!", "error");
+      return false;
+    }
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(form.guestEmail)) {
+      showToast("Sahi email daalo!", "error");
+      return false;
+    }
+    if (!form.checkIn) {
+      showToast("Check-in date daalna zaroori hai!", "error");
+      return false;
+    }
+    if (!form.checkOut) {
+      showToast("Check-out date daalna zaroori hai!", "error");
+      return false;
+    }
+    if (new Date(form.checkOut) <= new Date(form.checkIn)) {
+      showToast("Check-out date, check-in ke baad honi chahiye!", "error");
+      return false;
+    }
+    if (!form.amount || parseFloat(form.amount) <= 0) {
+      showToast("Amount 0 se zyada honi chahiye!", "error");
+      return false;
+    }
+    return true;
+  };
+
   const handleSubmit = async () => {
+    if (!validate()) return;
     setLoading(true);
-    setMessage("");
-    const res = await fetch("/api/bookings", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(form),
-    });
-    const data = await res.json();
-    if (res.ok) {
-      setMessage("✅ Booking ho gayi!");
-      setShowForm(false);
-      fetchData();
-    } else {
-      setMessage("❌ " + data.error);
+    try {
+      const res = await fetch("/api/bookings", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(form),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        showToast("Booking successfully ho gayi! ✅", "success");
+        setForm({ roomId: "", guestName: "", guestEmail: "", checkIn: "", checkOut: "", amount: "" });
+        setShowForm(false);
+        fetchData();
+      } else {
+        showToast(data.error || "Booking nahi ho saki!", "error");
+      }
+    } catch (error) {
+      showToast("Kuch galat hua, dobara try karo!", "error");
     }
     setLoading(false);
   };
@@ -77,10 +126,6 @@ export default function BookingsPage() {
             + Naya Booking
           </button>
         </div>
-
-        {message && (
-          <div className="mb-4 p-3 rounded-lg bg-gray-50 text-sm text-center">{message}</div>
-        )}
 
         {showForm && (
           <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 mb-8">
@@ -150,13 +195,21 @@ export default function BookingsPage() {
                 />
               </div>
             </div>
-            <button
-              onClick={handleSubmit}
-              disabled={loading}
-              className="mt-4 bg-blue-600 text-white px-6 py-2 rounded-lg text-sm hover:bg-blue-700 disabled:opacity-50"
-            >
-              {loading ? "Adding..." : "Booking Confirm Karo"}
-            </button>
+            <div className="flex gap-3 mt-4">
+              <button
+                onClick={handleSubmit}
+                disabled={loading}
+                className="bg-blue-600 text-white px-6 py-2 rounded-lg text-sm hover:bg-blue-700 disabled:opacity-50"
+              >
+                {loading ? "Adding..." : "Booking Confirm Karo"}
+              </button>
+              <button
+                onClick={() => setShowForm(false)}
+                className="bg-gray-100 text-gray-600 px-6 py-2 rounded-lg text-sm hover:bg-gray-200"
+              >
+                Cancel
+              </button>
+            </div>
           </div>
         )}
 
@@ -199,6 +252,14 @@ export default function BookingsPage() {
           </div>
         )}
       </div>
+
+      {toast && (
+        <Toast
+          message={toast.message}
+          type={toast.type}
+          onClose={hideToast}
+        />
+      )}
     </div>
   );
 }
