@@ -1,13 +1,15 @@
 "use client";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { Toast } from "@/components/Toast";
+import { useToast } from "@/components/useToast";
 
 export default function RoomsPage() {
   const router = useRouter();
+  const { toast, showToast, hideToast } = useToast();
   const [rooms, setRooms] = useState<any[]>([]);
   const [showForm, setShowForm] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [message, setMessage] = useState("");
   const [form, setForm] = useState({
     number: "",
     type: "Standard",
@@ -31,26 +33,43 @@ export default function RoomsPage() {
         setRooms(roomsData.rooms || []);
       }
     } catch (error) {
-      console.error(error);
+      showToast("Rooms load nahi ho sake!", "error");
     }
   };
 
+  // ✅ Validation
+  const validate = () => {
+    if (!form.number) {
+      showToast("Room number daalna zaroori hai!", "error");
+      return false;
+    }
+    if (!form.price || parseFloat(form.price) <= 0) {
+      showToast("Price 0 se zyada honi chahiye!", "error");
+      return false;
+    }
+    return true;
+  };
+
   const handleSubmit = async () => {
+    if (!validate()) return;
     setLoading(true);
-    setMessage("");
-    const res = await fetch("/api/rooms", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(form),
-    });
-    const data = await res.json();
-    if (res.ok) {
-      setMessage("✅ Room add ho gaya!");
-      setForm((f) => ({ ...f, number: "", price: "" }));
-      setShowForm(false);
-      fetchHotelAndRooms();
-    } else {
-      setMessage("❌ " + data.error);
+    try {
+      const res = await fetch("/api/rooms", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(form),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        showToast("Room successfully add ho gaya! ✅", "success");
+        setForm((f) => ({ ...f, number: "", price: "" }));
+        setShowForm(false);
+        fetchHotelAndRooms();
+      } else {
+        showToast(data.error || "Room add nahi ho saka!", "error");
+      }
+    } catch (error) {
+      showToast("Kuch galat hua, dobara try karo!", "error");
     }
     setLoading(false);
   };
@@ -81,13 +100,6 @@ export default function RoomsPage() {
             + Room Add Karo
           </button>
         </div>
-
-        {/* Message */}
-        {message && (
-          <div className="mb-4 p-3 rounded-lg bg-gray-50 text-sm text-center">
-            {message}
-          </div>
-        )}
 
         {/* Add Room Form */}
         {showForm && (
@@ -128,13 +140,21 @@ export default function RoomsPage() {
                 />
               </div>
             </div>
-            <button
-              onClick={handleSubmit}
-              disabled={loading}
-              className="mt-4 bg-blue-600 text-white px-6 py-2 rounded-lg text-sm hover:bg-blue-700 disabled:opacity-50"
-            >
-              {loading ? "Adding..." : "Room Add Karo"}
-            </button>
+            <div className="flex gap-3 mt-4">
+              <button
+                onClick={handleSubmit}
+                disabled={loading}
+                className="bg-blue-600 text-white px-6 py-2 rounded-lg text-sm hover:bg-blue-700 disabled:opacity-50"
+              >
+                {loading ? "Adding..." : "Room Add Karo"}
+              </button>
+              <button
+                onClick={() => setShowForm(false)}
+                className="bg-gray-100 text-gray-600 px-6 py-2 rounded-lg text-sm hover:bg-gray-200"
+              >
+                Cancel
+              </button>
+            </div>
           </div>
         )}
 
@@ -160,6 +180,14 @@ export default function RoomsPage() {
           </div>
         )}
       </div>
+
+      {toast && (
+        <Toast
+          message={toast.message}
+          type={toast.type}
+          onClose={hideToast}
+        />
+      )}
     </div>
   );
 }
