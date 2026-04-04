@@ -11,7 +11,10 @@ export default function BookingsPage() {
   const [rooms, setRooms] = useState<any[]>([]);
   const [showForm, setShowForm] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [hotelId, setHotelId] = useState("");
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filterStatus, setFilterStatus] = useState("all");
+  const [page, setPage] = useState(1);
+  const itemsPerPage = 5;
   const [form, setForm] = useState({
     roomId: "",
     guestName: "",
@@ -31,7 +34,6 @@ export default function BookingsPage() {
       const data = await res.json();
       if (data.hotels && data.hotels.length > 0) {
         const hId = data.hotels[0].id;
-        setHotelId(hId);
         const roomsRes = await fetch(`/api/rooms?hotelId=${hId}`);
         const roomsData = await roomsRes.json();
         setRooms(roomsData.rooms || []);
@@ -44,41 +46,16 @@ export default function BookingsPage() {
     }
   };
 
-  // ✅ Validation
   const validate = () => {
-    if (!form.roomId) {
-      showToast("Room select karna zaroori hai!", "error");
-      return false;
-    }
-    if (!form.guestName.trim()) {
-      showToast("Guest ka naam daalna zaroori hai!", "error");
-      return false;
-    }
-    if (!form.guestEmail.trim()) {
-      showToast("Guest ka email daalna zaroori hai!", "error");
-      return false;
-    }
+    if (!form.roomId) { showToast("Room select karna zaroori hai!", "error"); return false; }
+    if (!form.guestName.trim()) { showToast("Guest ka naam daalna zaroori hai!", "error"); return false; }
+    if (!form.guestEmail.trim()) { showToast("Guest ka email daalna zaroori hai!", "error"); return false; }
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(form.guestEmail)) {
-      showToast("Sahi email daalo!", "error");
-      return false;
-    }
-    if (!form.checkIn) {
-      showToast("Check-in date daalna zaroori hai!", "error");
-      return false;
-    }
-    if (!form.checkOut) {
-      showToast("Check-out date daalna zaroori hai!", "error");
-      return false;
-    }
-    if (new Date(form.checkOut) <= new Date(form.checkIn)) {
-      showToast("Check-out date, check-in ke baad honi chahiye!", "error");
-      return false;
-    }
-    if (!form.amount || parseFloat(form.amount) <= 0) {
-      showToast("Amount 0 se zyada honi chahiye!", "error");
-      return false;
-    }
+    if (!emailRegex.test(form.guestEmail)) { showToast("Sahi email daalo!", "error"); return false; }
+    if (!form.checkIn) { showToast("Check-in date daalna zaroori hai!", "error"); return false; }
+    if (!form.checkOut) { showToast("Check-out date daalna zaroori hai!", "error"); return false; }
+    if (new Date(form.checkOut) <= new Date(form.checkIn)) { showToast("Check-out date, check-in ke baad honi chahiye!", "error"); return false; }
+    if (!form.amount || parseFloat(form.amount) <= 0) { showToast("Amount 0 se zyada honi chahiye!", "error"); return false; }
     return true;
   };
 
@@ -105,6 +82,22 @@ export default function BookingsPage() {
     }
     setLoading(false);
   };
+
+  // Search + Filter
+  const filteredBookings = bookings.filter((b) => {
+    const matchesSearch =
+      b.guestName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      b.guestEmail?.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesFilter = filterStatus === "all" || b.status === filterStatus;
+    return matchesSearch && matchesFilter;
+  });
+
+  // Pagination
+  const totalPages = Math.ceil(filteredBookings.length / itemsPerPage);
+  const paginatedBookings = filteredBookings.slice(
+    (page - 1) * itemsPerPage,
+    page * itemsPerPage
+  );
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -133,132 +126,153 @@ export default function BookingsPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="text-sm font-medium text-gray-700 mb-1 block">Room Select Karo</label>
-                <select
-                  value={form.roomId}
-                  onChange={(e) => setForm({ ...form, roomId: e.target.value })}
-                  className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-blue-500"
-                >
+                <select value={form.roomId} onChange={(e) => setForm({ ...form, roomId: e.target.value })}
+                  className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-blue-500">
                   <option value="">-- Room chuno --</option>
                   {rooms.map((room) => (
-                    <option key={room.id} value={room.id}>
-                      Room #{room.number} — {room.type} — ₹{room.price}/night
-                    </option>
+                    <option key={room.id} value={room.id}>Room #{room.number} — {room.type} — ₹{room.price}/night</option>
                   ))}
                 </select>
               </div>
               <div>
                 <label className="text-sm font-medium text-gray-700 mb-1 block">Guest Name</label>
-                <input
-                  type="text"
-                  placeholder="Guest ka naam"
-                  value={form.guestName}
+                <input type="text" placeholder="Guest ka naam" value={form.guestName}
                   onChange={(e) => setForm({ ...form, guestName: e.target.value })}
-                  className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-blue-500"
-                />
+                  className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-blue-500" />
               </div>
               <div>
                 <label className="text-sm font-medium text-gray-700 mb-1 block">Guest Email</label>
-                <input
-                  type="email"
-                  placeholder="guest@email.com"
-                  value={form.guestEmail}
+                <input type="email" placeholder="guest@email.com" value={form.guestEmail}
                   onChange={(e) => setForm({ ...form, guestEmail: e.target.value })}
-                  className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-blue-500"
-                />
+                  className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-blue-500" />
               </div>
               <div>
                 <label className="text-sm font-medium text-gray-700 mb-1 block">Total Amount (₹)</label>
-                <input
-                  type="number"
-                  placeholder="5000"
-                  value={form.amount}
+                <input type="number" placeholder="5000" value={form.amount}
                   onChange={(e) => setForm({ ...form, amount: e.target.value })}
-                  className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-blue-500"
-                />
+                  className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-blue-500" />
               </div>
               <div>
                 <label className="text-sm font-medium text-gray-700 mb-1 block">Check In</label>
-                <input
-                  type="date"
-                  value={form.checkIn}
+                <input type="date" value={form.checkIn}
                   onChange={(e) => setForm({ ...form, checkIn: e.target.value })}
-                  className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-blue-500"
-                />
+                  className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-blue-500" />
               </div>
               <div>
                 <label className="text-sm font-medium text-gray-700 mb-1 block">Check Out</label>
-                <input
-                  type="date"
-                  value={form.checkOut}
+                <input type="date" value={form.checkOut}
                   onChange={(e) => setForm({ ...form, checkOut: e.target.value })}
-                  className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-blue-500"
-                />
+                  className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-blue-500" />
               </div>
             </div>
             <div className="flex gap-3 mt-4">
-              <button
-                onClick={handleSubmit}
-                disabled={loading}
-                className="bg-blue-600 text-white px-6 py-2 rounded-lg text-sm hover:bg-blue-700 disabled:opacity-50"
-              >
+              <button onClick={handleSubmit} disabled={loading}
+                className="bg-blue-600 text-white px-6 py-2 rounded-lg text-sm hover:bg-blue-700 disabled:opacity-50">
                 {loading ? "Adding..." : "Booking Confirm Karo"}
               </button>
-              <button
-                onClick={() => setShowForm(false)}
-                className="bg-gray-100 text-gray-600 px-6 py-2 rounded-lg text-sm hover:bg-gray-200"
-              >
+              <button onClick={() => setShowForm(false)}
+                className="bg-gray-100 text-gray-600 px-6 py-2 rounded-lg text-sm hover:bg-gray-200">
                 Cancel
               </button>
             </div>
           </div>
         )}
 
-        {bookings.length === 0 ? (
+        {/* Search + Filter */}
+        <div className="flex gap-4 mb-6">
+          <input
+            type="text"
+            placeholder="🔍 Guest naam ya email se search karo..."
+            value={searchTerm}
+            onChange={(e) => { setSearchTerm(e.target.value); setPage(1); }}
+            className="flex-1 border border-gray-200 rounded-lg px-4 py-2 text-sm focus:outline-none focus:border-blue-500 bg-white"
+          />
+          <select
+            value={filterStatus}
+            onChange={(e) => { setFilterStatus(e.target.value); setPage(1); }}
+            className="border border-gray-200 rounded-lg px-4 py-2 text-sm focus:outline-none focus:border-blue-500 bg-white"
+          >
+            <option value="all">All Status</option>
+            <option value="PENDING">Pending</option>
+            <option value="CONFIRMED">Confirmed</option>
+            <option value="CANCELLED">Cancelled</option>
+            <option value="COMPLETED">Completed</option>
+          </select>
+        </div>
+
+        {filteredBookings.length === 0 ? (
           <div className="bg-white rounded-2xl p-12 shadow-sm border border-gray-100 text-center text-gray-400">
             <div className="text-5xl mb-4">📭</div>
-            <p>Abhi koi booking nahi hai</p>
+            <p>Koi booking nahi mili</p>
           </div>
         ) : (
-          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-            <table className="w-full">
-              <thead className="bg-gray-50 border-b border-gray-100">
-                <tr>
-                  <th className="text-left px-6 py-4 text-sm font-medium text-gray-600">Guest</th>
-                  <th className="text-left px-6 py-4 text-sm font-medium text-gray-600">Room</th>
-                  <th className="text-left px-6 py-4 text-sm font-medium text-gray-600">Check In</th>
-                  <th className="text-left px-6 py-4 text-sm font-medium text-gray-600">Check Out</th>
-                  <th className="text-left px-6 py-4 text-sm font-medium text-gray-600">Amount</th>
-                  <th className="text-left px-6 py-4 text-sm font-medium text-gray-600">Status</th>
-                </tr>
-              </thead>
-              <tbody>
-                {bookings.map((booking) => (
-                  <tr key={booking.id} className="border-b border-gray-50 hover:bg-gray-50">
-                    <td className="px-6 py-4">
-                      <p className="text-sm font-medium text-gray-900">{booking.guestName}</p>
-                      <p className="text-xs text-gray-500">{booking.guestEmail}</p>
-                    </td>
-                    <td className="px-6 py-4 text-sm text-gray-600">#{booking.roomNumber} — {booking.roomType}</td>
-                    <td className="px-6 py-4 text-sm text-gray-600">{new Date(booking.checkIn).toLocaleDateString()}</td>
-                    <td className="px-6 py-4 text-sm text-gray-600">{new Date(booking.checkOut).toLocaleDateString()}</td>
-                    <td className="px-6 py-4 text-sm font-medium text-gray-900">₹{booking.amount}</td>
-                    <td className="px-6 py-4">
-                      <span className="bg-green-100 text-green-700 text-xs px-3 py-1 rounded-full">{booking.status}</span>
-                    </td>
+          <>
+            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden mb-4">
+              <table className="w-full">
+                <thead className="bg-gray-50 border-b border-gray-100">
+                  <tr>
+                    <th className="text-left px-6 py-4 text-sm font-medium text-gray-600">Guest</th>
+                    <th className="text-left px-6 py-4 text-sm font-medium text-gray-600">Room</th>
+                    <th className="text-left px-6 py-4 text-sm font-medium text-gray-600">Check In</th>
+                    <th className="text-left px-6 py-4 text-sm font-medium text-gray-600">Check Out</th>
+                    <th className="text-left px-6 py-4 text-sm font-medium text-gray-600">Amount</th>
+                    <th className="text-left px-6 py-4 text-sm font-medium text-gray-600">Status</th>
                   </tr>
+                </thead>
+                <tbody>
+                  {paginatedBookings.map((booking) => (
+                    <tr key={booking.id} className="border-b border-gray-50 hover:bg-gray-50">
+                      <td className="px-6 py-4">
+                        <p className="text-sm font-medium text-gray-900">{booking.guestName}</p>
+                        <p className="text-xs text-gray-500">{booking.guestEmail}</p>
+                      </td>
+                      <td className="px-6 py-4 text-sm text-gray-600">#{booking.roomNumber} — {booking.roomType}</td>
+                      <td className="px-6 py-4 text-sm text-gray-600">{new Date(booking.checkIn).toLocaleDateString()}</td>
+                      <td className="px-6 py-4 text-sm text-gray-600">{new Date(booking.checkOut).toLocaleDateString()}</td>
+                      <td className="px-6 py-4 text-sm font-medium text-gray-900">₹{booking.amount}</td>
+                      <td className="px-6 py-4">
+                        <span className="bg-green-100 text-green-700 text-xs px-3 py-1 rounded-full">{booking.status}</span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Pagination */}
+            {totalPages > 1 && (
+              <div className="flex justify-center items-center gap-2">
+                <button
+                  onClick={() => setPage((p) => p - 1)}
+                  disabled={page === 1}
+                  className="px-3 py-1 rounded-lg border text-sm disabled:opacity-40 hover:bg-gray-100"
+                >
+                  ← Pehle
+                </button>
+                {Array.from({ length: totalPages }, (_, i) => (
+                  <button
+                    key={i + 1}
+                    onClick={() => setPage(i + 1)}
+                    className={`px-3 py-1 rounded-lg text-sm border ${page === i + 1 ? "bg-blue-600 text-white border-blue-600" : "hover:bg-gray-100"}`}
+                  >
+                    {i + 1}
+                  </button>
                 ))}
-              </tbody>
-            </table>
-          </div>
+                <button
+                  onClick={() => setPage((p) => p + 1)}
+                  disabled={page === totalPages}
+                  className="px-3 py-1 rounded-lg border text-sm disabled:opacity-40 hover:bg-gray-100"
+                >
+                  Agle →
+                </button>
+              </div>
+            )}
+          </>
         )}
       </div>
 
       {toast && (
-        <Toast
-          message={toast.message}
-          type={toast.type}
-          onClose={hideToast}
-        />
+        <Toast message={toast.message} type={toast.type} onClose={hideToast} />
       )}
     </div>
   );
