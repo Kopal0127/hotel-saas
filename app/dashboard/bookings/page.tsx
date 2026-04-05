@@ -18,19 +18,12 @@ export default function BookingsPage() {
   const [page, setPage] = useState(1);
   const itemsPerPage = 5;
   const [form, setForm] = useState({
-    roomId: "",
-    guestName: "",
-    guestEmail: "",
-    checkIn: "",
-    checkOut: "",
-    amount: "",
-    notes: "",
-    specialRequests: "",
+    roomId: "", guestName: "", guestEmail: "",
+    checkIn: "", checkOut: "", amount: "",
+    notes: "", specialRequests: "",
   });
 
-  useEffect(() => {
-    fetchData();
-  }, []);
+  useEffect(() => { fetchData(); }, []);
 
   const fetchData = async () => {
     try {
@@ -88,79 +81,57 @@ export default function BookingsPage() {
   };
 
   const handleExportCSV = () => {
-    if (bookings.length === 0) {
-      showToast("Export karne ke liye koi booking nahi hai!", "warning");
-      return;
-    }
+    if (bookings.length === 0) { showToast("Export karne ke liye koi booking nahi hai!", "warning"); return; }
     const csv = [
       ["Guest Name", "Guest Email", "Room", "Check In", "Check Out", "Amount", "Status", "Special Requests"],
-      ...bookings.map((b) => [
-        b.guestName,
-        b.guestEmail,
-        `#${b.roomNumber}`,
-        new Date(b.checkIn).toLocaleDateString(),
-        new Date(b.checkOut).toLocaleDateString(),
-        b.amount,
-        b.status,
-        b.specialRequests || "",
-      ]),
-    ]
-      .map((row) => row.join(","))
-      .join("\n");
+      ...bookings.map((b) => [b.guestName, b.guestEmail, `#${b.roomNumber}`,
+        new Date(b.checkIn).toLocaleDateString(), new Date(b.checkOut).toLocaleDateString(),
+        b.amount, b.status, b.specialRequests || ""]),
+    ].map((row) => row.join(",")).join("\n");
     const blob = new Blob([csv], { type: "text/csv" });
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement("a");
-    a.href = url;
-    a.download = "bookings.csv";
-    a.click();
+    a.href = url; a.download = "bookings.csv"; a.click();
     showToast("CSV download ho gaya! ✅", "success");
   };
 
   const filteredBookings = bookings.filter((b) => {
-    const matchesSearch =
-      b.guestName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    const matchesSearch = b.guestName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       b.guestEmail?.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesFilter = filterStatus === "all" || b.status === filterStatus;
     return matchesSearch && matchesFilter;
   });
 
   const totalPages = Math.ceil(filteredBookings.length / itemsPerPage);
-  const paginatedBookings = filteredBookings.slice(
-    (page - 1) * itemsPerPage,
-    page * itemsPerPage
-  );
+  const paginatedBookings = filteredBookings.slice((page - 1) * itemsPerPage, page * itemsPerPage);
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <nav className="bg-white border-b border-gray-100 px-8 py-4 flex items-center justify-between">
+      <nav className="bg-white border-b border-gray-100 px-4 md:px-8 py-4 flex items-center justify-between">
         <h1 className="text-xl font-bold text-blue-600">HotelPro</h1>
-        <div className="flex gap-4">
+        <div className="flex gap-3 md:gap-4">
           <button onClick={() => router.push("/dashboard")} className="text-sm text-gray-600 hover:text-blue-600">Dashboard</button>
           <button onClick={() => router.push("/login")} className="text-sm text-red-500 hover:underline">Logout</button>
         </div>
       </nav>
 
-      <div className="max-w-5xl mx-auto px-8 py-10">
-        <div className="flex items-center justify-between mb-8">
-          <h2 className="text-2xl font-bold text-gray-900">Booking Management</h2>
-          <div className="flex gap-3">
-            <button
-              onClick={handleExportCSV}
-              className="bg-green-600 text-white px-5 py-2 rounded-lg text-sm hover:bg-green-700"
-            >
-              📥 Export CSV
+      <div className="max-w-5xl mx-auto px-4 md:px-8 py-6 md:py-10">
+        <div className="flex items-center justify-between mb-6 md:mb-8">
+          <h2 className="text-xl md:text-2xl font-bold text-gray-900">Booking Management</h2>
+          <div className="flex gap-2 md:gap-3">
+            <button onClick={handleExportCSV}
+              className="bg-green-600 text-white px-3 md:px-5 py-2 rounded-lg text-xs md:text-sm hover:bg-green-700">
+              📥 CSV
             </button>
-            <button
-              onClick={() => setShowForm(!showForm)}
-              className="bg-blue-600 text-white px-5 py-2 rounded-lg text-sm hover:bg-blue-700"
-            >
-              + Naya Booking
+            <button onClick={() => setShowForm(!showForm)}
+              className="bg-blue-600 text-white px-3 md:px-5 py-2 rounded-lg text-xs md:text-sm hover:bg-blue-700">
+              + Booking
             </button>
           </div>
         </div>
 
         {showForm && (
-          <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 mb-8">
+          <div className="bg-white rounded-2xl p-4 md:p-6 shadow-sm border border-gray-100 mb-6 md:mb-8">
             <h3 className="text-lg font-semibold text-gray-900 mb-4">Naya Booking Add Karo</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
@@ -232,7 +203,7 @@ export default function BookingsPage() {
           </div>
         )}
 
-        <div className="flex gap-4 mb-6">
+        <div className="flex flex-col sm:flex-row gap-3 mb-6">
           <input type="text" placeholder="🔍 Guest naam ya email se search karo..."
             value={searchTerm}
             onChange={(e) => { setSearchTerm(e.target.value); setPage(1); }}
@@ -255,34 +226,34 @@ export default function BookingsPage() {
           </div>
         ) : (
           <>
-            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden mb-4">
-              <table className="w-full">
+            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-x-auto mb-4">
+              <table className="w-full min-w-[600px]">
                 <thead className="bg-gray-50 border-b border-gray-100">
                   <tr>
-                    <th className="text-left px-6 py-4 text-sm font-medium text-gray-600">Guest</th>
-                    <th className="text-left px-6 py-4 text-sm font-medium text-gray-600">Room</th>
-                    <th className="text-left px-6 py-4 text-sm font-medium text-gray-600">Check In</th>
-                    <th className="text-left px-6 py-4 text-sm font-medium text-gray-600">Check Out</th>
-                    <th className="text-left px-6 py-4 text-sm font-medium text-gray-600">Amount</th>
-                    <th className="text-left px-6 py-4 text-sm font-medium text-gray-600">Status</th>
+                    <th className="text-left px-4 md:px-6 py-4 text-xs md:text-sm font-medium text-gray-600">Guest</th>
+                    <th className="text-left px-4 md:px-6 py-4 text-xs md:text-sm font-medium text-gray-600">Room</th>
+                    <th className="text-left px-4 md:px-6 py-4 text-xs md:text-sm font-medium text-gray-600">Check In</th>
+                    <th className="text-left px-4 md:px-6 py-4 text-xs md:text-sm font-medium text-gray-600">Check Out</th>
+                    <th className="text-left px-4 md:px-6 py-4 text-xs md:text-sm font-medium text-gray-600">Amount</th>
+                    <th className="text-left px-4 md:px-6 py-4 text-xs md:text-sm font-medium text-gray-600">Status</th>
                   </tr>
                 </thead>
                 <tbody>
                   {paginatedBookings.map((booking) => (
                     <tr key={booking.id} className="border-b border-gray-50 hover:bg-gray-50">
-                      <td className="px-6 py-4">
-                        <p className="text-sm font-medium text-gray-900">{booking.guestName}</p>
-                        <p className="text-xs text-gray-500">{booking.guestEmail}</p>
+                      <td className="px-4 md:px-6 py-4">
+                        <p className="text-xs md:text-sm font-medium text-gray-900">{booking.guestName}</p>
+                        <p className="text-xs text-gray-500 hidden md:block">{booking.guestEmail}</p>
                         {booking.specialRequests && (
                           <p className="text-xs text-blue-500 mt-1">📝 {booking.specialRequests}</p>
                         )}
                       </td>
-                      <td className="px-6 py-4 text-sm text-gray-600">#{booking.roomNumber} — {booking.roomType}</td>
-                      <td className="px-6 py-4 text-sm text-gray-600">{new Date(booking.checkIn).toLocaleDateString()}</td>
-                      <td className="px-6 py-4 text-sm text-gray-600">{new Date(booking.checkOut).toLocaleDateString()}</td>
-                      <td className="px-6 py-4 text-sm font-medium text-gray-900">₹{booking.amount}</td>
-                      <td className="px-6 py-4">
-                        <span className="bg-green-100 text-green-700 text-xs px-3 py-1 rounded-full">{booking.status}</span>
+                      <td className="px-4 md:px-6 py-4 text-xs md:text-sm text-gray-600">#{booking.roomNumber}</td>
+                      <td className="px-4 md:px-6 py-4 text-xs md:text-sm text-gray-600">{new Date(booking.checkIn).toLocaleDateString()}</td>
+                      <td className="px-4 md:px-6 py-4 text-xs md:text-sm text-gray-600">{new Date(booking.checkOut).toLocaleDateString()}</td>
+                      <td className="px-4 md:px-6 py-4 text-xs md:text-sm font-medium text-gray-900">₹{booking.amount}</td>
+                      <td className="px-4 md:px-6 py-4">
+                        <span className="bg-green-100 text-green-700 text-xs px-2 py-1 rounded-full">{booking.status}</span>
                       </td>
                     </tr>
                   ))}
@@ -293,9 +264,7 @@ export default function BookingsPage() {
             {totalPages > 1 && (
               <div className="flex justify-center items-center gap-2">
                 <button onClick={() => setPage((p) => p - 1)} disabled={page === 1}
-                  className="px-3 py-1 rounded-lg border text-sm disabled:opacity-40 hover:bg-gray-100">
-                  ← Pehle
-                </button>
+                  className="px-3 py-1 rounded-lg border text-sm disabled:opacity-40 hover:bg-gray-100">← Pehle</button>
                 {Array.from({ length: totalPages }, (_, i) => (
                   <button key={i + 1} onClick={() => setPage(i + 1)}
                     className={`px-3 py-1 rounded-lg text-sm border ${page === i + 1 ? "bg-blue-600 text-white border-blue-600" : "hover:bg-gray-100"}`}>
@@ -303,18 +272,14 @@ export default function BookingsPage() {
                   </button>
                 ))}
                 <button onClick={() => setPage((p) => p + 1)} disabled={page === totalPages}
-                  className="px-3 py-1 rounded-lg border text-sm disabled:opacity-40 hover:bg-gray-100">
-                  Agle →
-                </button>
+                  className="px-3 py-1 rounded-lg border text-sm disabled:opacity-40 hover:bg-gray-100">Agle →</button>
               </div>
             )}
           </>
         )}
       </div>
 
-      {toast && (
-        <Toast message={toast.message} type={toast.type} onClose={hideToast} />
-      )}
+      {toast && <Toast message={toast.message} type={toast.type} onClose={hideToast} />}
     </div>
   );
 }
