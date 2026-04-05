@@ -17,7 +17,7 @@ export default function BookingsPage() {
   const [filterStatus, setFilterStatus] = useState("all");
   const [page, setPage] = useState(1);
   const itemsPerPage = 5;
- const [form, setForm] = useState({
+  const [form, setForm] = useState({
     roomId: "",
     guestName: "",
     guestEmail: "",
@@ -75,7 +75,7 @@ export default function BookingsPage() {
       const data = await res.json();
       if (res.ok) {
         showToast("Booking successfully ho gayi! ✅", "success");
-        setForm({ roomId: "", guestName: "", guestEmail: "", checkIn: "", checkOut: "", amount: "" });
+        setForm({ roomId: "", guestName: "", guestEmail: "", checkIn: "", checkOut: "", amount: "", notes: "", specialRequests: "" });
         setShowForm(false);
         fetchData();
       } else {
@@ -87,7 +87,6 @@ export default function BookingsPage() {
     setLoading(false);
   };
 
-  // Search + Filter
   const filteredBookings = bookings.filter((b) => {
     const matchesSearch =
       b.guestName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -96,7 +95,6 @@ export default function BookingsPage() {
     return matchesSearch && matchesFilter;
   });
 
-  // Pagination
   const totalPages = Math.ceil(filteredBookings.length / itemsPerPage);
   const paginatedBookings = filteredBookings.slice(
     (page - 1) * itemsPerPage,
@@ -168,7 +166,7 @@ export default function BookingsPage() {
                   onChange={(e) => setForm({ ...form, checkOut: e.target.value })}
                   className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-blue-500" />
               </div>
-            <div className="md:col-span-2">
+              <div className="md:col-span-2">
                 <label className="text-sm font-medium text-gray-700 mb-1 block">Special Requests</label>
                 <input type="text" placeholder="Koi special request? (Optional)"
                   value={form.specialRequests}
@@ -197,20 +195,14 @@ export default function BookingsPage() {
           </div>
         )}
 
-        {/* Search + Filter */}
         <div className="flex gap-4 mb-6">
-          <input
-            type="text"
-            placeholder="🔍 Guest naam ya email se search karo..."
+          <input type="text" placeholder="🔍 Guest naam ya email se search karo..."
             value={searchTerm}
             onChange={(e) => { setSearchTerm(e.target.value); setPage(1); }}
-            className="flex-1 border border-gray-200 rounded-lg px-4 py-2 text-sm focus:outline-none focus:border-blue-500 bg-white"
-          />
-          <select
-            value={filterStatus}
+            className="flex-1 border border-gray-200 rounded-lg px-4 py-2 text-sm focus:outline-none focus:border-blue-500 bg-white" />
+          <select value={filterStatus}
             onChange={(e) => { setFilterStatus(e.target.value); setPage(1); }}
-            className="border border-gray-200 rounded-lg px-4 py-2 text-sm focus:outline-none focus:border-blue-500 bg-white"
-          >
+            className="border border-gray-200 rounded-lg px-4 py-2 text-sm focus:outline-none focus:border-blue-500 bg-white">
             <option value="all">All Status</option>
             <option value="PENDING">Pending</option>
             <option value="CONFIRMED">Confirmed</option>
@@ -244,6 +236,9 @@ export default function BookingsPage() {
                       <td className="px-6 py-4">
                         <p className="text-sm font-medium text-gray-900">{booking.guestName}</p>
                         <p className="text-xs text-gray-500">{booking.guestEmail}</p>
+                        {booking.specialRequests && (
+                          <p className="text-xs text-blue-500 mt-1">📝 {booking.specialRequests}</p>
+                        )}
                       </td>
                       <td className="px-6 py-4 text-sm text-gray-600">#{booking.roomNumber} — {booking.roomType}</td>
                       <td className="px-6 py-4 text-sm text-gray-600">{new Date(booking.checkIn).toLocaleDateString()}</td>
@@ -258,30 +253,20 @@ export default function BookingsPage() {
               </table>
             </div>
 
-            {/* Pagination */}
             {totalPages > 1 && (
               <div className="flex justify-center items-center gap-2">
-                <button
-                  onClick={() => setPage((p) => p - 1)}
-                  disabled={page === 1}
-                  className="px-3 py-1 rounded-lg border text-sm disabled:opacity-40 hover:bg-gray-100"
-                >
+                <button onClick={() => setPage((p) => p - 1)} disabled={page === 1}
+                  className="px-3 py-1 rounded-lg border text-sm disabled:opacity-40 hover:bg-gray-100">
                   ← Pehle
                 </button>
                 {Array.from({ length: totalPages }, (_, i) => (
-                  <button
-                    key={i + 1}
-                    onClick={() => setPage(i + 1)}
-                    className={`px-3 py-1 rounded-lg text-sm border ${page === i + 1 ? "bg-blue-600 text-white border-blue-600" : "hover:bg-gray-100"}`}
-                  >
+                  <button key={i + 1} onClick={() => setPage(i + 1)}
+                    className={`px-3 py-1 rounded-lg text-sm border ${page === i + 1 ? "bg-blue-600 text-white border-blue-600" : "hover:bg-gray-100"}`}>
                     {i + 1}
                   </button>
                 ))}
-                <button
-                  onClick={() => setPage((p) => p + 1)}
-                  disabled={page === totalPages}
-                  className="px-3 py-1 rounded-lg border text-sm disabled:opacity-40 hover:bg-gray-100"
-                >
+                <button onClick={() => setPage((p) => p + 1)} disabled={page === totalPages}
+                  className="px-3 py-1 rounded-lg border text-sm disabled:opacity-40 hover:bg-gray-100">
                   Agle →
                 </button>
               </div>
