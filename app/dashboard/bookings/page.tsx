@@ -87,6 +87,35 @@ export default function BookingsPage() {
     setLoading(false);
   };
 
+  const handleExportCSV = () => {
+    if (bookings.length === 0) {
+      showToast("Export karne ke liye koi booking nahi hai!", "warning");
+      return;
+    }
+    const csv = [
+      ["Guest Name", "Guest Email", "Room", "Check In", "Check Out", "Amount", "Status", "Special Requests"],
+      ...bookings.map((b) => [
+        b.guestName,
+        b.guestEmail,
+        `#${b.roomNumber}`,
+        new Date(b.checkIn).toLocaleDateString(),
+        new Date(b.checkOut).toLocaleDateString(),
+        b.amount,
+        b.status,
+        b.specialRequests || "",
+      ]),
+    ]
+      .map((row) => row.join(","))
+      .join("\n");
+    const blob = new Blob([csv], { type: "text/csv" });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "bookings.csv";
+    a.click();
+    showToast("CSV download ho gaya! ✅", "success");
+  };
+
   const filteredBookings = bookings.filter((b) => {
     const matchesSearch =
       b.guestName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -114,12 +143,20 @@ export default function BookingsPage() {
       <div className="max-w-5xl mx-auto px-8 py-10">
         <div className="flex items-center justify-between mb-8">
           <h2 className="text-2xl font-bold text-gray-900">Booking Management</h2>
-          <button
-            onClick={() => setShowForm(!showForm)}
-            className="bg-blue-600 text-white px-5 py-2 rounded-lg text-sm hover:bg-blue-700"
-          >
-            + Naya Booking
-          </button>
+          <div className="flex gap-3">
+            <button
+              onClick={handleExportCSV}
+              className="bg-green-600 text-white px-5 py-2 rounded-lg text-sm hover:bg-green-700"
+            >
+              📥 Export CSV
+            </button>
+            <button
+              onClick={() => setShowForm(!showForm)}
+              className="bg-blue-600 text-white px-5 py-2 rounded-lg text-sm hover:bg-blue-700"
+            >
+              + Naya Booking
+            </button>
+          </div>
         </div>
 
         {showForm && (
