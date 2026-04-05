@@ -3,8 +3,10 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Toast } from "@/components/Toast";
 import { useToast } from "@/components/useToast";
+import { useAuth } from "@/components/useAuth";
 
 export default function ProfilePage() {
+  useAuth();
   const router = useRouter();
   const { toast, showToast, hideToast } = useToast();
   const [user, setUser] = useState({ name: "", email: "", role: "" });

@@ -4,8 +4,10 @@ import { useRouter } from "next/navigation";
 import { Toast } from "@/components/Toast";
 import { useToast } from "@/components/useToast";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
+import { useAuth } from "@/components/useAuth";
 
 export default function RoomsPage() {
+  useAuth();
   const router = useRouter();
   const { toast, showToast, hideToast } = useToast();
   const [rooms, setRooms] = useState<any[]>([]);

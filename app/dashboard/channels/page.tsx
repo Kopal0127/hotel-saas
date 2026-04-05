@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react'
 import { Toast } from "@/components/Toast";
 import { useToast } from "@/components/useToast";
+import { useAuth } from "@/components/useAuth";
 
 const OTA_LIST = [
   { name: 'BOOKING_COM', label: 'Booking.com', logo: '🏨' },
@@ -10,6 +11,7 @@ const OTA_LIST = [
 ]
 
 export default function ChannelsPage() {
+  useAuth();
   const { toast, showToast, hideToast } = useToast();
   const [channels, setChannels] = useState<any[]>([])
   const [loading, setLoading] = useState(true)

@@ -2,8 +2,10 @@
 import { useState, useEffect } from 'react'
 import { Toast } from "@/components/Toast";
 import { useToast } from "@/components/useToast";
+import { useAuth } from "@/components/useAuth";
 
 export default function PaymentsPage() {
+  useAuth();
   const { toast, showToast, hideToast } = useToast();
   const [payments, setPayments] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
