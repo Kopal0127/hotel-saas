@@ -35,6 +35,7 @@ model Room {
   number      String
   type        String
   price       Float
+  imageUrl    String?
   hotelId     String
   hotel       Hotel        @relation(fields: [hotelId], references: [id])
   bookings    Booking[]

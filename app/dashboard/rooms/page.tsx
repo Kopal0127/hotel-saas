@@ -17,6 +17,7 @@ export default function RoomsPage() {
     number: "",
     type: "Standard",
     price: "",
+    imageUrl: "",
     hotelId: "",
   });
   const [confirm, setConfirm] = useState({
@@ -68,7 +69,7 @@ export default function RoomsPage() {
       const data = await res.json();
       if (res.ok) {
         showToast("Room successfully add ho gaya! ✅", "success");
-        setForm((f) => ({ ...f, number: "", price: "" }));
+        setForm((f) => ({ ...f, number: "", price: "", imageUrl: "" }));
         setShowForm(false);
         fetchHotelAndRooms();
       } else {
@@ -129,7 +130,7 @@ export default function RoomsPage() {
         {showForm && (
           <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 mb-8">
             <h3 className="text-lg font-semibold text-gray-900 mb-4">Naya Room Add Karo</h3>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="text-sm font-medium text-gray-700 mb-1 block">Room Number</label>
                 <input
@@ -163,6 +164,27 @@ export default function RoomsPage() {
                   className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-blue-500"
                 />
               </div>
+              <div>
+                <label className="text-sm font-medium text-gray-700 mb-1 block">Room Image URL (Optional)</label>
+                <input
+                  type="text"
+                  placeholder="https://example.com/room.jpg"
+                  value={form.imageUrl}
+                  onChange={(e) => setForm({ ...form, imageUrl: e.target.value })}
+                  className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-blue-500"
+                />
+              </div>
+              {form.imageUrl && (
+                <div className="md:col-span-2">
+                  <label className="text-sm font-medium text-gray-700 mb-1 block">Image Preview</label>
+                  <img
+                    src={form.imageUrl}
+                    alt="Room preview"
+                    className="h-40 w-full object-cover rounded-lg border border-gray-200"
+                    onError={(e: any) => { e.target.style.display = 'none'; }}
+                  />
+                </div>
+              )}
             </div>
             <div className="flex gap-3 mt-4">
               <button
@@ -191,19 +213,33 @@ export default function RoomsPage() {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {rooms.map((room) => (
-              <div key={room.id} className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
-                <div className="flex items-center justify-between mb-3">
-                  <span className="text-2xl font-bold text-gray-900">#{room.number}</span>
-                  <span className="bg-green-100 text-green-700 text-xs px-3 py-1 rounded-full">Available</span>
+              <div key={room.id} className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                {room.imageUrl ? (
+                  <img
+                    src={room.imageUrl}
+                    alt={`Room ${room.number}`}
+                    className="w-full h-40 object-cover"
+                    onError={(e: any) => { e.target.style.display = 'none'; }}
+                  />
+                ) : (
+                  <div className="w-full h-40 bg-gray-100 flex items-center justify-center text-4xl">
+                    🛏️
+                  </div>
+                )}
+                <div className="p-6">
+                  <div className="flex items-center justify-between mb-3">
+                    <span className="text-2xl font-bold text-gray-900">#{room.number}</span>
+                    <span className="bg-green-100 text-green-700 text-xs px-3 py-1 rounded-full">Available</span>
+                  </div>
+                  <p className="text-gray-600 text-sm mb-1">{room.type}</p>
+                  <p className="text-blue-600 font-semibold mb-4">₹{room.price}/night</p>
+                  <button
+                    onClick={() => handleDeleteClick(room.id)}
+                    className="w-full py-2 bg-red-50 text-red-500 rounded-lg text-sm hover:bg-red-100"
+                  >
+                    🗑️ Delete Room
+                  </button>
                 </div>
-                <p className="text-gray-600 text-sm mb-1">{room.type}</p>
-                <p className="text-blue-600 font-semibold mb-4">₹{room.price}/night</p>
-                <button
-                  onClick={() => handleDeleteClick(room.id)}
-                  className="w-full py-2 bg-red-50 text-red-500 rounded-lg text-sm hover:bg-red-100"
-                >
-                  🗑️ Delete Room
-                </button>
               </div>
             ))}
           </div>
@@ -220,11 +256,7 @@ export default function RoomsPage() {
       />
 
       {toast && (
-        <Toast
-          message={toast.message}
-          type={toast.type}
-          onClose={hideToast}
-        />
+        <Toast message={toast.message} type={toast.type} onClose={hideToast} />
       )}
     </div>
   );
