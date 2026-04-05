@@ -61,7 +61,12 @@ export default function Dashboard() {
       <nav className="bg-white border-b border-gray-100 px-8 py-4 flex items-center justify-between">
         <h1 className="text-xl font-bold text-blue-600">HotelPro</h1>
         <div className="flex items-center gap-4">
-          <span className="text-gray-600 text-sm">Welcome back! 👋</span>
+                  <button
+          onClick={() => router.push("/dashboard/profile")}
+          className="text-sm text-gray-600 hover:text-blue-600"
+        >
+          👤 My Profile
+        </button>
           <button onClick={() => router.push("/login")} className="text-sm text-red-500 hover:underline">
             Logout
           </button>
