@@ -17,13 +17,15 @@ export default function BookingsPage() {
   const [filterStatus, setFilterStatus] = useState("all");
   const [page, setPage] = useState(1);
   const itemsPerPage = 5;
-  const [form, setForm] = useState({
+ const [form, setForm] = useState({
     roomId: "",
     guestName: "",
     guestEmail: "",
     checkIn: "",
     checkOut: "",
     amount: "",
+    notes: "",
+    specialRequests: "",
   });
 
   useEffect(() => {
@@ -164,6 +166,21 @@ export default function BookingsPage() {
                 <label className="text-sm font-medium text-gray-700 mb-1 block">Check Out</label>
                 <input type="date" value={form.checkOut}
                   onChange={(e) => setForm({ ...form, checkOut: e.target.value })}
+                  className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-blue-500" />
+              </div>
+            <div className="md:col-span-2">
+                <label className="text-sm font-medium text-gray-700 mb-1 block">Special Requests</label>
+                <input type="text" placeholder="Koi special request? (Optional)"
+                  value={form.specialRequests}
+                  onChange={(e) => setForm({ ...form, specialRequests: e.target.value })}
+                  className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-blue-500" />
+              </div>
+              <div className="md:col-span-2">
+                <label className="text-sm font-medium text-gray-700 mb-1 block">Notes (Staff ke liye)</label>
+                <textarea placeholder="Internal notes... (Optional)"
+                  value={form.notes}
+                  onChange={(e) => setForm({ ...form, notes: e.target.value })}
+                  rows={2}
                   className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-blue-500" />
               </div>
             </div>

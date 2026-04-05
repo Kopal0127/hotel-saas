@@ -43,16 +43,18 @@ model Room {
 }
 
 model Booking {
-  id         String        @id @default(cuid())
-  roomId     String
-  room       Room          @relation(fields: [roomId], references: [id])
-  guestName  String
-  guestEmail String
-  checkIn    DateTime
-  checkOut   DateTime
-  status     BookingStatus @default(PENDING)
-  amount     Float
-  createdAt  DateTime      @default(now())
+  id              String        @id @default(cuid())
+  roomId          String
+  room            Room          @relation(fields: [roomId], references: [id])
+  guestName       String
+  guestEmail      String
+  checkIn         DateTime
+  checkOut        DateTime
+  status          BookingStatus @default(PENDING)
+  amount          Float
+  notes           String?
+  specialRequests String?
+  createdAt       DateTime      @default(now())
 }
 
 model OtaChannel {
