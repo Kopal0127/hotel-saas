@@ -104,9 +104,10 @@ export default function RoomsPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <nav className="bg-white border-b border-gray-100 px-8 py-4 flex items-center justify-between">
+      {/* Navbar */}
+      <nav className="bg-white border-b border-gray-100 px-4 md:px-8 py-4 flex items-center justify-between">
         <h1 className="text-xl font-bold text-blue-600">HotelPro</h1>
-        <div className="flex gap-4">
+        <div className="flex gap-3 md:gap-4">
           <button onClick={() => router.push("/dashboard")} className="text-sm text-gray-600 hover:text-blue-600">
             Dashboard
           </button>
@@ -116,19 +117,19 @@ export default function RoomsPage() {
         </div>
       </nav>
 
-      <div className="max-w-5xl mx-auto px-8 py-10">
-        <div className="flex items-center justify-between mb-8">
-          <h2 className="text-2xl font-bold text-gray-900">Room Management</h2>
+      <div className="max-w-5xl mx-auto px-4 md:px-8 py-6 md:py-10">
+        <div className="flex items-center justify-between mb-6 md:mb-8">
+          <h2 className="text-xl md:text-2xl font-bold text-gray-900">Room Management</h2>
           <button
             onClick={() => setShowForm(!showForm)}
-            className="bg-blue-600 text-white px-5 py-2 rounded-lg text-sm hover:bg-blue-700"
+            className="bg-blue-600 text-white px-3 md:px-5 py-2 rounded-lg text-sm hover:bg-blue-700"
           >
             + Room Add Karo
           </button>
         </div>
 
         {showForm && (
-          <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 mb-8">
+          <div className="bg-white rounded-2xl p-4 md:p-6 shadow-sm border border-gray-100 mb-6 md:mb-8">
             <h3 className="text-lg font-semibold text-gray-900 mb-4">Naya Room Add Karo</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
@@ -211,7 +212,7 @@ export default function RoomsPage() {
             <p className="text-sm mt-1">Upar button se room add karo!</p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 md:gap-6">
             {rooms.map((room) => (
               <div key={room.id} className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
                 {room.imageUrl ? (
@@ -226,9 +227,9 @@ export default function RoomsPage() {
                     🛏️
                   </div>
                 )}
-                <div className="p-6">
+                <div className="p-4 md:p-6">
                   <div className="flex items-center justify-between mb-3">
-                    <span className="text-2xl font-bold text-gray-900">#{room.number}</span>
+                    <span className="text-xl md:text-2xl font-bold text-gray-900">#{room.number}</span>
                     <span className="bg-green-100 text-green-700 text-xs px-3 py-1 rounded-full">Available</span>
                   </div>
                   <p className="text-gray-600 text-sm mb-1">{room.type}</p>
