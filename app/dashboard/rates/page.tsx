@@ -279,7 +279,7 @@ export default function RatesPage() {
               }}
               className="bg-orange-200 text-orange-800 px-4 py-2 rounded-lg text-sm font-medium hover:bg-orange-300 transition-colors"
             >
-              📅 Range Select Karo
+              📅 Select Range
             </button>
             <div>
               <label className="text-xs text-gray-600 font-medium">Bulk Price (₹)</label>
@@ -301,7 +301,7 @@ export default function RatesPage() {
               onClick={bulkUpdate}
               className="bg-orange-500 text-white px-5 py-2 rounded-lg font-medium hover:bg-orange-600 transition-colors"
             >
-              ✓ Sabhi OTAs pe Update Karo
+              ✓ Update All OTAs
             </button>
             <button onClick={() => setSelectedDates([])} className="text-gray-500 px-3 py-2 rounded-lg hover:bg-gray-200 text-sm">
               Clear
