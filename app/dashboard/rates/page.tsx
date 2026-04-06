@@ -25,17 +25,14 @@ export default function RatesPage() {
   const [channels, setChannels] = useState<Channel[]>([]);
   const [ratePlans, setRatePlans] = useState<RatePlan[]>([]);
   const [selectedRoom, setSelectedRoom] = useState("");
-  const [selectedChannel, setSelectedChannel] = useState("");
   const [hotelId, setHotelId] = useState("");
   const [loading, setLoading] = useState(false);
 
-  // Bulk edit state
   const [bulkMode, setBulkMode] = useState(false);
   const [selectedDates, setSelectedDates] = useState<string[]>([]);
   const [bulkPrice, setBulkPrice] = useState("");
   const [bulkAvailable, setBulkAvailable] = useState("");
 
-  // Single cell edit
   const [editCell, setEditCell] = useState<{ date: string; field: string } | null>(null);
   const [editValue, setEditValue] = useState("");
 
@@ -51,7 +48,7 @@ export default function RatesPage() {
 
   useEffect(() => {
     if (hotelId) fetchRates();
-  }, [hotelId, month, year, selectedRoom, selectedChannel]);
+  }, [hotelId, month, year, selectedRoom]);
 
   async function fetchRates() {
     setLoading(true);
@@ -64,7 +61,6 @@ export default function RatesPage() {
     setChannels(data.channels || []);
     setRatePlans(data.ratePlans || []);
     if (!selectedRoom && data.rooms?.[0]) setSelectedRoom(data.rooms[0].id);
-    if (!selectedChannel && data.channels?.[0]) setSelectedChannel(data.channels[0].id);
     setLoading(false);
   }
 
@@ -81,49 +77,66 @@ export default function RatesPage() {
     return `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
   }
 
-  function getRatePlan(day: number): RatePlan | undefined {
+  // Sabhi OTAs ka combined view — agar koi bhi OTA pe blocked hai toh blocked dikhao
+  function getCombinedRatePlan(day: number) {
     const ds = dateStr(day);
-    return ratePlans.find(
-      (r) => r.date.startsWith(ds) && r.roomId === selectedRoom && r.channelId === selectedChannel
+    const plans = ratePlans.filter(
+      (r) => r.date.startsWith(ds) && r.roomId === selectedRoom
     );
+    if (plans.length === 0) return null;
+    // Minimum available across all OTAs
+    const minAvail = Math.min(...plans.map(p => p.available));
+    // Average price
+    const avgPrice = plans.reduce((s, p) => s + p.price, 0) / plans.length;
+    // Blocked agar kisi bhi OTA pe blocked ho
+    const isBlocked = plans.some(p => p.isBlocked);
+    return { price: avgPrice, available: minAvail, isBlocked, count: plans.length };
   }
 
   function getDefaultPrice() {
     return rooms.find((r) => r.id === selectedRoom)?.price || 0;
   }
 
-  async function toggleBlock(day: number) {
-    const rp = getRatePlan(day);
+  const connectedChannels = channels.filter(c => c.isConnected);
+
+  // Sabhi OTAs pe ek saath update
+  async function updateAllOTAs(day: number, updates: { price?: number; available?: number; isBlocked?: boolean }) {
     const token = localStorage.getItem("token");
-    await fetch("/api/rates", {
-      method: "POST",
-      headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-      body: JSON.stringify({
-        channelId: selectedChannel, roomId: selectedRoom,
-        date: dateStr(day), isBlocked: !rp?.isBlocked,
-        price: rp?.price ?? getDefaultPrice(), available: rp?.available ?? 1,
-      }),
-    });
-    showToast(rp?.isBlocked ? "Room khol diya!" : "Room band kar diya!", "success");
+    const ds = dateStr(day);
+    const combined = getCombinedRatePlan(day);
+
+    await Promise.all(
+      connectedChannels.map(channel =>
+        fetch("/api/rates", {
+          method: "POST",
+          headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+          body: JSON.stringify({
+            channelId: channel.id,
+            roomId: selectedRoom,
+            date: ds,
+            price: updates.price ?? combined?.price ?? getDefaultPrice(),
+            available: updates.available ?? combined?.available ?? 1,
+            isBlocked: updates.isBlocked ?? combined?.isBlocked ?? false,
+          }),
+        })
+      )
+    );
+  }
+
+  async function toggleBlock(day: number) {
+    const combined = getCombinedRatePlan(day);
+    await updateAllOTAs(day, { isBlocked: !combined?.isBlocked });
+    showToast(combined?.isBlocked ? "Sabhi OTAs pe room khol diya! 🟢" : "Sabhi OTAs pe room band kar diya! 🔴", "success");
     fetchRates();
   }
 
   async function saveCell(day: number, field: string, value: string) {
-    const rp = getRatePlan(day);
-    const token = localStorage.getItem("token");
-    const payload: Record<string, unknown> = {
-      channelId: selectedChannel, roomId: selectedRoom, date: dateStr(day),
-      price: rp?.price ?? getDefaultPrice(), available: rp?.available ?? 1, isBlocked: rp?.isBlocked ?? false,
-    };
-    if (field === "price") payload.price = parseFloat(value);
-    if (field === "available") payload.available = parseInt(value);
-    await fetch("/api/rates", {
-      method: "POST",
-      headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-      body: JSON.stringify(payload),
-    });
+    const updates: { price?: number; available?: number } = {};
+    if (field === "price") updates.price = parseFloat(value);
+    if (field === "available") updates.available = parseInt(value);
+    await updateAllOTAs(day, updates);
     setEditCell(null);
-    showToast("Updated!", "success");
+    showToast(`Sabhi ${connectedChannels.length} OTAs pe update ho gaya! ✅`, "success");
     fetchRates();
   }
 
@@ -131,17 +144,24 @@ export default function RatesPage() {
     if (!selectedDates.length) { showToast("Koi date select nahi ki!", "warning"); return; }
     if (!bulkPrice && !bulkAvailable) { showToast("Price ya available enter karo!", "warning"); return; }
     const token = localStorage.getItem("token");
-    await fetch("/api/rates", {
-      method: "PUT",
-      headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-      body: JSON.stringify({
-        channelId: selectedChannel, roomId: selectedRoom,
-        dates: selectedDates,
-        ...(bulkPrice ? { price: parseFloat(bulkPrice) } : {}),
-        ...(bulkAvailable ? { available: parseInt(bulkAvailable) } : {}),
-      }),
-    });
-    showToast(`${selectedDates.length} dates update ho gayi!`, "success");
+
+    await Promise.all(
+      connectedChannels.map(channel =>
+        fetch("/api/rates", {
+          method: "PUT",
+          headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+          body: JSON.stringify({
+            channelId: channel.id,
+            roomId: selectedRoom,
+            dates: selectedDates,
+            ...(bulkPrice ? { price: parseFloat(bulkPrice) } : {}),
+            ...(bulkAvailable ? { available: parseInt(bulkAvailable) } : {}),
+          }),
+        })
+      )
+    );
+
+    showToast(`${selectedDates.length} dates × ${connectedChannels.length} OTAs update ho gayi! 🎉`, "success");
     setSelectedDates([]); setBulkPrice(""); setBulkAvailable(""); setBulkMode(false);
     fetchRates();
   }
@@ -164,7 +184,7 @@ export default function RatesPage() {
       <div className="bg-white shadow-sm border-b px-6 py-4 flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-gray-800">📅 Rate & Availability Manager</h1>
-          <p className="text-gray-500 text-sm">Prices aur availability manage karo — sab OTAs ke liye</p>
+          <p className="text-gray-500 text-sm">Ek jagah update karo → Sabhi OTAs pe sync ho jata hai</p>
         </div>
         <button
           onClick={() => { setBulkMode(!bulkMode); setSelectedDates([]); }}
@@ -177,6 +197,23 @@ export default function RatesPage() {
       </div>
 
       <div className="max-w-7xl mx-auto px-4 py-6 space-y-4">
+
+        {/* Connected OTAs Status */}
+        <div className="bg-white rounded-xl shadow-sm p-4">
+          <p className="text-xs text-gray-500 font-medium mb-2">Connected OTAs — Sab pe ek saath sync hoga:</p>
+          <div className="flex flex-wrap gap-2">
+            {channels.length === 0 && (
+              <span className="text-xs text-gray-400">Koi OTA connected nahi — pehle Channels page pe connect karo</span>
+            )}
+            {channels.map(c => (
+              <span key={c.id} className={`text-xs px-3 py-1 rounded-full font-medium ${
+                c.isConnected ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-400"
+              }`}>
+                {c.isConnected ? "✅" : "❌"} {c.name.replace(/_/g, " ")}
+              </span>
+            ))}
+          </div>
+        </div>
 
         {/* Filters */}
         <div className="bg-white rounded-xl shadow-sm p-4 flex flex-wrap gap-4 items-center">
@@ -192,26 +229,12 @@ export default function RatesPage() {
               ))}
             </select>
           </div>
-          <div>
-            <label className="text-xs text-gray-500 font-medium">OTA Channel</label>
-            <select
-              value={selectedChannel}
-              onChange={(e) => setSelectedChannel(e.target.value)}
-              className="block mt-1 border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              <option value="">-- Select OTA --</option>
-              {channels.map((c) => (
-                <option key={c.id} value={c.id}>{c.name.replace(/_/g, " ")}</option>
-              ))}
-            </select>
-          </div>
-          {/* Month Navigator */}
           <div className="ml-auto flex items-center gap-3">
-            <button onClick={prevMonth} className="p-2 rounded-lg hover:bg-gray-100 text-gray-600 font-bold">‹</button>
+            <button onClick={prevMonth} className="p-2 rounded-lg hover:bg-gray-100 text-gray-600 font-bold text-lg">‹</button>
             <span className="text-lg font-semibold text-gray-800 w-40 text-center">
               {MONTHS[month - 1]} {year}
             </span>
-            <button onClick={nextMonth} className="p-2 rounded-lg hover:bg-gray-100 text-gray-600 font-bold">›</button>
+            <button onClick={nextMonth} className="p-2 rounded-lg hover:bg-gray-100 text-gray-600 font-bold text-lg">›</button>
           </div>
         </div>
 
@@ -219,8 +242,8 @@ export default function RatesPage() {
         {bulkMode && (
           <div className="bg-orange-50 border border-orange-200 rounded-xl p-4 flex flex-wrap gap-4 items-end">
             <div>
-              <label className="text-xs text-orange-700 font-medium">Selected Dates: {selectedDates.length}</label>
-              <p className="text-xs text-gray-500">Calendar mein dates click karo select karne ke liye</p>
+              <label className="text-xs text-orange-700 font-medium">Selected: {selectedDates.length} dates × {connectedChannels.length} OTAs</label>
+              <p className="text-xs text-gray-500">Calendar mein dates click karo</p>
             </div>
             <div>
               <label className="text-xs text-gray-600 font-medium">Bulk Price (₹)</label>
@@ -242,20 +265,16 @@ export default function RatesPage() {
               onClick={bulkUpdate}
               className="bg-orange-500 text-white px-5 py-2 rounded-lg font-medium hover:bg-orange-600 transition-colors"
             >
-              ✓ Update {selectedDates.length} Dates
+              ✓ Sabhi OTAs pe Update Karo
             </button>
-            <button
-              onClick={() => setSelectedDates([])}
-              className="text-gray-500 px-3 py-2 rounded-lg hover:bg-gray-200 text-sm"
-            >
-              Clear Selection
+            <button onClick={() => setSelectedDates([])} className="text-gray-500 px-3 py-2 rounded-lg hover:bg-gray-200 text-sm">
+              Clear
             </button>
           </div>
         )}
 
         {/* Calendar */}
         <div className="bg-white rounded-xl shadow-sm overflow-hidden">
-          {/* Day Headers */}
           <div className="grid grid-cols-7 bg-gray-800 text-white">
             {DAYS.map((d) => (
               <div key={d} className="text-center py-3 text-sm font-semibold tracking-wide">{d}</div>
@@ -271,10 +290,10 @@ export default function RatesPage() {
             <div className="grid grid-cols-7">
               {calDays.map((day, i) => {
                 if (!day) return <div key={`empty-${i}`} className="bg-gray-50 border border-gray-100 min-h-[110px]" />;
-                const rp = getRatePlan(day);
+                const combined = getCombinedRatePlan(day);
                 const ds = dateStr(day);
                 const isSelected = selectedDates.includes(ds);
-                const isBlocked = rp?.isBlocked;
+                const isBlocked = combined?.isBlocked;
                 const isToday = day === today.getDate() && month === today.getMonth() + 1 && year === today.getFullYear();
 
                 return (
@@ -287,24 +306,20 @@ export default function RatesPage() {
                       isBlocked ? "bg-red-50" : ""
                     } ${isToday && !isSelected && !isBlocked ? "bg-yellow-50" : ""}`}
                   >
-                    {/* Date Number */}
                     <div className="flex items-center justify-between mb-1">
-                      <span className={`text-sm font-bold ${isToday ? "text-blue-600" : "text-gray-700"} ${
-                        isBlocked ? "text-red-500" : ""
-                      }`}>
+                      <span className={`text-sm font-bold ${isToday ? "text-blue-600" : "text-gray-700"} ${isBlocked ? "text-red-500" : ""}`}>
                         {day}
                         {isToday && <span className="ml-1 text-xs bg-blue-600 text-white rounded px-1">Today</span>}
                       </span>
                       {isSelected && <span className="text-blue-500 text-xs">✓</span>}
                     </div>
 
-                    {!bulkMode && selectedChannel && (
+                    {!bulkMode && (
                       <>
                         {/* Price */}
                         {editCell?.date === ds && editCell?.field === "price" ? (
                           <input
-                            autoFocus type="number"
-                            value={editValue}
+                            autoFocus type="number" value={editValue}
                             onChange={(e) => setEditValue(e.target.value)}
                             onBlur={() => saveCell(day, "price", editValue)}
                             onKeyDown={(e) => { if (e.key === "Enter") saveCell(day, "price", editValue); if (e.key === "Escape") setEditCell(null); }}
@@ -314,18 +329,17 @@ export default function RatesPage() {
                         ) : (
                           <div
                             className="text-sm font-semibold text-green-700 cursor-pointer hover:bg-green-50 rounded px-1"
-                            onClick={(e) => { e.stopPropagation(); setEditCell({ date: ds, field: "price" }); setEditValue(String(rp?.price ?? getDefaultPrice())); }}
-                            title="Click to edit price"
+                            onClick={(e) => { e.stopPropagation(); setEditCell({ date: ds, field: "price" }); setEditValue(String(combined?.price ?? getDefaultPrice())); }}
+                            title="Click to edit — sabhi OTAs pe update hoga"
                           >
-                            ₹{rp?.price ?? getDefaultPrice()}
+                            ₹{combined?.price ?? getDefaultPrice()}
                           </div>
                         )}
 
                         {/* Available */}
                         {editCell?.date === ds && editCell?.field === "available" ? (
                           <input
-                            autoFocus type="number"
-                            value={editValue}
+                            autoFocus type="number" value={editValue}
                             onChange={(e) => setEditValue(e.target.value)}
                             onBlur={() => saveCell(day, "available", editValue)}
                             onKeyDown={(e) => { if (e.key === "Enter") saveCell(day, "available", editValue); if (e.key === "Escape") setEditCell(null); }}
@@ -334,32 +348,35 @@ export default function RatesPage() {
                           />
                         ) : (
                           <div
-                            className={`text-xs cursor-pointer hover:bg-gray-100 rounded px-1 ${
-                              isBlocked ? "text-red-500" : "text-gray-500"
-                            }`}
-                            onClick={(e) => { e.stopPropagation(); setEditCell({ date: ds, field: "available" }); setEditValue(String(rp?.available ?? 1)); }}
+                            className={`text-xs cursor-pointer hover:bg-gray-100 rounded px-1 ${isBlocked ? "text-red-500" : "text-gray-500"}`}
+                            onClick={(e) => { e.stopPropagation(); setEditCell({ date: ds, field: "available" }); setEditValue(String(combined?.available ?? 1)); }}
                             title="Click to edit availability"
                           >
-                            {isBlocked ? "🚫 Blocked" : `${rp?.available ?? 1} avail`}
+                            {isBlocked ? "🚫 Blocked" : `${combined?.available ?? 1} avail`}
                           </div>
                         )}
 
-                        {/* Block/Unblock button */}
+                        {/* OTAs count badge */}
+                        {combined && (
+                          <div className="text-xs text-blue-400 px-1">
+                            {combined.count} OTA{combined.count > 1 ? "s" : ""}
+                          </div>
+                        )}
+
+                        {/* Block button */}
                         <button
                           onClick={(e) => { e.stopPropagation(); toggleBlock(day); }}
                           className={`mt-1 w-full text-xs py-0.5 rounded transition-colors ${
-                            isBlocked
-                              ? "bg-red-100 text-red-600 hover:bg-red-200"
-                              : "bg-gray-100 text-gray-500 hover:bg-gray-200"
+                            isBlocked ? "bg-red-100 text-red-600 hover:bg-red-200" : "bg-gray-100 text-gray-500 hover:bg-gray-200"
                           }`}
                         >
-                          {isBlocked ? "🔓 Unblock" : "🔒 Block"}
+                          {isBlocked ? "🔓 Unblock All" : "🔒 Block All"}
                         </button>
                       </>
                     )}
 
-                    {!selectedChannel && (
-                      <p className="text-xs text-gray-400 mt-1">OTA select karo</p>
+                    {connectedChannels.length === 0 && !bulkMode && (
+                      <p className="text-xs text-gray-400 mt-1">OTA connect karo</p>
                     )}
                   </div>
                 );
@@ -369,11 +386,11 @@ export default function RatesPage() {
         </div>
 
         {/* Legend */}
-        <div className="flex gap-6 text-xs text-gray-500 bg-white rounded-xl shadow-sm p-4">
+        <div className="flex flex-wrap gap-6 text-xs text-gray-500 bg-white rounded-xl shadow-sm p-4">
           <span className="flex items-center gap-1"><span className="w-3 h-3 bg-yellow-100 border rounded inline-block"></span> Today</span>
-          <span className="flex items-center gap-1"><span className="w-3 h-3 bg-red-50 border rounded inline-block"></span> Blocked</span>
+          <span className="flex items-center gap-1"><span className="w-3 h-3 bg-red-50 border rounded inline-block"></span> Blocked (Sabhi OTAs)</span>
           <span className="flex items-center gap-1"><span className="w-3 h-3 bg-blue-100 border rounded inline-block"></span> Selected (Bulk)</span>
-          <span className="ml-auto">💡 Price pe click karo edit karne ke liye | Bulk Mode mein dates select karo</span>
+          <span className="ml-auto">💡 Price click karo → Sabhi OTAs pe update hoga</span>
         </div>
       </div>
     </div>
