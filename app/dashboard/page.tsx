@@ -69,13 +69,12 @@ export default function Dashboard() {
             className="text-sm text-gray-600 hover:text-blue-600"
           >
             👤 Profile
-          </button>
           <button
-            onClick={() => router.push("/login")}
-            className="text-sm text-red-500 hover:underline"
-          >
-            Logout
-          </button>
+              onClick={() => router.push("/dashboard/rates")}
+              className="flex flex-col items-center gap-2 p-3 md:p-4 rounded-xl bg-purple-50 hover:bg-purple-100 transition-colors">
+              <span className="text-xl md:text-2xl">📅</span>
+              <span className="text-xs md:text-sm font-medium text-purple-700 text-center">Rates</span>
+            </button>
         </div>
       </nav>
 
