@@ -242,9 +242,45 @@ export default function RatesPage() {
         {bulkMode && (
           <div className="bg-orange-50 border border-orange-200 rounded-xl p-4 flex flex-wrap gap-4 items-end">
             <div>
-              <label className="text-xs text-orange-700 font-medium">Selected: {selectedDates.length} dates × {connectedChannels.length} OTAs</label>
-              <p className="text-xs text-gray-500">Calendar mein dates click karo</p>
+              <p className="text-sm font-semibold text-orange-700">{selectedDates.length} dates selected</p>
+              <p className="text-xs text-gray-500">Calendar mein dates click karo ya range select karo</p>
             </div>
+            {/* Date Range */}
+            <div>
+              <label className="text-xs text-gray-600 font-medium block mb-1">From Date</label>
+              <input
+                type="date"
+                id="rangeFrom"
+                className="border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400"
+              />
+            </div>
+            <div>
+              <label className="text-xs text-gray-600 font-medium block mb-1">To Date</label>
+              <input
+                type="date"
+                id="rangeTo"
+                className="border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400"
+              />
+            </div>
+            <button
+              onClick={() => {
+                const from = (document.getElementById("rangeFrom") as HTMLInputElement).value;
+                const to = (document.getElementById("rangeTo") as HTMLInputElement).value;
+                if (!from || !to) { showToast("From aur To date dono select karo!", "warning"); return; }
+                const dates: string[] = [];
+                const cur = new Date(from);
+                const end = new Date(to);
+                while (cur <= end) {
+                  dates.push(cur.toISOString().split("T")[0]);
+                  cur.setDate(cur.getDate() + 1);
+                }
+                setSelectedDates(dates);
+                showToast(`${dates.length} dates select ho gayi!`, "info");
+              }}
+              className="bg-orange-200 text-orange-800 px-4 py-2 rounded-lg text-sm font-medium hover:bg-orange-300 transition-colors"
+            >
+              📅 Range Select Karo
+            </button>
             <div>
               <label className="text-xs text-gray-600 font-medium">Bulk Price (₹)</label>
               <input
