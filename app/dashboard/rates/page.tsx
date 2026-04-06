@@ -243,7 +243,7 @@ export default function RatesPage() {
           <div className="bg-orange-50 border border-orange-200 rounded-xl p-4 flex flex-wrap gap-4 items-end">
             <div>
               <p className="text-sm font-semibold text-orange-700">{selectedDates.length} dates selected</p>
-              <p className="text-xs text-gray-500">Calendar mein dates click karo ya range select karo</p>
+              {/* <p className="text-xs text-gray-500">Calendar mein dates click karo ya range select karo</p> */}
             </div>
             {/* Date Range */}
             <div>
