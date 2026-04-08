@@ -1,7 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { PrismaClient } from "@prisma/client";
+import { Resend } from "resend";
 
 const prisma = new PrismaClient();
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 export async function GET(req: NextRequest) {
   try {
@@ -44,8 +46,26 @@ export async function POST(req: NextRequest) {
         checkOut: new Date(checkOut),
         status: "CONFIRMED",
         amount: parseFloat(amount)
-      }
+      },
+      include: { room: { include: { hotel: true } } }
     });
+
+    // Email bhejo
+    resend.emails.send({
+      from: "onboarding@resend.dev",
+      to: "dargudetushar@gmail.com",
+      subject: `Naya Booking — ${guestName} Room #${booking.room.number}`,
+      html: `
+        <h2>Naya Booking Aaya!</h2>
+        <p><b>Guest:</b> ${guestName}</p>
+        <p><b>Email:</b> ${guestEmail}</p>
+        <p><b>Hotel:</b> ${booking.room.hotel.name}</p>
+        <p><b>Room:</b> #${booking.room.number}</p>
+        <p><b>Check In:</b> ${new Date(checkIn).toLocaleDateString("en-IN")}</p>
+        <p><b>Check Out:</b> ${new Date(checkOut).toLocaleDateString("en-IN")}</p>
+        <p><b>Amount:</b> ₹${amount}</p>
+      `,
+    }).catch(e => console.error("Email error:", e));
 
     return NextResponse.json({ message: "Booking ho gayi!", id: booking.id }, { status: 201 });
   } catch (error) {
