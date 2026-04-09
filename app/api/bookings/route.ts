@@ -31,7 +31,11 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   try {
-    const { roomId, guestName, guestEmail, checkIn, checkOut, amount } = await req.json();
+    const {
+      roomId, guestName, guestEmail, checkIn, checkOut, amount,
+      notes, specialRequests, paymentMode, paymentAmount,
+      finalPaymentMode, finalPaymentAmount
+    } = await req.json();
 
     if (!roomId || !guestName || !guestEmail || !checkIn || !checkOut || !amount) {
       return NextResponse.json({ error: "Sab fields bharo!" }, { status: 400 });
@@ -45,7 +49,13 @@ export async function POST(req: NextRequest) {
         checkIn: new Date(checkIn),
         checkOut: new Date(checkOut),
         status: "CONFIRMED",
-        amount: parseFloat(amount)
+        amount: parseFloat(amount),
+        notes: notes || null,
+        specialRequests: specialRequests || null,
+        paymentMode: paymentMode || "CASH",
+        paymentAmount: paymentAmount ? parseFloat(paymentAmount) : null,
+        finalPaymentMode: finalPaymentMode || null,
+        finalPaymentAmount: finalPaymentAmount ? parseFloat(finalPaymentAmount) : null,
       },
       include: { room: { include: { hotel: true } } }
     });
@@ -64,6 +74,10 @@ export async function POST(req: NextRequest) {
         <p><b>Check In:</b> ${new Date(checkIn).toLocaleDateString("en-IN")}</p>
         <p><b>Check Out:</b> ${new Date(checkOut).toLocaleDateString("en-IN")}</p>
         <p><b>Amount:</b> ₹${amount}</p>
+        <p><b>Payment Mode:</b> ${paymentMode || "CASH"}</p>
+        ${finalPaymentMode ? `<p><b>Final Payment:</b> ${finalPaymentMode} — ₹${finalPaymentAmount}</p>` : ""}
+        ${specialRequests ? `<p><b>Special Requests:</b> ${specialRequests}</p>` : ""}
+        ${notes ? `<p><b>Notes:</b> ${notes}</p>` : ""}
       `,
     }).catch(e => console.error("Email error:", e));
 
