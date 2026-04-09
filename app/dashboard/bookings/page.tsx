@@ -100,10 +100,12 @@ export default function BookingsPage() {
   const handleExportCSV = () => {
     if (bookings.length === 0) { showToast("Export karne ke liye koi booking nahi hai!", "warning"); return; }
     const csv = [
-      ["Guest Name", "Guest Email", "Room", "Check In", "Check Out", "Total Amount", "Payment Mode", "Payment Amount", "Final Payment Mode", "Final Payment Amount", "Status"],
+      ["Guest Name", "Guest Email", "Room", "Check In", "Check Out", "Total Amount", "Payment Mode", "Payment Amount", "Final Payment Mode", "Final Payment Amount", "Special Requests", "Notes", "Status"],
       ...bookings.map((b) => [b.guestName, b.guestEmail, `#${b.roomNumber}`,
         new Date(b.checkIn).toLocaleDateString(), new Date(b.checkOut).toLocaleDateString(),
-        b.amount, b.paymentMode || "CASH", b.paymentAmount || "", b.finalPaymentMode || "", b.finalPaymentAmount || "", b.status]),
+        b.amount, b.paymentMode || "CASH", b.paymentAmount || "",
+        b.finalPaymentMode || "No", b.finalPaymentAmount || "",
+        b.specialRequests || "No Requests", b.notes || "No", b.status]),
     ].map((row) => row.join(",")).join("\n");
     const blob = new Blob([csv], { type: "text/csv" });
     const url = window.URL.createObjectURL(blob);
@@ -161,7 +163,7 @@ export default function BookingsPage() {
         </div>
       </nav>
 
-      <div className="max-w-5xl mx-auto px-4 md:px-8 py-6 md:py-10">
+      <div className="max-w-7xl mx-auto px-4 md:px-8 py-6 md:py-10">
         <div className="flex items-center justify-between mb-6 md:mb-8">
           <h2 className="text-xl md:text-2xl font-bold text-gray-900">Booking Management</h2>
           <div className="flex gap-2 md:gap-3">
@@ -180,8 +182,6 @@ export default function BookingsPage() {
           <div className="bg-white rounded-2xl p-4 md:p-6 shadow-sm border border-gray-100 mb-6 md:mb-8">
             <h3 className="text-lg font-semibold text-gray-900 mb-4">Naya Booking Add Karo</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-
-              {/* Main Fields */}
               <div>
                 <label className="text-sm font-medium text-gray-700 mb-1 block">Room Select Karo</label>
                 <select value={form.roomId} onChange={(e) => setForm({ ...form, roomId: e.target.value })}
@@ -249,10 +249,8 @@ export default function BookingsPage() {
                 </button>
               </div>
 
-              {/* More Options Section */}
               {showMoreOptions && (
                 <>
-                  {/* Final Payment */}
                   {!showFinalPayment ? (
                     <div className="md:col-span-2">
                       <button
@@ -286,8 +284,6 @@ export default function BookingsPage() {
                       </div>
                     </>
                   )}
-
-                  {/* Special Requests */}
                   <div className="md:col-span-2">
                     <label className="text-sm font-medium text-gray-700 mb-1 block">Special Requests</label>
                     <input type="text" placeholder="Koi special request? (Optional)"
@@ -295,8 +291,6 @@ export default function BookingsPage() {
                       onChange={(e) => setForm({ ...form, specialRequests: e.target.value })}
                       className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-blue-500" />
                   </div>
-
-                  {/* Notes */}
                   <div className="md:col-span-2">
                     <label className="text-sm font-medium text-gray-700 mb-1 block">Notes (Staff ke liye)</label>
                     <textarea placeholder="Internal notes... (Optional)"
@@ -346,43 +340,61 @@ export default function BookingsPage() {
         ) : (
           <>
             <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-x-auto mb-4">
-              <table className="w-full min-w-[600px]">
+              <table className="w-full min-w-[900px]">
                 <thead className="bg-gray-50 border-b border-gray-100">
                   <tr>
-                    <th className="text-left px-4 md:px-6 py-4 text-xs md:text-sm font-medium text-gray-600">Guest</th>
-                    <th className="text-left px-4 md:px-6 py-4 text-xs md:text-sm font-medium text-gray-600">Room</th>
-                    <th className="text-left px-4 md:px-6 py-4 text-xs md:text-sm font-medium text-gray-600">Check In</th>
-                    <th className="text-left px-4 md:px-6 py-4 text-xs md:text-sm font-medium text-gray-600">Check Out</th>
-                    <th className="text-left px-4 md:px-6 py-4 text-xs md:text-sm font-medium text-gray-600">Amount</th>
-                    <th className="text-left px-4 md:px-6 py-4 text-xs md:text-sm font-medium text-gray-600">Payment</th>
-                    <th className="text-left px-4 md:px-6 py-4 text-xs md:text-sm font-medium text-gray-600">Status</th>
+                    <th className="text-left px-4 py-4 text-xs font-medium text-gray-600">Guest</th>
+                    <th className="text-left px-4 py-4 text-xs font-medium text-gray-600">Room</th>
+                    <th className="text-left px-4 py-4 text-xs font-medium text-gray-600">Check In</th>
+                    <th className="text-left px-4 py-4 text-xs font-medium text-gray-600">Check Out</th>
+                    <th className="text-left px-4 py-4 text-xs font-medium text-gray-600">Amount</th>
+                    <th className="text-left px-4 py-4 text-xs font-medium text-gray-600">Payment</th>
+                    <th className="text-left px-4 py-4 text-xs font-medium text-gray-600">Final Payment</th>
+                    <th className="text-left px-4 py-4 text-xs font-medium text-gray-600">Special Requests</th>
+                    <th className="text-left px-4 py-4 text-xs font-medium text-gray-600">Notes</th>
+                    <th className="text-left px-4 py-4 text-xs font-medium text-gray-600">Status</th>
                   </tr>
                 </thead>
                 <tbody>
                   {paginatedBookings.map((booking) => (
                     <tr key={booking.id} className="border-b border-gray-50 hover:bg-gray-50">
-                      <td className="px-4 md:px-6 py-4">
-                        <p className="text-xs md:text-sm font-medium text-gray-900">{booking.guestName}</p>
-                        <p className="text-xs text-gray-500 hidden md:block">{booking.guestEmail}</p>
-                        {booking.specialRequests && (
-                          <p className="text-xs text-blue-500 mt-1">📝 {booking.specialRequests}</p>
-                        )}
+                      <td className="px-4 py-4">
+                        <p className="text-xs font-medium text-gray-900">{booking.guestName}</p>
+                        <p className="text-xs text-gray-500">{booking.guestEmail}</p>
                       </td>
-                      <td className="px-4 md:px-6 py-4 text-xs md:text-sm text-gray-600">#{booking.roomNumber}</td>
-                      <td className="px-4 md:px-6 py-4 text-xs md:text-sm text-gray-600">{new Date(booking.checkIn).toLocaleDateString()}</td>
-                      <td className="px-4 md:px-6 py-4 text-xs md:text-sm text-gray-600">{new Date(booking.checkOut).toLocaleDateString()}</td>
-                      <td className="px-4 md:px-6 py-4 text-xs md:text-sm font-medium text-gray-900">₹{booking.amount}</td>
-                      <td className="px-4 md:px-6 py-4 text-xs text-gray-600">
+                      <td className="px-4 py-4 text-xs text-gray-600">#{booking.roomNumber}</td>
+                      <td className="px-4 py-4 text-xs text-gray-600">{new Date(booking.checkIn).toLocaleDateString()}</td>
+                      <td className="px-4 py-4 text-xs text-gray-600">{new Date(booking.checkOut).toLocaleDateString()}</td>
+                      <td className="px-4 py-4 text-xs font-medium text-gray-900">₹{booking.amount}</td>
+                      <td className="px-4 py-4 text-xs text-gray-600">
                         <span>{paymentModeLabel[booking.paymentMode] || "💵 Cash"}</span>
-                        {booking.paymentAmount && <span className="text-green-600 ml-1">₹{booking.paymentAmount}</span>}
-                        {booking.finalPaymentMode && (
-                          <span className="block text-blue-600 mt-0.5">
-                            → {paymentModeLabel[booking.finalPaymentMode]}
-                            {booking.finalPaymentAmount && <span className="text-green-600 ml-1">₹{booking.finalPaymentAmount}</span>}
+                        {booking.paymentAmount && <span className="text-green-600 block">₹{booking.paymentAmount}</span>}
+                      </td>
+                      <td className="px-4 py-4 text-xs">
+                        {booking.finalPaymentMode ? (
+                          <span className="text-blue-600">
+                            {paymentModeLabel[booking.finalPaymentMode]}
+                            {booking.finalPaymentAmount && <span className="text-green-600 block">₹{booking.finalPaymentAmount}</span>}
                           </span>
+                        ) : (
+                          <span className="text-gray-400">No</span>
                         )}
                       </td>
-                      <td className="px-4 md:px-6 py-4">
+                      <td className="px-4 py-4 text-xs">
+                        {booking.specialRequests ? (
+                          <span className="text-blue-600">📝 {booking.specialRequests}</span>
+                        ) : (
+                          <span className="text-gray-400">No Requests</span>
+                        )}
+                      </td>
+                      <td className="px-4 py-4 text-xs">
+                        {booking.notes ? (
+                          <span className="text-gray-700">📋 {booking.notes}</span>
+                        ) : (
+                          <span className="text-gray-400">No</span>
+                        )}
+                      </td>
+                      <td className="px-4 py-4">
                         <span className="bg-green-100 text-green-700 text-xs px-2 py-1 rounded-full">{booking.status}</span>
                       </td>
                     </tr>
