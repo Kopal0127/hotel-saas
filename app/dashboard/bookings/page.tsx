@@ -15,12 +15,15 @@ export default function BookingsPage() {
   const [loading, setLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [filterStatus, setFilterStatus] = useState("all");
+  const [showFinalPayment, setShowFinalPayment] = useState(false);
   const [page, setPage] = useState(1);
   const itemsPerPage = 5;
   const [form, setForm] = useState({
     roomId: "", guestName: "", guestEmail: "",
     checkIn: "", checkOut: "", amount: "",
-    notes: "", specialRequests: "", paymentMode: "CASH",
+    notes: "", specialRequests: "",
+    paymentMode: "CASH",
+    finalPaymentMode: "",
   });
 
   useEffect(() => { fetchData(); }, []);
@@ -68,8 +71,9 @@ export default function BookingsPage() {
       const data = await res.json();
       if (res.ok) {
         showToast("Booking successfully ho gayi! ✅", "success");
-        setForm({ roomId: "", guestName: "", guestEmail: "", checkIn: "", checkOut: "", amount: "", notes: "", specialRequests: "", paymentMode: "CASH" });
+        setForm({ roomId: "", guestName: "", guestEmail: "", checkIn: "", checkOut: "", amount: "", notes: "", specialRequests: "", paymentMode: "CASH", finalPaymentMode: "" });
         setShowForm(false);
+        setShowFinalPayment(false);
         fetchData();
       } else {
         showToast(data.error || "Booking nahi ho saki!", "error");
@@ -83,10 +87,10 @@ export default function BookingsPage() {
   const handleExportCSV = () => {
     if (bookings.length === 0) { showToast("Export karne ke liye koi booking nahi hai!", "warning"); return; }
     const csv = [
-      ["Guest Name", "Guest Email", "Room", "Check In", "Check Out", "Amount", "Payment Mode", "Status", "Special Requests"],
+      ["Guest Name", "Guest Email", "Room", "Check In", "Check Out", "Amount", "Payment Mode", "Final Payment Mode", "Status"],
       ...bookings.map((b) => [b.guestName, b.guestEmail, `#${b.roomNumber}`,
         new Date(b.checkIn).toLocaleDateString(), new Date(b.checkOut).toLocaleDateString(),
-        b.amount, b.paymentMode || "CASH", b.status, b.specialRequests || ""]),
+        b.amount, b.paymentMode || "CASH", b.finalPaymentMode || "", b.status]),
     ].map((row) => row.join(",")).join("\n");
     const blob = new Blob([csv], { type: "text/csv" });
     const url = window.URL.createObjectURL(blob);
@@ -106,12 +110,33 @@ export default function BookingsPage() {
   const paginatedBookings = filteredBookings.slice((page - 1) * itemsPerPage, page * itemsPerPage);
 
   const paymentModeLabel: Record<string, string> = {
-    CASH: "💵 Cash",
-    CARD: "💳 Card",
-    UPI: "📱 UPI",
-    BANK_TRANSFER: "🏦 Bank Transfer",
-    ONLINE: "🌐 Online",
+    CASH: "💵 Cash", CARD: "💳 Card", UPI: "📱 UPI",
+    BANK_TRANSFER: "🏦 Bank Transfer", ONLINE: "🌐 Online",
+    PARTIAL_CASH: "💵 Partial Cash", PARTIAL_CARD: "💳 Partial Card",
+    PARTIAL_UPI: "📱 Partial UPI", PARTIAL_BANK_TRANSFER: "🏦 Partial Bank Transfer",
+    PARTIAL_ONLINE: "🌐 Partial Online",
   };
+
+  const firstPaymentOptions = [
+    { value: "CASH", label: "💵 Cash" },
+    { value: "CARD", label: "💳 Card" },
+    { value: "UPI", label: "📱 UPI" },
+    { value: "BANK_TRANSFER", label: "🏦 Bank Transfer" },
+    { value: "ONLINE", label: "🌐 Online" },
+    { value: "PARTIAL_CASH", label: "💵 Partial Cash" },
+    { value: "PARTIAL_CARD", label: "💳 Partial Card" },
+    { value: "PARTIAL_UPI", label: "📱 Partial UPI" },
+    { value: "PARTIAL_BANK_TRANSFER", label: "🏦 Partial Bank Transfer" },
+    { value: "PARTIAL_ONLINE", label: "🌐 Partial Online" },
+  ];
+
+  const finalPaymentOptions = [
+    { value: "CASH", label: "💵 Cash" },
+    { value: "CARD", label: "💳 Card" },
+    { value: "UPI", label: "📱 UPI" },
+    { value: "BANK_TRANSFER", label: "🏦 Bank Transfer" },
+    { value: "ONLINE", label: "🌐 Online" },
+  ];
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -182,18 +207,46 @@ export default function BookingsPage() {
                   onChange={(e) => setForm({ ...form, checkOut: e.target.value })}
                   className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-blue-500" />
               </div>
+
+              {/* Payment Mode */}
               <div>
                 <label className="text-sm font-medium text-gray-700 mb-1 block">Payment Mode</label>
                 <select value={form.paymentMode}
                   onChange={(e) => setForm({ ...form, paymentMode: e.target.value })}
                   className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-blue-500">
-                  <option value="CASH">💵 Cash</option>
-                  <option value="CARD">💳 Card</option>
-                  <option value="UPI">📱 UPI</option>
-                  <option value="BANK_TRANSFER">🏦 Bank Transfer</option>
-                  <option value="ONLINE">🌐 Online</option>
+                  {firstPaymentOptions.map(o => (
+                    <option key={o.value} value={o.value}>{o.label}</option>
+                  ))}
                 </select>
               </div>
+
+              {/* Add Final Payment Button */}
+              <div className="flex items-end">
+                {!showFinalPayment ? (
+                  <button
+                    onClick={() => { setShowFinalPayment(true); setForm({ ...form, finalPaymentMode: "CASH" }); }}
+                    className="w-full border-2 border-dashed border-blue-300 text-blue-600 rounded-lg px-4 py-3 text-sm hover:bg-blue-50 transition-colors"
+                  >
+                    + Add Final Payment Mode
+                  </button>
+                ) : (
+                  <div className="w-full">
+                    <div className="flex items-center justify-between mb-1">
+                      <label className="text-sm font-medium text-gray-700">Final Payment Mode</label>
+                      <button onClick={() => { setShowFinalPayment(false); setForm({ ...form, finalPaymentMode: "" }); }}
+                        className="text-xs text-red-400 hover:text-red-600">✕ Remove</button>
+                    </div>
+                    <select value={form.finalPaymentMode}
+                      onChange={(e) => setForm({ ...form, finalPaymentMode: e.target.value })}
+                      className="w-full border border-blue-300 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-blue-500 bg-blue-50">
+                      {finalPaymentOptions.map(o => (
+                        <option key={o.value} value={o.value}>{o.label}</option>
+                      ))}
+                    </select>
+                  </div>
+                )}
+              </div>
+
               <div className="md:col-span-2">
                 <label className="text-sm font-medium text-gray-700 mb-1 block">Special Requests</label>
                 <input type="text" placeholder="Koi special request? (Optional)"
@@ -215,7 +268,7 @@ export default function BookingsPage() {
                 className="bg-blue-600 text-white px-6 py-2 rounded-lg text-sm hover:bg-blue-700 disabled:opacity-50">
                 {loading ? "Adding..." : "Booking Confirm Karo"}
               </button>
-              <button onClick={() => setShowForm(false)}
+              <button onClick={() => { setShowForm(false); setShowFinalPayment(false); }}
                 className="bg-gray-100 text-gray-600 px-6 py-2 rounded-lg text-sm hover:bg-gray-200">
                 Cancel
               </button>
@@ -273,8 +326,13 @@ export default function BookingsPage() {
                       <td className="px-4 md:px-6 py-4 text-xs md:text-sm text-gray-600">{new Date(booking.checkIn).toLocaleDateString()}</td>
                       <td className="px-4 md:px-6 py-4 text-xs md:text-sm text-gray-600">{new Date(booking.checkOut).toLocaleDateString()}</td>
                       <td className="px-4 md:px-6 py-4 text-xs md:text-sm font-medium text-gray-900">₹{booking.amount}</td>
-                      <td className="px-4 md:px-6 py-4 text-xs md:text-sm text-gray-600">
-                        {paymentModeLabel[booking.paymentMode] || "💵 Cash"}
+                      <td className="px-4 md:px-6 py-4 text-xs text-gray-600">
+                        <span>{paymentModeLabel[booking.paymentMode] || "💵 Cash"}</span>
+                        {booking.finalPaymentMode && (
+                          <span className="block text-blue-600 mt-0.5">
+                            → {paymentModeLabel[booking.finalPaymentMode]}
+                          </span>
+                        )}
                       </td>
                       <td className="px-4 md:px-6 py-4">
                         <span className="bg-green-100 text-green-700 text-xs px-2 py-1 rounded-full">{booking.status}</span>
