@@ -20,7 +20,7 @@ export default function BookingsPage() {
   const [form, setForm] = useState({
     roomId: "", guestName: "", guestEmail: "",
     checkIn: "", checkOut: "", amount: "",
-    notes: "", specialRequests: "",
+    notes: "", specialRequests: "", paymentMode: "CASH",
   });
 
   useEffect(() => { fetchData(); }, []);
@@ -68,7 +68,7 @@ export default function BookingsPage() {
       const data = await res.json();
       if (res.ok) {
         showToast("Booking successfully ho gayi! ✅", "success");
-        setForm({ roomId: "", guestName: "", guestEmail: "", checkIn: "", checkOut: "", amount: "", notes: "", specialRequests: "" });
+        setForm({ roomId: "", guestName: "", guestEmail: "", checkIn: "", checkOut: "", amount: "", notes: "", specialRequests: "", paymentMode: "CASH" });
         setShowForm(false);
         fetchData();
       } else {
@@ -83,10 +83,10 @@ export default function BookingsPage() {
   const handleExportCSV = () => {
     if (bookings.length === 0) { showToast("Export karne ke liye koi booking nahi hai!", "warning"); return; }
     const csv = [
-      ["Guest Name", "Guest Email", "Room", "Check In", "Check Out", "Amount", "Status", "Special Requests"],
+      ["Guest Name", "Guest Email", "Room", "Check In", "Check Out", "Amount", "Payment Mode", "Status", "Special Requests"],
       ...bookings.map((b) => [b.guestName, b.guestEmail, `#${b.roomNumber}`,
         new Date(b.checkIn).toLocaleDateString(), new Date(b.checkOut).toLocaleDateString(),
-        b.amount, b.status, b.specialRequests || ""]),
+        b.amount, b.paymentMode || "CASH", b.status, b.specialRequests || ""]),
     ].map((row) => row.join(",")).join("\n");
     const blob = new Blob([csv], { type: "text/csv" });
     const url = window.URL.createObjectURL(blob);
@@ -104,6 +104,14 @@ export default function BookingsPage() {
 
   const totalPages = Math.ceil(filteredBookings.length / itemsPerPage);
   const paginatedBookings = filteredBookings.slice((page - 1) * itemsPerPage, page * itemsPerPage);
+
+  const paymentModeLabel: Record<string, string> = {
+    CASH: "💵 Cash",
+    CARD: "💳 Card",
+    UPI: "📱 UPI",
+    BANK_TRANSFER: "🏦 Bank Transfer",
+    ONLINE: "🌐 Online",
+  };
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -174,6 +182,18 @@ export default function BookingsPage() {
                   onChange={(e) => setForm({ ...form, checkOut: e.target.value })}
                   className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-blue-500" />
               </div>
+              <div>
+                <label className="text-sm font-medium text-gray-700 mb-1 block">Payment Mode</label>
+                <select value={form.paymentMode}
+                  onChange={(e) => setForm({ ...form, paymentMode: e.target.value })}
+                  className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-blue-500">
+                  <option value="CASH">💵 Cash</option>
+                  <option value="CARD">💳 Card</option>
+                  <option value="UPI">📱 UPI</option>
+                  <option value="BANK_TRANSFER">🏦 Bank Transfer</option>
+                  <option value="ONLINE">🌐 Online</option>
+                </select>
+              </div>
               <div className="md:col-span-2">
                 <label className="text-sm font-medium text-gray-700 mb-1 block">Special Requests</label>
                 <input type="text" placeholder="Koi special request? (Optional)"
@@ -235,6 +255,7 @@ export default function BookingsPage() {
                     <th className="text-left px-4 md:px-6 py-4 text-xs md:text-sm font-medium text-gray-600">Check In</th>
                     <th className="text-left px-4 md:px-6 py-4 text-xs md:text-sm font-medium text-gray-600">Check Out</th>
                     <th className="text-left px-4 md:px-6 py-4 text-xs md:text-sm font-medium text-gray-600">Amount</th>
+                    <th className="text-left px-4 md:px-6 py-4 text-xs md:text-sm font-medium text-gray-600">Payment</th>
                     <th className="text-left px-4 md:px-6 py-4 text-xs md:text-sm font-medium text-gray-600">Status</th>
                   </tr>
                 </thead>
@@ -252,6 +273,9 @@ export default function BookingsPage() {
                       <td className="px-4 md:px-6 py-4 text-xs md:text-sm text-gray-600">{new Date(booking.checkIn).toLocaleDateString()}</td>
                       <td className="px-4 md:px-6 py-4 text-xs md:text-sm text-gray-600">{new Date(booking.checkOut).toLocaleDateString()}</td>
                       <td className="px-4 md:px-6 py-4 text-xs md:text-sm font-medium text-gray-900">₹{booking.amount}</td>
+                      <td className="px-4 md:px-6 py-4 text-xs md:text-sm text-gray-600">
+                        {paymentModeLabel[booking.paymentMode] || "💵 Cash"}
+                      </td>
                       <td className="px-4 md:px-6 py-4">
                         <span className="bg-green-100 text-green-700 text-xs px-2 py-1 rounded-full">{booking.status}</span>
                       </td>
