@@ -16,6 +16,7 @@ export default function BookingsPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [filterStatus, setFilterStatus] = useState("all");
   const [showFinalPayment, setShowFinalPayment] = useState(false);
+  const [showMoreOptions, setShowMoreOptions] = useState(false);
   const [page, setPage] = useState(1);
   const itemsPerPage = 5;
   const [form, setForm] = useState({
@@ -57,8 +58,15 @@ export default function BookingsPage() {
     if (new Date(form.checkOut) <= new Date(form.checkIn)) { showToast("Check-out date, check-in ke baad honi chahiye!", "error"); return false; }
     if (!form.amount || parseFloat(form.amount) <= 0) { showToast("Amount 0 se zyada honi chahiye!", "error"); return false; }
     if (!form.paymentAmount || parseFloat(form.paymentAmount) <= 0) { showToast("Payment amount daalna zaroori hai!", "error"); return false; }
-    if (showFinalPayment && (!form.finalPaymentAmount || parseFloat(form.finalPaymentAmount) <= 0)) {
+    const isPartial = form.paymentMode.startsWith("PARTIAL");
+    if (isPartial && !showFinalPayment) {
+      showToast("Partial payment select kiya hai — Final Payment Mode bhi add karo!", "warning"); return false;
+    }
+    if (isPartial && showFinalPayment && (!form.finalPaymentAmount || parseFloat(form.finalPaymentAmount) <= 0)) {
       showToast("Final payment amount daalna zaroori hai!", "error"); return false;
+    }
+    if (showFinalPayment && !form.finalPaymentMode) {
+      showToast("Final Payment Mode select karo!", "error"); return false;
     }
     return true;
   };
@@ -78,6 +86,7 @@ export default function BookingsPage() {
         setForm({ roomId: "", guestName: "", guestEmail: "", checkIn: "", checkOut: "", amount: "", notes: "", specialRequests: "", paymentMode: "CASH", paymentAmount: "", finalPaymentMode: "", finalPaymentAmount: "" });
         setShowForm(false);
         setShowFinalPayment(false);
+        setShowMoreOptions(false);
         fetchData();
       } else {
         showToast(data.error || "Booking nahi ho saki!", "error");
@@ -171,6 +180,8 @@ export default function BookingsPage() {
           <div className="bg-white rounded-2xl p-4 md:p-6 shadow-sm border border-gray-100 mb-6 md:mb-8">
             <h3 className="text-lg font-semibold text-gray-900 mb-4">Naya Booking Add Karo</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+              {/* Main Fields */}
               <div>
                 <label className="text-sm font-medium text-gray-700 mb-1 block">Room Select Karo</label>
                 <select value={form.roomId} onChange={(e) => setForm({ ...form, roomId: e.target.value })}
@@ -211,8 +222,6 @@ export default function BookingsPage() {
                   onChange={(e) => setForm({ ...form, checkOut: e.target.value })}
                   className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-blue-500" />
               </div>
-
-              {/* Payment Mode + Amount */}
               <div>
                 <label className="text-sm font-medium text-gray-700 mb-1 block">Payment Mode</label>
                 <select value={form.paymentMode}
@@ -230,63 +239,82 @@ export default function BookingsPage() {
                   className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-blue-500" />
               </div>
 
-              {/* Final Payment Mode + Amount */}
-              {!showFinalPayment ? (
-                <div className="md:col-span-2">
-                  <button
-                    onClick={() => { setShowFinalPayment(true); setForm({ ...form, finalPaymentMode: "CASH" }); }}
-                    className="w-full border-2 border-dashed border-blue-300 text-blue-600 rounded-lg px-4 py-3 text-sm hover:bg-blue-50 transition-colors"
-                  >
-                    + Add Final Payment Mode
-                  </button>
-                </div>
-              ) : (
+              {/* More Options Toggle */}
+              <div className="md:col-span-2">
+                <button
+                  onClick={() => setShowMoreOptions(!showMoreOptions)}
+                  className="flex items-center gap-2 text-sm text-blue-600 hover:text-blue-700 font-medium py-1"
+                >
+                  {showMoreOptions ? "▲ Less Options" : "▼ More Options"}
+                </button>
+              </div>
+
+              {/* More Options Section */}
+              {showMoreOptions && (
                 <>
-                  <div>
-                    <div className="flex items-center justify-between mb-1">
-                      <label className="text-sm font-medium text-gray-700">Final Payment Mode</label>
-                      <button onClick={() => { setShowFinalPayment(false); setForm({ ...form, finalPaymentMode: "", finalPaymentAmount: "" }); }}
-                        className="text-xs text-red-400 hover:text-red-600">✕ Remove</button>
+                  {/* Final Payment */}
+                  {!showFinalPayment ? (
+                    <div className="md:col-span-2">
+                      <button
+                        onClick={() => { setShowFinalPayment(true); setForm({ ...form, finalPaymentMode: "CASH" }); }}
+                        className="w-full border-2 border-dashed border-blue-300 text-blue-600 rounded-lg px-4 py-3 text-sm hover:bg-blue-50 transition-colors"
+                      >
+                        + Add Final Payment Mode
+                      </button>
                     </div>
-                    <select value={form.finalPaymentMode}
-                      onChange={(e) => setForm({ ...form, finalPaymentMode: e.target.value })}
-                      className="w-full border border-blue-300 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-blue-500 bg-blue-50">
-                      {finalPaymentOptions.map(o => (
-                        <option key={o.value} value={o.value}>{o.label}</option>
-                      ))}
-                    </select>
+                  ) : (
+                    <>
+                      <div>
+                        <div className="flex items-center justify-between mb-1">
+                          <label className="text-sm font-medium text-gray-700">Final Payment Mode</label>
+                          <button onClick={() => { setShowFinalPayment(false); setForm({ ...form, finalPaymentMode: "", finalPaymentAmount: "" }); }}
+                            className="text-xs text-red-400 hover:text-red-600">✕ Remove</button>
+                        </div>
+                        <select value={form.finalPaymentMode}
+                          onChange={(e) => setForm({ ...form, finalPaymentMode: e.target.value })}
+                          className="w-full border border-blue-300 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-blue-500 bg-blue-50">
+                          {finalPaymentOptions.map(o => (
+                            <option key={o.value} value={o.value}>{o.label}</option>
+                          ))}
+                        </select>
+                      </div>
+                      <div>
+                        <label className="text-sm font-medium text-gray-700 mb-1 block">Final Payment Amount (₹)</label>
+                        <input type="number" placeholder="e.g. 2500" value={form.finalPaymentAmount}
+                          onChange={(e) => setForm({ ...form, finalPaymentAmount: e.target.value })}
+                          className="w-full border border-blue-300 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-blue-500 bg-blue-50" />
+                      </div>
+                    </>
+                  )}
+
+                  {/* Special Requests */}
+                  <div className="md:col-span-2">
+                    <label className="text-sm font-medium text-gray-700 mb-1 block">Special Requests</label>
+                    <input type="text" placeholder="Koi special request? (Optional)"
+                      value={form.specialRequests}
+                      onChange={(e) => setForm({ ...form, specialRequests: e.target.value })}
+                      className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-blue-500" />
                   </div>
-                  <div>
-                    <label className="text-sm font-medium text-gray-700 mb-1 block">Final Payment Amount (₹)</label>
-                    <input type="number" placeholder="e.g. 2500" value={form.finalPaymentAmount}
-                      onChange={(e) => setForm({ ...form, finalPaymentAmount: e.target.value })}
-                      className="w-full border border-blue-300 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-blue-500 bg-blue-50" />
+
+                  {/* Notes */}
+                  <div className="md:col-span-2">
+                    <label className="text-sm font-medium text-gray-700 mb-1 block">Notes (Staff ke liye)</label>
+                    <textarea placeholder="Internal notes... (Optional)"
+                      value={form.notes}
+                      onChange={(e) => setForm({ ...form, notes: e.target.value })}
+                      rows={2}
+                      className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-blue-500" />
                   </div>
                 </>
               )}
-
-              <div className="md:col-span-2">
-                <label className="text-sm font-medium text-gray-700 mb-1 block">Special Requests</label>
-                <input type="text" placeholder="Koi special request? (Optional)"
-                  value={form.specialRequests}
-                  onChange={(e) => setForm({ ...form, specialRequests: e.target.value })}
-                  className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-blue-500" />
-              </div>
-              <div className="md:col-span-2">
-                <label className="text-sm font-medium text-gray-700 mb-1 block">Notes (Staff ke liye)</label>
-                <textarea placeholder="Internal notes... (Optional)"
-                  value={form.notes}
-                  onChange={(e) => setForm({ ...form, notes: e.target.value })}
-                  rows={2}
-                  className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-blue-500" />
-              </div>
             </div>
+
             <div className="flex gap-3 mt-4">
               <button onClick={handleSubmit} disabled={loading}
                 className="bg-blue-600 text-white px-6 py-2 rounded-lg text-sm hover:bg-blue-700 disabled:opacity-50">
                 {loading ? "Adding..." : "Booking Confirm Karo"}
               </button>
-              <button onClick={() => { setShowForm(false); setShowFinalPayment(false); }}
+              <button onClick={() => { setShowForm(false); setShowFinalPayment(false); setShowMoreOptions(false); }}
                 className="bg-gray-100 text-gray-600 px-6 py-2 rounded-lg text-sm hover:bg-gray-200">
                 Cancel
               </button>
