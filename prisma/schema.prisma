@@ -179,6 +179,7 @@ enum PaymentStatus {
 }
 model Staff {
   id         String       @id @default(cuid())
+  employeeId String?
   name       String
   email      String       @unique
   password   String
