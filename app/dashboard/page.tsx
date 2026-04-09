@@ -108,7 +108,7 @@ export default function Dashboard() {
         {/* Quick Actions */}
         <div className="bg-white rounded-2xl p-4 md:p-8 shadow-sm border border-gray-100 mb-6 md:mb-8">
           <h2 className="text-lg md:text-xl font-bold text-gray-900 mb-4 md:mb-6">Quick Actions</h2>
-          <div className="grid grid-cols-3 md:grid-cols-6 gap-3">
+          <div className="grid grid-cols-3 md:grid-cols-7 gap-3">
             <button
               onClick={() => router.push("/dashboard/rooms")}
               className="flex flex-col items-center gap-2 p-3 md:p-4 rounded-xl bg-blue-50 hover:bg-blue-100 transition-colors">
@@ -144,6 +144,12 @@ export default function Dashboard() {
               className="flex flex-col items-center gap-2 p-3 md:p-4 rounded-xl bg-purple-50 hover:bg-purple-100 transition-colors">
               <span className="text-xl md:text-2xl">📅</span>
               <span className="text-xs md:text-sm font-medium text-purple-700 text-center">Rates</span>
+            </button>
+            <button
+              onClick={() => router.push("/dashboard/staff")}
+              className="flex flex-col items-center gap-2 p-3 md:p-4 rounded-xl bg-pink-50 hover:bg-pink-100 transition-colors">
+              <span className="text-xl md:text-2xl">👥</span>
+              <span className="text-xs md:text-sm font-medium text-pink-700 text-center">Staff</span>
             </button>
           </div>
         </div>

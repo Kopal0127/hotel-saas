@@ -18,16 +18,17 @@ model User {
 }
 
 model Hotel {
-  id          String       @id @default(cuid())
-  name        String
-  address     String?
-  phone       String?
-  userId      String
-  user        User         @relation(fields: [userId], references: [id])
-  rooms       Room[]
-  createdAt   DateTime     @default(now())
-  channels    OtaChannel[]
-  otaBookings OtaBooking[]
+  id           String       @id @default(cuid())
+  name         String
+  address      String?
+  phone        String?
+  userId       String
+  user         User         @relation(fields: [userId], references: [id])
+  rooms        Room[]
+  createdAt    DateTime     @default(now())
+  channels     OtaChannel[]
+  otaBookings  OtaBooking[]
+  staffMembers Staff[]
 }
 
 model Room {
@@ -175,4 +176,28 @@ enum PaymentStatus {
   COMPLETED
   FAILED
   REFUNDED
+}
+model Staff {
+  id         String       @id @default(cuid())
+  name       String
+  email      String       @unique
+  password   String
+  phone      String?
+  role       String       @default("STAFF")
+  hotelId    String
+  hotel      Hotel        @relation(fields: [hotelId], references: [id])
+  attendance Attendance[]
+  createdAt  DateTime     @default(now())
+}
+
+model Attendance {
+  id          String    @id @default(cuid())
+  staffId     String
+  staff       Staff     @relation(fields: [staffId], references: [id])
+  date        DateTime  @default(now())
+  checkIn     DateTime?
+  checkOut    DateTime?
+  totalHours  Float?
+  status      String    @default("PRESENT")
+  createdAt   DateTime  @default(now())
 }
