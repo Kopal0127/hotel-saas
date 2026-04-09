@@ -22,8 +22,8 @@ export default function BookingsPage() {
     roomId: "", guestName: "", guestEmail: "",
     checkIn: "", checkOut: "", amount: "",
     notes: "", specialRequests: "",
-    paymentMode: "CASH",
-    finalPaymentMode: "",
+    paymentMode: "CASH", paymentAmount: "",
+    finalPaymentMode: "", finalPaymentAmount: "",
   });
 
   useEffect(() => { fetchData(); }, []);
@@ -56,6 +56,10 @@ export default function BookingsPage() {
     if (!form.checkOut) { showToast("Check-out date daalna zaroori hai!", "error"); return false; }
     if (new Date(form.checkOut) <= new Date(form.checkIn)) { showToast("Check-out date, check-in ke baad honi chahiye!", "error"); return false; }
     if (!form.amount || parseFloat(form.amount) <= 0) { showToast("Amount 0 se zyada honi chahiye!", "error"); return false; }
+    if (!form.paymentAmount || parseFloat(form.paymentAmount) <= 0) { showToast("Payment amount daalna zaroori hai!", "error"); return false; }
+    if (showFinalPayment && (!form.finalPaymentAmount || parseFloat(form.finalPaymentAmount) <= 0)) {
+      showToast("Final payment amount daalna zaroori hai!", "error"); return false;
+    }
     return true;
   };
 
@@ -71,7 +75,7 @@ export default function BookingsPage() {
       const data = await res.json();
       if (res.ok) {
         showToast("Booking successfully ho gayi! ✅", "success");
-        setForm({ roomId: "", guestName: "", guestEmail: "", checkIn: "", checkOut: "", amount: "", notes: "", specialRequests: "", paymentMode: "CASH", finalPaymentMode: "" });
+        setForm({ roomId: "", guestName: "", guestEmail: "", checkIn: "", checkOut: "", amount: "", notes: "", specialRequests: "", paymentMode: "CASH", paymentAmount: "", finalPaymentMode: "", finalPaymentAmount: "" });
         setShowForm(false);
         setShowFinalPayment(false);
         fetchData();
@@ -87,10 +91,10 @@ export default function BookingsPage() {
   const handleExportCSV = () => {
     if (bookings.length === 0) { showToast("Export karne ke liye koi booking nahi hai!", "warning"); return; }
     const csv = [
-      ["Guest Name", "Guest Email", "Room", "Check In", "Check Out", "Amount", "Payment Mode", "Final Payment Mode", "Status"],
+      ["Guest Name", "Guest Email", "Room", "Check In", "Check Out", "Total Amount", "Payment Mode", "Payment Amount", "Final Payment Mode", "Final Payment Amount", "Status"],
       ...bookings.map((b) => [b.guestName, b.guestEmail, `#${b.roomNumber}`,
         new Date(b.checkIn).toLocaleDateString(), new Date(b.checkOut).toLocaleDateString(),
-        b.amount, b.paymentMode || "CASH", b.finalPaymentMode || "", b.status]),
+        b.amount, b.paymentMode || "CASH", b.paymentAmount || "", b.finalPaymentMode || "", b.finalPaymentAmount || "", b.status]),
     ].map((row) => row.join(",")).join("\n");
     const blob = new Blob([csv], { type: "text/csv" });
     const url = window.URL.createObjectURL(blob);
@@ -208,7 +212,7 @@ export default function BookingsPage() {
                   className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-blue-500" />
               </div>
 
-              {/* Payment Mode */}
+              {/* Payment Mode + Amount */}
               <div>
                 <label className="text-sm font-medium text-gray-700 mb-1 block">Payment Mode</label>
                 <select value={form.paymentMode}
@@ -219,21 +223,29 @@ export default function BookingsPage() {
                   ))}
                 </select>
               </div>
+              <div>
+                <label className="text-sm font-medium text-gray-700 mb-1 block">Payment Amount (₹)</label>
+                <input type="number" placeholder="e.g. 2500" value={form.paymentAmount}
+                  onChange={(e) => setForm({ ...form, paymentAmount: e.target.value })}
+                  className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-blue-500" />
+              </div>
 
-              {/* Add Final Payment Button */}
-              <div className="flex items-end">
-                {!showFinalPayment ? (
+              {/* Final Payment Mode + Amount */}
+              {!showFinalPayment ? (
+                <div className="md:col-span-2">
                   <button
                     onClick={() => { setShowFinalPayment(true); setForm({ ...form, finalPaymentMode: "CASH" }); }}
                     className="w-full border-2 border-dashed border-blue-300 text-blue-600 rounded-lg px-4 py-3 text-sm hover:bg-blue-50 transition-colors"
                   >
                     + Add Final Payment Mode
                   </button>
-                ) : (
-                  <div className="w-full">
+                </div>
+              ) : (
+                <>
+                  <div>
                     <div className="flex items-center justify-between mb-1">
                       <label className="text-sm font-medium text-gray-700">Final Payment Mode</label>
-                      <button onClick={() => { setShowFinalPayment(false); setForm({ ...form, finalPaymentMode: "" }); }}
+                      <button onClick={() => { setShowFinalPayment(false); setForm({ ...form, finalPaymentMode: "", finalPaymentAmount: "" }); }}
                         className="text-xs text-red-400 hover:text-red-600">✕ Remove</button>
                     </div>
                     <select value={form.finalPaymentMode}
@@ -244,8 +256,14 @@ export default function BookingsPage() {
                       ))}
                     </select>
                   </div>
-                )}
-              </div>
+                  <div>
+                    <label className="text-sm font-medium text-gray-700 mb-1 block">Final Payment Amount (₹)</label>
+                    <input type="number" placeholder="e.g. 2500" value={form.finalPaymentAmount}
+                      onChange={(e) => setForm({ ...form, finalPaymentAmount: e.target.value })}
+                      className="w-full border border-blue-300 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-blue-500 bg-blue-50" />
+                  </div>
+                </>
+              )}
 
               <div className="md:col-span-2">
                 <label className="text-sm font-medium text-gray-700 mb-1 block">Special Requests</label>
@@ -328,9 +346,11 @@ export default function BookingsPage() {
                       <td className="px-4 md:px-6 py-4 text-xs md:text-sm font-medium text-gray-900">₹{booking.amount}</td>
                       <td className="px-4 md:px-6 py-4 text-xs text-gray-600">
                         <span>{paymentModeLabel[booking.paymentMode] || "💵 Cash"}</span>
+                        {booking.paymentAmount && <span className="text-green-600 ml-1">₹{booking.paymentAmount}</span>}
                         {booking.finalPaymentMode && (
                           <span className="block text-blue-600 mt-0.5">
                             → {paymentModeLabel[booking.finalPaymentMode]}
+                            {booking.finalPaymentAmount && <span className="text-green-600 ml-1">₹{booking.finalPaymentAmount}</span>}
                           </span>
                         )}
                       </td>
