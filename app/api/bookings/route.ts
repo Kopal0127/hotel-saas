@@ -62,7 +62,7 @@ export async function POST(req: NextRequest) {
 
     // Email bhejo
     resend.emails.send({
-      from: "onboarding@resend.dev",
+      from: "bookings@nightstays.in",
       to: "dargudetushar@gmail.com",
       subject: `Naya Booking — ${guestName} Room #${booking.room.number}`,
       html: `
@@ -80,6 +80,42 @@ export async function POST(req: NextRequest) {
         ${notes ? `<p><b>Notes:</b> ${notes}</p>` : ""}
       `,
     }).catch(e => console.error("Email error:", e));
+    // ✅ Guest ko confirmation email
+    if (guestEmail) {
+      resend.emails.send({
+        from: "bookings@nightstays.in",
+        to: guestEmail,
+        subject: `Booking Confirmed — ${booking.room.hotel.name}`,
+        html: `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 8px;">
+            <h1 style="color: #2563eb; text-align: center;">🏨 Booking Confirmed!</h1>
+            <p style="font-size: 16px;">Dear <b>${guestName}</b>,</p>
+            <p>Your booking at <b>${booking.room.hotel.name}</b> has been confirmed!</p>
+            
+            <div style="background: #f0f7ff; padding: 16px; border-radius: 8px; margin: 20px 0;">
+              <h3 style="margin-top: 0; color: #1e40af;">📋 Booking Details</h3>
+              <p><b>Room:</b> #${booking.room.number} — ${booking.room.type}</p>
+              <p><b>Check-in:</b> ${new Date(checkIn).toLocaleDateString("en-IN")}</p>
+              <p><b>Check-out:</b> ${new Date(checkOut).toLocaleDateString("en-IN")}</p>
+              <p><b>Total Amount:</b> ₹${amount}</p>
+              <p><b>Payment Mode:</b> ${paymentMode || "CASH"}</p>
+              ${specialRequests ? `<p><b>Special Requests:</b> ${specialRequests}</p>` : ""}
+            </div>
+
+            <div style="background: #f0fff4; padding: 16px; border-radius: 8px; margin: 20px 0;">
+              <h3 style="margin-top: 0; color: #166534;">🏨 Hotel Details</h3>
+              <p><b>${booking.room.hotel.name}</b></p>
+              ${booking.room.hotel.address ? `<p>📍 ${booking.room.hotel.address}</p>` : ""}
+              ${booking.room.hotel.phone ? `<p>📞 ${booking.room.hotel.phone}</p>` : ""}
+            </div>
+
+            <p style="color: #6b7280; font-size: 14px; text-align: center;">
+              Thank you for choosing ${booking.room.hotel.name}. We look forward to welcoming you!
+            </p>
+          </div>
+        `,
+      }).catch(e => console.error("Guest email error:", e));
+    }
 
     return NextResponse.json({ message: "Booking ho gayi!", id: booking.id }, { status: 201 });
   } catch (error) {
