@@ -32,17 +32,14 @@ export default function StaffPage() {
   const [selectedStaff, setSelectedStaff] = useState("");
   const [month, setMonth] = useState(new Date().getMonth() + 1);
   const [year, setYear] = useState(new Date().getFullYear());
-
-  // Report filters
   const [reportStaff, setReportStaff] = useState("");
   const [reportFrom, setReportFrom] = useState("");
   const [reportTo, setReportTo] = useState("");
-
   const [form, setForm] = useState({ name: "", email: "", password: "", phone: "" });
-
   const [editAttendance, setEditAttendance] = useState<{
     staffId: string; date: string; status: string; checkIn: string; checkOut: string;
   } | null>(null);
+  const [fingerprintStatus, setFingerprintStatus] = useState<Record<string, string>>({});
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -56,11 +53,126 @@ export default function StaffPage() {
     if (hotelId) { fetchStaff(); fetchAttendance(); }
   }, [hotelId, month, year, selectedStaff]);
 
+  // ✅ Fingerprint support check
+  const isFingerprintSupported = () => {
+    return window.PublicKeyCredential !== undefined;
+  };
+
+  // ✅ Fingerprint Register
+  const handleRegisterFingerprint = async (staff: Staff) => {
+    if (!isFingerprintSupported()) {
+      showToast("Tumhara browser/device fingerprint support nahi karta!", "error");
+      return;
+    }
+    try {
+      showToast(`${staff.name} ka fingerprint register ho raha hai...`, "info");
+      const challenge = new Uint8Array(32);
+      window.crypto.getRandomValues(challenge);
+      const credential = await navigator.credentials.create({
+        publicKey: {
+          challenge,
+          rp: { name: "HotelPro", id: window.location.hostname },
+          user: {
+            id: new TextEncoder().encode(staff.id),
+            name: staff.email,
+            displayName: staff.name,
+          },
+          pubKeyCredParams: [{ alg: -7, type: "public-key" }],
+          authenticatorSelection: {
+            authenticatorAttachment: "platform",
+            userVerification: "required",
+          },
+          timeout: 60000,
+        },
+      }) as PublicKeyCredential;
+
+      if (credential) {
+        // Credential ID save karo localStorage mein
+        const credId = btoa(String.fromCharCode(...new Uint8Array(credential.rawId)));
+        const saved = JSON.parse(localStorage.getItem("fingerprint_credentials") || "{}");
+        saved[staff.id] = credId;
+        localStorage.setItem("fingerprint_credentials", JSON.stringify(saved));
+        setFingerprintStatus(prev => ({ ...prev, [staff.id]: "registered" }));
+        showToast(`✅ ${staff.name} ka fingerprint register ho gaya!`, "success");
+      }
+    } catch (error: any) {
+      if (error.name === "NotAllowedError") {
+        showToast("Fingerprint cancel kar diya!", "warning");
+      } else {
+        showToast("Fingerprint register nahi ho saka: " + error.message, "error");
+      }
+    }
+  };
+
+  // ✅ Fingerprint Attendance Mark
+  const handleFingerprintAttendance = async (staff: Staff, dateStr: string) => {
+    if (!isFingerprintSupported()) {
+      showToast("Tumhara browser/device fingerprint support nahi karta!", "error");
+      return;
+    }
+    const saved = JSON.parse(localStorage.getItem("fingerprint_credentials") || "{}");
+    if (!saved[staff.id]) {
+      showToast(`${staff.name} ka fingerprint pehle register karo!`, "warning");
+      return;
+    }
+    try {
+      showToast("Fingerprint scan karo...", "info");
+      const challenge = new Uint8Array(32);
+      window.crypto.getRandomValues(challenge);
+      const credIdStr = saved[staff.id];
+      const credIdBytes = Uint8Array.from(atob(credIdStr), c => c.charCodeAt(0));
+      const assertion = await navigator.credentials.get({
+        publicKey: {
+          challenge,
+          allowCredentials: [{ id: credIdBytes, type: "public-key" }],
+          userVerification: "required",
+          timeout: 60000,
+        },
+      });
+      if (assertion) {
+        // Attendance API call
+        const token = localStorage.getItem("token");
+        const now = new Date();
+        const timeStr = now.toTimeString().slice(0, 5);
+        const res = await fetch("/api/attendance", {
+          method: "PUT",
+          headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+          body: JSON.stringify({
+            staffId: staff.id,
+            date: dateStr,
+            status: "PRESENT",
+            checkIn: timeStr,
+            checkOut: "",
+          }),
+        });
+        if (res.ok) {
+          showToast(`✅ ${staff.name} ki attendance mark ho gayi! Time: ${timeStr}`, "success");
+          fetchAttendance();
+        } else {
+          showToast("Attendance save nahi ho saki!", "error");
+        }
+      }
+    } catch (error: any) {
+      if (error.name === "NotAllowedError") {
+        showToast("Fingerprint cancel kar diya!", "warning");
+      } else {
+        showToast("Fingerprint verify nahi ho saka: " + error.message, "error");
+      }
+    }
+  };
+
   async function fetchStaff() {
     const token = localStorage.getItem("token");
     const res = await fetch(`/api/staff?hotelId=${hotelId}`, { headers: { Authorization: `Bearer ${token}` } });
     const data = await res.json();
     setStaffList(data.staff || []);
+    // Check registered fingerprints
+    const saved = JSON.parse(localStorage.getItem("fingerprint_credentials") || "{}");
+    const status: Record<string, string> = {};
+    (data.staff || []).forEach((s: Staff) => {
+      if (saved[s.id]) status[s.id] = "registered";
+    });
+    setFingerprintStatus(status);
   }
 
   async function fetchAttendance() {
@@ -125,46 +237,36 @@ export default function StaffPage() {
     if (!reportFrom || !reportTo) {
       showToast("From aur To date select karo!", "warning"); return;
     }
-
     const token = localStorage.getItem("token");
     let url = `/api/attendance?hotelId=${hotelId}`;
     if (reportStaff) url += `&staffId=${reportStaff}`;
-
     const res = await fetch(url, { headers: { Authorization: `Bearer ${token}` } });
     const data = await res.json();
-
     const from = new Date(reportFrom);
     const to = new Date(reportTo);
-
     const filtered = (data.attendance || []).filter((a: Attendance) => {
       const d = new Date(a.date);
       return d >= from && d <= to && (!reportStaff || a.staffId === reportStaff);
     });
-
     if (filtered.length === 0) {
       showToast("Is range mein koi attendance nahi mili!", "warning"); return;
     }
-
     const staffMap: Record<string, Staff> = {};
     staffList.forEach(s => { staffMap[s.id] = s; });
-
     const csv = [
       ["Employee ID", "Staff Name", "Email", "Date", "Status", "Check In", "Check Out", "Total Hours"],
       ...filtered.map((a: Attendance) => {
         const s = staffMap[a.staffId];
         return [
-          s?.employeeId || "—",
-          a.staff?.name || s?.name || "—",
+          s?.employeeId || "—", a.staff?.name || s?.name || "—",
           a.staff?.email || s?.email || "—",
-          new Date(a.date).toLocaleDateString("en-IN"),
-          a.status,
+          new Date(a.date).toLocaleDateString("en-IN"), a.status,
           a.checkIn ? new Date(a.checkIn).toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" }) : "—",
           a.checkOut ? new Date(a.checkOut).toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" }) : "—",
           a.totalHours ? `${a.totalHours} hrs` : "—",
         ];
       })
     ].map(row => row.join(",")).join("\n");
-
     const blob = new Blob([csv], { type: "text/csv" });
     const url2 = window.URL.createObjectURL(blob);
     const a = document.createElement("a");
@@ -199,7 +301,6 @@ export default function StaffPage() {
   }
 
   const daysInMonth = getDaysInMonth();
-
   return (
     <div className="min-h-screen bg-gray-50">
       {toast && <Toast message={toast.message} type={toast.type} onClose={hideToast} />}
@@ -225,18 +326,16 @@ export default function StaffPage() {
 
         {/* Tabs */}
         <div className="flex gap-2 mb-6">
-          <button onClick={() => setActiveTab("staff")}
-            className={`px-5 py-2 rounded-lg text-sm font-medium transition-colors ${activeTab === "staff" ? "bg-blue-600 text-white" : "bg-white text-gray-600 hover:bg-gray-100"}`}>
-            👥 Staff List
-          </button>
-          <button onClick={() => setActiveTab("attendance")}
-            className={`px-5 py-2 rounded-lg text-sm font-medium transition-colors ${activeTab === "attendance" ? "bg-blue-600 text-white" : "bg-white text-gray-600 hover:bg-gray-100"}`}>
-            📅 Attendance
-          </button>
-          <button onClick={() => setActiveTab("report")}
-            className={`px-5 py-2 rounded-lg text-sm font-medium transition-colors ${activeTab === "report" ? "bg-blue-600 text-white" : "bg-white text-gray-600 hover:bg-gray-100"}`}>
-            📥 Download Report
-          </button>
+          {[
+            { key: "staff", label: "👥 Staff List" },
+            { key: "attendance", label: "📅 Attendance" },
+            { key: "report", label: "📥 Download Report" },
+          ].map(tab => (
+            <button key={tab.key} onClick={() => setActiveTab(tab.key as any)}
+              className={`px-5 py-2 rounded-lg text-sm font-medium transition-colors ${activeTab === tab.key ? "bg-blue-600 text-white" : "bg-white text-gray-600 hover:bg-gray-100"}`}>
+              {tab.label}
+            </button>
+          ))}
         </div>
 
         {/* Add Staff Form */}
@@ -299,6 +398,7 @@ export default function StaffPage() {
                     <th className="text-left px-6 py-4 text-sm font-medium text-gray-600">Phone</th>
                     <th className="text-left px-6 py-4 text-sm font-medium text-gray-600">Role</th>
                     <th className="text-left px-6 py-4 text-sm font-medium text-gray-600">Joined</th>
+                    <th className="text-left px-6 py-4 text-sm font-medium text-gray-600">Fingerprint</th>
                     <th className="text-left px-6 py-4 text-sm font-medium text-gray-600">Action</th>
                   </tr>
                 </thead>
@@ -320,6 +420,16 @@ export default function StaffPage() {
                       </td>
                       <td className="px-6 py-4 text-sm text-gray-600">
                         {new Date(s.createdAt).toLocaleDateString("en-IN")}
+                      </td>
+                      <td className="px-6 py-4">
+                        {fingerprintStatus[s.id] === "registered" ? (
+                          <span className="bg-green-100 text-green-700 text-xs px-2 py-1 rounded-full">✅ Registered</span>
+                        ) : (
+                          <button onClick={() => handleRegisterFingerprint(s)}
+                            className="bg-purple-100 text-purple-700 text-xs px-3 py-1 rounded-full hover:bg-purple-200">
+                            🔑 Register
+                          </button>
+                        )}
                       </td>
                       <td className="px-6 py-4">
                         <button onClick={() => handleDeleteStaff(s.id)}
@@ -382,6 +492,11 @@ export default function StaffPage() {
                           <div className="flex items-center gap-2">
                             <span className="bg-blue-100 text-blue-700 text-xs font-bold px-2 py-0.5 rounded">{s.employeeId}</span>
                             <p className="font-semibold text-gray-900">{s.name}</p>
+                            {fingerprintStatus[s.id] === "registered" ? (
+                              <span className="bg-green-100 text-green-700 text-xs px-2 py-0.5 rounded-full">✅ Fingerprint Ready</span>
+                            ) : (
+                              <span className="bg-yellow-100 text-yellow-700 text-xs px-2 py-0.5 rounded-full">⚠️ Fingerprint Register Karo</span>
+                            )}
                           </div>
                           <p className="text-xs text-gray-500">{s.email}</p>
                         </div>
@@ -434,7 +549,13 @@ export default function StaffPage() {
                                   <td className="px-4 py-2 text-xs text-gray-600">
                                     {att?.totalHours ? `${att.totalHours} hrs` : "—"}
                                   </td>
-                                  <td className="px-4 py-2">
+                                  <td className="px-4 py-2 flex gap-2">
+                                    {!isFuture && isToday && fingerprintStatus[s.id] === "registered" && (
+                                      <button onClick={() => handleFingerprintAttendance(s, dateStr)}
+                                        className="bg-purple-100 text-purple-700 text-xs px-2 py-1 rounded-full hover:bg-purple-200">
+                                        👆 Fingerprint
+                                      </button>
+                                    )}
                                     {!isFuture && (
                                       <button onClick={() => setEditAttendance({
                                         staffId: s.id, date: dateStr,
@@ -477,26 +598,22 @@ export default function StaffPage() {
               <div></div>
               <div>
                 <label className="text-sm font-medium text-gray-700 mb-1 block">From Date</label>
-                <input type="date" value={reportFrom}
-                  onChange={(e) => setReportFrom(e.target.value)}
+                <input type="date" value={reportFrom} onChange={(e) => setReportFrom(e.target.value)}
                   className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-blue-500" />
               </div>
               <div>
                 <label className="text-sm font-medium text-gray-700 mb-1 block">To Date</label>
-                <input type="date" value={reportTo}
-                  onChange={(e) => setReportTo(e.target.value)}
+                <input type="date" value={reportTo} onChange={(e) => setReportTo(e.target.value)}
                   className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-blue-500" />
               </div>
             </div>
-
             <div className="bg-blue-50 rounded-xl p-4 mb-6">
               <p className="text-sm text-blue-700">
                 📋 Report mein aayega: Employee ID, Name, Email, Date, Status, Check In, Check Out, Total Hours
               </p>
             </div>
-
             <button onClick={downloadReport}
-              className="bg-green-600 text-white px-8 py-3 rounded-lg text-sm font-medium hover:bg-green-700 transition-colors">
+              className="bg-green-600 text-white px-8 py-3 rounded-lg text-sm font-medium hover:bg-green-700">
               📥 CSV Report Download Karo
             </button>
           </div>
