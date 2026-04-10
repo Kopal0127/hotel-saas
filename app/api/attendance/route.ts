@@ -21,7 +21,6 @@ export async function GET(req: NextRequest) {
   const year = searchParams.get("year");
 
   const whereClause: any = {};
-
   if (staffId) whereClause.staffId = staffId;
   if (hotelId) whereClause.staff = { hotelId };
   if (month && year) {
@@ -72,11 +71,9 @@ export async function POST(req: NextRequest) {
     if (existing.checkOut) {
       return NextResponse.json({ error: "Aaj already check-out ho gaya hai!" }, { status: 400 });
     }
-
     const checkInTime = new Date(existing.checkIn!);
     const checkOutTime = today;
     const totalHours = (checkOutTime.getTime() - checkInTime.getTime()) / (1000 * 60 * 60);
-
     const updated = await prisma.attendance.update({
       where: { id: existing.id },
       data: {
@@ -91,7 +88,7 @@ export async function POST(req: NextRequest) {
   return NextResponse.json({ error: "Invalid action!" }, { status: 400 });
 }
 
-// PUT — Manual attendance update (Admin)
+// PUT — Manual attendance update (Admin + Fingerprint)
 export async function PUT(req: NextRequest) {
   const user = getUserFromToken(req);
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -110,9 +107,26 @@ export async function PUT(req: NextRequest) {
     where: { staffId, date: { gte: startOfDay, lte: endOfDay } }
   });
 
+  // ✅ Time string "HH:MM" ko full DateTime mein convert karo
+  const parseTime = (timeStr: string, baseDate: Date) => {
+    if (!timeStr) return null;
+    // Agar already full ISO date hai toh directly return karo
+    if (timeStr.includes("T") || timeStr.includes("-")) {
+      return new Date(timeStr);
+    }
+    // HH:MM format handle karo
+    const [hours, minutes] = timeStr.split(":").map(Number);
+    const dt = new Date(baseDate);
+    dt.setHours(hours, minutes, 0, 0);
+    return dt;
+  };
+
+  const checkInDate = checkIn ? parseTime(checkIn, targetDate) : null;
+  const checkOutDate = checkOut ? parseTime(checkOut, targetDate) : null;
+
   let totalHours = null;
-  if (checkIn && checkOut) {
-    totalHours = (new Date(checkOut).getTime() - new Date(checkIn).getTime()) / (1000 * 60 * 60);
+  if (checkInDate && checkOutDate) {
+    totalHours = (checkOutDate.getTime() - checkInDate.getTime()) / (1000 * 60 * 60);
     totalHours = Math.round(totalHours * 100) / 100;
   }
 
@@ -121,18 +135,20 @@ export async function PUT(req: NextRequest) {
       where: { id: existing.id },
       data: {
         status: status || existing.status,
-        checkIn: checkIn ? new Date(checkIn) : existing.checkIn,
-        checkOut: checkOut ? new Date(checkOut) : existing.checkOut,
-        totalHours: totalHours || existing.totalHours,
+        checkIn: checkInDate || existing.checkIn,
+        checkOut: checkOutDate || existing.checkOut,
+        totalHours: totalHours !== null ? totalHours : existing.totalHours,
       }
     });
     return NextResponse.json({ message: "Attendance update ho gayi!", attendance: updated });
   } else {
     const created = await prisma.attendance.create({
       data: {
-        staffId, date: targetDate, status: status || "PRESENT",
-        checkIn: checkIn ? new Date(checkIn) : null,
-        checkOut: checkOut ? new Date(checkOut) : null,
+        staffId,
+        date: targetDate,
+        status: status || "PRESENT",
+        checkIn: checkInDate,
+        checkOut: checkOutDate,
         totalHours,
       }
     });
