@@ -29,6 +29,34 @@ export default function BookingsPage() {
 
   useEffect(() => { fetchData(); }, []);
 
+  // ✅ Auto amount calculate when room/dates change
+  useEffect(() => {
+    if (form.roomId && form.checkIn && form.checkOut) {
+      const selectedRoom = rooms.find(r => r.id === form.roomId);
+      if (selectedRoom) {
+        const checkIn = new Date(form.checkIn);
+        const checkOut = new Date(form.checkOut);
+        const nights = Math.ceil((checkOut.getTime() - checkIn.getTime()) / (1000 * 60 * 60 * 24));
+        if (nights > 0) {
+          const totalAmount = (selectedRoom.price * nights).toString();
+          setForm(prev => ({ ...prev, amount: totalAmount }));
+        }
+      }
+    }
+  }, [form.roomId, form.checkIn, form.checkOut, rooms]);
+
+  // ✅ Auto remaining amount calculate for checkout payment
+  useEffect(() => {
+    if (form.finalPaymentMode === "CHECKOUT_PAYMENT" && form.amount && form.paymentAmount) {
+      const total = parseFloat(form.amount);
+      const paid = parseFloat(form.paymentAmount);
+      const remaining = total - paid;
+      if (remaining >= 0) {
+        setForm(prev => ({ ...prev, finalPaymentAmount: remaining.toString() }));
+      }
+    }
+  }, [form.finalPaymentMode, form.amount, form.paymentAmount]);
+
   const fetchData = async () => {
     try {
       const res = await fetch("/api/hotels");
@@ -130,6 +158,7 @@ export default function BookingsPage() {
     PARTIAL_CASH: "💵 Partial Cash", PARTIAL_CARD: "💳 Partial Card",
     PARTIAL_UPI: "📱 Partial UPI", PARTIAL_BANK_TRANSFER: "🏦 Partial Bank Transfer",
     PARTIAL_ONLINE: "🌐 Partial Online",
+    CHECKOUT_PAYMENT: "🏨 Checkout Payment",
   };
 
   const firstPaymentOptions = [
@@ -146,12 +175,27 @@ export default function BookingsPage() {
   ];
 
   const finalPaymentOptions = [
+    { value: "CHECKOUT_PAYMENT", label: "🏨 Checkout Payment (Remaining Auto)" },
     { value: "CASH", label: "💵 Cash" },
     { value: "CARD", label: "💳 Card" },
     { value: "UPI", label: "📱 UPI" },
     { value: "BANK_TRANSFER", label: "🏦 Bank Transfer" },
     { value: "ONLINE", label: "🌐 Online" },
   ];
+
+  // Calculate remaining amount for display
+  const remainingAmount = form.amount && form.paymentAmount
+    ? parseFloat(form.amount) - parseFloat(form.paymentAmount)
+    : 0;
+
+  // Calculate nights for display
+  const calculateNights = () => {
+    if (form.checkIn && form.checkOut) {
+      const nights = Math.ceil((new Date(form.checkOut).getTime() - new Date(form.checkIn).getTime()) / (1000 * 60 * 60 * 24));
+      return nights > 0 ? nights : 0;
+    }
+    return 0;
+  };
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -205,10 +249,17 @@ export default function BookingsPage() {
                   className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-blue-500" />
               </div>
               <div>
-                <label className="text-sm font-medium text-gray-700 mb-1 block">Total Amount (₹)</label>
-                <input type="number" placeholder="5000" value={form.amount}
+                <label className="text-sm font-medium text-gray-700 mb-1 block">
+                  Total Amount (₹)
+                  {calculateNights() > 0 && form.roomId && (
+                    <span className="ml-2 text-xs text-blue-500 font-normal">
+                      {calculateNights()} night{calculateNights() > 1 ? "s" : ""} × ₹{rooms.find(r => r.id === form.roomId)?.price}/night
+                    </span>
+                  )}
+                </label>
+                <input type="number" placeholder="Auto calculate hoga" value={form.amount}
                   onChange={(e) => setForm({ ...form, amount: e.target.value })}
-                  className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-blue-500" />
+                  className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-blue-500 bg-blue-50" />
               </div>
               <div>
                 <label className="text-sm font-medium text-gray-700 mb-1 block">Check In</label>
@@ -237,6 +288,10 @@ export default function BookingsPage() {
                 <input type="number" placeholder="e.g. 2500" value={form.paymentAmount}
                   onChange={(e) => setForm({ ...form, paymentAmount: e.target.value })}
                   className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-blue-500" />
+                {/* Remaining amount hint */}
+                {form.paymentMode.startsWith("PARTIAL") && form.amount && form.paymentAmount && remainingAmount > 0 && (
+                  <p className="text-xs text-orange-500 mt-1">⚠️ Remaining: ₹{remainingAmount} checkout pe lena hoga</p>
+                )}
               </div>
 
               {/* More Options Toggle */}
@@ -254,7 +309,7 @@ export default function BookingsPage() {
                   {!showFinalPayment ? (
                     <div className="md:col-span-2">
                       <button
-                        onClick={() => { setShowFinalPayment(true); setForm({ ...form, finalPaymentMode: "CASH" }); }}
+                        onClick={() => { setShowFinalPayment(true); setForm({ ...form, finalPaymentMode: "CHECKOUT_PAYMENT" }); }}
                         className="w-full border-2 border-dashed border-blue-300 text-blue-600 rounded-lg px-4 py-3 text-sm hover:bg-blue-50 transition-colors"
                       >
                         + Add Final Payment Mode
@@ -277,10 +332,27 @@ export default function BookingsPage() {
                         </select>
                       </div>
                       <div>
-                        <label className="text-sm font-medium text-gray-700 mb-1 block">Final Payment Amount (₹)</label>
-                        <input type="number" placeholder="e.g. 2500" value={form.finalPaymentAmount}
+                        <label className="text-sm font-medium text-gray-700 mb-1 block">
+                          Final Payment Amount (₹)
+                          {form.finalPaymentMode === "CHECKOUT_PAYMENT" && (
+                            <span className="ml-2 text-xs text-green-500 font-normal">✅ Auto calculated</span>
+                          )}
+                        </label>
+                        <input
+                          type="number"
+                          placeholder="e.g. 2500"
+                          value={form.finalPaymentAmount}
+                          readOnly={form.finalPaymentMode === "CHECKOUT_PAYMENT"}
                           onChange={(e) => setForm({ ...form, finalPaymentAmount: e.target.value })}
-                          className="w-full border border-blue-300 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-blue-500 bg-blue-50" />
+                          className={`w-full border rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-blue-500 ${
+                            form.finalPaymentMode === "CHECKOUT_PAYMENT"
+                              ? "bg-green-50 border-green-300 text-green-700 font-medium"
+                              : "border-blue-300 bg-blue-50"
+                          }`}
+                        />
+                        {form.finalPaymentMode === "CHECKOUT_PAYMENT" && form.finalPaymentAmount && (
+                          <p className="text-xs text-green-600 mt-1">✅ ₹{form.finalPaymentAmount} checkout pe collect karna hai</p>
+                        )}
                       </div>
                     </>
                   )}
@@ -374,7 +446,7 @@ export default function BookingsPage() {
                         {booking.finalPaymentMode ? (
                           <span className="text-blue-600">
                             {paymentModeLabel[booking.finalPaymentMode]}
-                            {booking.finalPaymentAmount && <span className="text-green-600 block">₹{booking.finalPaymentAmount}</span>}
+                            {booking.finalPaymentAmount && <span className="text-orange-500 block">₹{booking.finalPaymentAmount} pending</span>}
                           </span>
                         ) : (
                           <span className="text-gray-400">No</span>

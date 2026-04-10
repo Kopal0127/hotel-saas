@@ -100,6 +100,11 @@ export async function POST(req: NextRequest) {
               <p><b>Total Amount:</b> ₹${amount}</p>
               <p><b>Payment Mode:</b> ${paymentMode || "CASH"}</p>
               ${specialRequests ? `<p><b>Special Requests:</b> ${specialRequests}</p>` : ""}
+              ${finalPaymentMode === "CHECKOUT_PAYMENT" && finalPaymentAmount ? `
+                <div style="background: #fff7ed; padding: 12px; border-radius: 8px; margin-top: 12px; border-left: 4px solid #f97316;">
+                  <p style="margin: 0; color: #c2410c;"><b>⚠️ Final Payment:</b> ₹${finalPaymentAmount} checkout pe dena hoga</p>
+                </div>
+              ` : ""}
             </div>
 
             <div style="background: #f0fff4; padding: 16px; border-radius: 8px; margin: 20px 0;">
