@@ -383,14 +383,14 @@ export default function StaffPage() {
 
         {/* Staff List */}
         {activeTab === "staff" && (
-          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-x-auto">
             {staffList.length === 0 ? (
               <div className="text-center py-16 text-gray-400">
                 <div className="text-5xl mb-4">👥</div>
                 <p>Koi staff nahi hai — Add Staff se add karo</p>
               </div>
             ) : (
-              <table className="w-full">
+              <table className="w-full min-w-[800px]">
                 <thead className="bg-gray-50 border-b border-gray-100">
                   <tr>
                     <th className="text-left px-6 py-4 text-sm font-medium text-gray-600">Employee ID</th>
