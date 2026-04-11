@@ -133,13 +133,13 @@ export default function RoomsPage() {
               
               <div>
                 <label className="text-sm font-medium text-gray-700 mb-1 block">Room Type</label>
-                <select value={form.type} onChange={(e) => setForm({ ...form, type: e.target.value })}
-                  className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-blue-500">
-                  <option>Standard</option>
-                  <option>Deluxe</option>
-                  <option>Suite</option>
-                  <option>Super Deluxe</option>
-                </select>
+                <input
+                  type="text"
+                  placeholder="e.g. Standard, Deluxe, Suite"
+                  value={form.type}
+                  onChange={(e) => setForm({ ...form, type: e.target.value })}
+                  className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-blue-500"
+                />
               </div>
 
               <div>

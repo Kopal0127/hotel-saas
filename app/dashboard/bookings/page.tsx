@@ -261,6 +261,7 @@ export default function BookingsPage() {
               <div>
                 <label className="text-sm font-medium text-gray-700 mb-1 block">Check In</label>
                 <input type="date" value={form.checkIn}
+                  min={new Date().toISOString().split("T")[0]}
                   onChange={(e) => {
                     setForm({ ...form, checkIn: e.target.value });
                     setSelectedRoomId("");
@@ -272,6 +273,7 @@ export default function BookingsPage() {
               <div>
                 <label className="text-sm font-medium text-gray-700 mb-1 block">Check Out</label>
                 <input type="date" value={form.checkOut}
+                  min={form.checkIn || new Date().toISOString().split("T")[0]}
                   onChange={(e) => {
                     setForm({ ...form, checkOut: e.target.value });
                     setSelectedRoomId("");
