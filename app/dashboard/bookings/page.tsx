@@ -19,6 +19,11 @@ export default function BookingsPage() {
   const [showMoreOptions, setShowMoreOptions] = useState(false);
   const [page, setPage] = useState(1);
   const itemsPerPage = 5;
+
+  // ✅ Room Type aur Room Number alag
+  const [selectedType, setSelectedType] = useState("");
+  const [selectedRoomId, setSelectedRoomId] = useState("");
+
   const [form, setForm] = useState({
     roomId: "", guestName: "", guestEmail: "",
     checkIn: "", checkOut: "", amount: "",
@@ -29,33 +34,37 @@ export default function BookingsPage() {
 
   useEffect(() => { fetchData(); }, []);
 
-  // ✅ Auto amount calculate when room/dates change
+  // ✅ Auto amount calculate
   useEffect(() => {
     if (form.roomId && form.checkIn && form.checkOut) {
       const selectedRoom = rooms.find(r => r.id === form.roomId);
       if (selectedRoom) {
-        const checkIn = new Date(form.checkIn);
-        const checkOut = new Date(form.checkOut);
-        const nights = Math.ceil((checkOut.getTime() - checkIn.getTime()) / (1000 * 60 * 60 * 24));
+        const nights = Math.ceil((new Date(form.checkOut).getTime() - new Date(form.checkIn).getTime()) / (1000 * 60 * 60 * 24));
         if (nights > 0) {
-          const totalAmount = (selectedRoom.price * nights).toString();
-          setForm(prev => ({ ...prev, amount: totalAmount }));
+          setForm(prev => ({ ...prev, amount: (selectedRoom.price * nights).toString() }));
         }
       }
     }
   }, [form.roomId, form.checkIn, form.checkOut, rooms]);
 
-  // ✅ Auto remaining amount calculate for checkout payment
+  // ✅ Auto remaining amount
   useEffect(() => {
     if (form.finalPaymentMode === "CHECKOUT_PAYMENT" && form.amount && form.paymentAmount) {
-      const total = parseFloat(form.amount);
-      const paid = parseFloat(form.paymentAmount);
-      const remaining = total - paid;
-      if (remaining >= 0) {
-        setForm(prev => ({ ...prev, finalPaymentAmount: remaining.toString() }));
-      }
+      const remaining = parseFloat(form.amount) - parseFloat(form.paymentAmount);
+      if (remaining >= 0) setForm(prev => ({ ...prev, finalPaymentAmount: remaining.toString() }));
     }
   }, [form.finalPaymentMode, form.amount, form.paymentAmount]);
+
+  // ✅ Jab type change ho toh roomId reset karo
+  useEffect(() => {
+    setSelectedRoomId("");
+    setForm(prev => ({ ...prev, roomId: "" }));
+  }, [selectedType]);
+
+  // ✅ Jab room select ho toh form mein roomId set karo
+  useEffect(() => {
+    setForm(prev => ({ ...prev, roomId: selectedRoomId }));
+  }, [selectedRoomId]);
 
   const fetchData = async () => {
     try {
@@ -75,6 +84,12 @@ export default function BookingsPage() {
     }
   };
 
+  // ✅ Unique room types
+  const roomTypes = [...new Set(rooms.map(r => r.type))];
+
+  // ✅ Selected type ke rooms
+  const filteredRoomsByType = selectedType ? rooms.filter(r => r.type === selectedType) : [];
+
   const validate = () => {
     if (!form.roomId) { showToast("Room select karna zaroori hai!", "error"); return false; }
     if (!form.guestName.trim()) { showToast("Guest ka naam daalna zaroori hai!", "error"); return false; }
@@ -87,15 +102,9 @@ export default function BookingsPage() {
     if (!form.amount || parseFloat(form.amount) <= 0) { showToast("Amount 0 se zyada honi chahiye!", "error"); return false; }
     if (!form.paymentAmount || parseFloat(form.paymentAmount) <= 0) { showToast("Payment amount daalna zaroori hai!", "error"); return false; }
     const isPartial = form.paymentMode.startsWith("PARTIAL");
-    if (isPartial && !showFinalPayment) {
-      showToast("Partial payment select kiya hai — Final Payment Mode bhi add karo!", "warning"); return false;
-    }
-    if (isPartial && showFinalPayment && (!form.finalPaymentAmount || parseFloat(form.finalPaymentAmount) <= 0)) {
-      showToast("Final payment amount daalna zaroori hai!", "error"); return false;
-    }
-    if (showFinalPayment && !form.finalPaymentMode) {
-      showToast("Final Payment Mode select karo!", "error"); return false;
-    }
+    if (isPartial && !showFinalPayment) { showToast("Partial payment select kiya hai — Final Payment Mode bhi add karo!", "warning"); return false; }
+    if (isPartial && showFinalPayment && (!form.finalPaymentAmount || parseFloat(form.finalPaymentAmount) <= 0)) { showToast("Final payment amount daalna zaroori hai!", "error"); return false; }
+    if (showFinalPayment && !form.finalPaymentMode) { showToast("Final Payment Mode select karo!", "error"); return false; }
     return true;
   };
 
@@ -112,6 +121,8 @@ export default function BookingsPage() {
       if (res.ok) {
         showToast("Booking successfully ho gayi! ✅", "success");
         setForm({ roomId: "", guestName: "", guestEmail: "", checkIn: "", checkOut: "", amount: "", notes: "", specialRequests: "", paymentMode: "CASH", paymentAmount: "", finalPaymentMode: "", finalPaymentAmount: "" });
+        setSelectedType("");
+        setSelectedRoomId("");
         setShowForm(false);
         setShowFinalPayment(false);
         setShowMoreOptions(false);
@@ -157,8 +168,7 @@ export default function BookingsPage() {
     BANK_TRANSFER: "🏦 Bank Transfer", ONLINE: "🌐 Online",
     PARTIAL_CASH: "💵 Partial Cash", PARTIAL_CARD: "💳 Partial Card",
     PARTIAL_UPI: "📱 Partial UPI", PARTIAL_BANK_TRANSFER: "🏦 Partial Bank Transfer",
-    PARTIAL_ONLINE: "🌐 Partial Online",
-    CHECKOUT_PAYMENT: "🏨 Checkout Payment",
+    PARTIAL_ONLINE: "🌐 Partial Online", CHECKOUT_PAYMENT: "🏨 Checkout Payment",
   };
 
   const firstPaymentOptions = [
@@ -183,12 +193,9 @@ export default function BookingsPage() {
     { value: "ONLINE", label: "🌐 Online" },
   ];
 
-  // Calculate remaining amount for display
   const remainingAmount = form.amount && form.paymentAmount
-    ? parseFloat(form.amount) - parseFloat(form.paymentAmount)
-    : 0;
+    ? parseFloat(form.amount) - parseFloat(form.paymentAmount) : 0;
 
-  // Calculate nights for display
   const calculateNights = () => {
     if (form.checkIn && form.checkOut) {
       const nights = Math.ceil((new Date(form.checkOut).getTime() - new Date(form.checkIn).getTime()) / (1000 * 60 * 60 * 24));
@@ -196,6 +203,8 @@ export default function BookingsPage() {
     }
     return 0;
   };
+
+  const selectedRoomPrice = rooms.find(r => r.id === form.roomId)?.price;
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -226,34 +235,67 @@ export default function BookingsPage() {
           <div className="bg-white rounded-2xl p-4 md:p-6 shadow-sm border border-gray-100 mb-6 md:mb-8">
             <h3 className="text-lg font-semibold text-gray-900 mb-4">Naya Booking Add Karo</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+              {/* ✅ Room Type Dropdown */}
               <div>
-                <label className="text-sm font-medium text-gray-700 mb-1 block">Room Select Karo</label>
-                <select value={form.roomId} onChange={(e) => setForm({ ...form, roomId: e.target.value })}
+                <label className="text-sm font-medium text-gray-700 mb-1 block">Room Type</label>
+                <select value={selectedType} onChange={(e) => setSelectedType(e.target.value)}
                   className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-blue-500">
-                  <option value="">-- Room chuno --</option>
-                  {rooms.map((room) => (
-                    <option key={room.id} value={room.id}>Room #{room.number} — {room.type} — ₹{room.price}/night</option>
+                  <option value="">-- Room Type chuno --</option>
+                  {roomTypes.map((type) => (
+                    <option key={type} value={type}>{type}</option>
                   ))}
                 </select>
               </div>
+
+              {/* ✅ Room Number Dropdown */}
+              <div>
+                <label className="text-sm font-medium text-gray-700 mb-1 block">Room Number</label>
+                <select value={selectedRoomId} onChange={(e) => setSelectedRoomId(e.target.value)}
+                  disabled={!selectedType}
+                  className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-blue-500 disabled:bg-gray-100 disabled:text-gray-400">
+                  <option value="">-- Room Number chuno --</option>
+                  {filteredRoomsByType.map((room) => (
+                    <option key={room.id} value={room.id}>Room #{room.number} — ₹{room.price}/night</option>
+                  ))}
+                </select>
+                {!selectedType && <p className="text-xs text-gray-400 mt-1">Pehle Room Type chuno</p>}
+              </div>
+
               <div>
                 <label className="text-sm font-medium text-gray-700 mb-1 block">Guest Name</label>
                 <input type="text" placeholder="Guest ka naam" value={form.guestName}
                   onChange={(e) => setForm({ ...form, guestName: e.target.value })}
                   className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-blue-500" />
               </div>
+
               <div>
                 <label className="text-sm font-medium text-gray-700 mb-1 block">Guest Email</label>
                 <input type="email" placeholder="guest@email.com" value={form.guestEmail}
                   onChange={(e) => setForm({ ...form, guestEmail: e.target.value })}
                   className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-blue-500" />
               </div>
+
+              <div>
+                <label className="text-sm font-medium text-gray-700 mb-1 block">Check In</label>
+                <input type="date" value={form.checkIn}
+                  onChange={(e) => setForm({ ...form, checkIn: e.target.value })}
+                  className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-blue-500" />
+              </div>
+
+              <div>
+                <label className="text-sm font-medium text-gray-700 mb-1 block">Check Out</label>
+                <input type="date" value={form.checkOut}
+                  onChange={(e) => setForm({ ...form, checkOut: e.target.value })}
+                  className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-blue-500" />
+              </div>
+
               <div>
                 <label className="text-sm font-medium text-gray-700 mb-1 block">
                   Total Amount (₹)
                   {calculateNights() > 0 && form.roomId && (
                     <span className="ml-2 text-xs text-blue-500 font-normal">
-                      {calculateNights()} night{calculateNights() > 1 ? "s" : ""} × ₹{rooms.find(r => r.id === form.roomId)?.price}/night
+                      {calculateNights()} night{calculateNights() > 1 ? "s" : ""} × ₹{selectedRoomPrice}/night
                     </span>
                   )}
                 </label>
@@ -261,45 +303,31 @@ export default function BookingsPage() {
                   onChange={(e) => setForm({ ...form, amount: e.target.value })}
                   className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-blue-500 bg-blue-50" />
               </div>
-              <div>
-                <label className="text-sm font-medium text-gray-700 mb-1 block">Check In</label>
-                <input type="date" value={form.checkIn}
-                  onChange={(e) => setForm({ ...form, checkIn: e.target.value })}
-                  className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-blue-500" />
-              </div>
-              <div>
-                <label className="text-sm font-medium text-gray-700 mb-1 block">Check Out</label>
-                <input type="date" value={form.checkOut}
-                  onChange={(e) => setForm({ ...form, checkOut: e.target.value })}
-                  className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-blue-500" />
-              </div>
+
               <div>
                 <label className="text-sm font-medium text-gray-700 mb-1 block">Payment Mode</label>
-                <select value={form.paymentMode}
-                  onChange={(e) => setForm({ ...form, paymentMode: e.target.value })}
+                <select value={form.paymentMode} onChange={(e) => setForm({ ...form, paymentMode: e.target.value })}
                   className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-blue-500">
                   {firstPaymentOptions.map(o => (
                     <option key={o.value} value={o.value}>{o.label}</option>
                   ))}
                 </select>
               </div>
+
               <div>
                 <label className="text-sm font-medium text-gray-700 mb-1 block">Payment Amount (₹)</label>
                 <input type="number" placeholder="e.g. 2500" value={form.paymentAmount}
                   onChange={(e) => setForm({ ...form, paymentAmount: e.target.value })}
                   className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-blue-500" />
-                {/* Remaining amount hint */}
                 {form.paymentMode.startsWith("PARTIAL") && form.amount && form.paymentAmount && remainingAmount > 0 && (
                   <p className="text-xs text-orange-500 mt-1">⚠️ Remaining: ₹{remainingAmount} checkout pe lena hoga</p>
                 )}
               </div>
 
-              {/* More Options Toggle */}
+              {/* More Options */}
               <div className="md:col-span-2">
-                <button
-                  onClick={() => setShowMoreOptions(!showMoreOptions)}
-                  className="flex items-center gap-2 text-sm text-blue-600 hover:text-blue-700 font-medium py-1"
-                >
+                <button onClick={() => setShowMoreOptions(!showMoreOptions)}
+                  className="flex items-center gap-2 text-sm text-blue-600 hover:text-blue-700 font-medium py-1">
                   {showMoreOptions ? "▲ Less Options" : "▼ More Options"}
                 </button>
               </div>
@@ -308,10 +336,8 @@ export default function BookingsPage() {
                 <>
                   {!showFinalPayment ? (
                     <div className="md:col-span-2">
-                      <button
-                        onClick={() => { setShowFinalPayment(true); setForm({ ...form, finalPaymentMode: "CHECKOUT_PAYMENT" }); }}
-                        className="w-full border-2 border-dashed border-blue-300 text-blue-600 rounded-lg px-4 py-3 text-sm hover:bg-blue-50 transition-colors"
-                      >
+                      <button onClick={() => { setShowFinalPayment(true); setForm({ ...form, finalPaymentMode: "CHECKOUT_PAYMENT" }); }}
+                        className="w-full border-2 border-dashed border-blue-300 text-blue-600 rounded-lg px-4 py-3 text-sm hover:bg-blue-50">
                         + Add Final Payment Mode
                       </button>
                     </div>
@@ -323,8 +349,7 @@ export default function BookingsPage() {
                           <button onClick={() => { setShowFinalPayment(false); setForm({ ...form, finalPaymentMode: "", finalPaymentAmount: "" }); }}
                             className="text-xs text-red-400 hover:text-red-600">✕ Remove</button>
                         </div>
-                        <select value={form.finalPaymentMode}
-                          onChange={(e) => setForm({ ...form, finalPaymentMode: e.target.value })}
+                        <select value={form.finalPaymentMode} onChange={(e) => setForm({ ...form, finalPaymentMode: e.target.value })}
                           className="w-full border border-blue-300 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-blue-500 bg-blue-50">
                           {finalPaymentOptions.map(o => (
                             <option key={o.value} value={o.value}>{o.label}</option>
@@ -338,18 +363,14 @@ export default function BookingsPage() {
                             <span className="ml-2 text-xs text-green-500 font-normal">✅ Auto calculated</span>
                           )}
                         </label>
-                        <input
-                          type="number"
-                          placeholder="e.g. 2500"
-                          value={form.finalPaymentAmount}
+                        <input type="number" placeholder="e.g. 2500" value={form.finalPaymentAmount}
                           readOnly={form.finalPaymentMode === "CHECKOUT_PAYMENT"}
                           onChange={(e) => setForm({ ...form, finalPaymentAmount: e.target.value })}
                           className={`w-full border rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-blue-500 ${
                             form.finalPaymentMode === "CHECKOUT_PAYMENT"
                               ? "bg-green-50 border-green-300 text-green-700 font-medium"
                               : "border-blue-300 bg-blue-50"
-                          }`}
-                        />
+                          }`} />
                         {form.finalPaymentMode === "CHECKOUT_PAYMENT" && form.finalPaymentAmount && (
                           <p className="text-xs text-green-600 mt-1">✅ ₹{form.finalPaymentAmount} checkout pe collect karna hai</p>
                         )}
@@ -358,17 +379,14 @@ export default function BookingsPage() {
                   )}
                   <div className="md:col-span-2">
                     <label className="text-sm font-medium text-gray-700 mb-1 block">Special Requests</label>
-                    <input type="text" placeholder="Koi special request? (Optional)"
-                      value={form.specialRequests}
+                    <input type="text" placeholder="Koi special request? (Optional)" value={form.specialRequests}
                       onChange={(e) => setForm({ ...form, specialRequests: e.target.value })}
                       className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-blue-500" />
                   </div>
                   <div className="md:col-span-2">
                     <label className="text-sm font-medium text-gray-700 mb-1 block">Notes (Staff ke liye)</label>
-                    <textarea placeholder="Internal notes... (Optional)"
-                      value={form.notes}
-                      onChange={(e) => setForm({ ...form, notes: e.target.value })}
-                      rows={2}
+                    <textarea placeholder="Internal notes... (Optional)" value={form.notes}
+                      onChange={(e) => setForm({ ...form, notes: e.target.value })} rows={2}
                       className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-blue-500" />
                   </div>
                 </>
@@ -380,7 +398,7 @@ export default function BookingsPage() {
                 className="bg-blue-600 text-white px-6 py-2 rounded-lg text-sm hover:bg-blue-700 disabled:opacity-50">
                 {loading ? "Adding..." : "Booking Confirm Karo"}
               </button>
-              <button onClick={() => { setShowForm(false); setShowFinalPayment(false); setShowMoreOptions(false); }}
+              <button onClick={() => { setShowForm(false); setShowFinalPayment(false); setShowMoreOptions(false); setSelectedType(""); setSelectedRoomId(""); }}
                 className="bg-gray-100 text-gray-600 px-6 py-2 rounded-lg text-sm hover:bg-gray-200">
                 Cancel
               </button>
@@ -390,11 +408,9 @@ export default function BookingsPage() {
 
         <div className="flex flex-col sm:flex-row gap-3 mb-6">
           <input type="text" placeholder="🔍 Guest naam ya email se search karo..."
-            value={searchTerm}
-            onChange={(e) => { setSearchTerm(e.target.value); setPage(1); }}
+            value={searchTerm} onChange={(e) => { setSearchTerm(e.target.value); setPage(1); }}
             className="flex-1 border border-gray-200 rounded-lg px-4 py-2 text-sm focus:outline-none focus:border-blue-500 bg-white" />
-          <select value={filterStatus}
-            onChange={(e) => { setFilterStatus(e.target.value); setPage(1); }}
+          <select value={filterStatus} onChange={(e) => { setFilterStatus(e.target.value); setPage(1); }}
             className="border border-gray-200 rounded-lg px-4 py-2 text-sm focus:outline-none focus:border-blue-500 bg-white">
             <option value="all">All Status</option>
             <option value="PENDING">Pending</option>
@@ -434,7 +450,10 @@ export default function BookingsPage() {
                         <p className="text-xs font-medium text-gray-900">{booking.guestName}</p>
                         <p className="text-xs text-gray-500">{booking.guestEmail}</p>
                       </td>
-                      <td className="px-4 py-4 text-xs text-gray-600">#{booking.roomNumber}</td>
+                      <td className="px-4 py-4 text-xs text-gray-600">
+                        <p>#{booking.roomNumber}</p>
+                        <p className="text-gray-400">{booking.roomType}</p>
+                      </td>
                       <td className="px-4 py-4 text-xs text-gray-600">{new Date(booking.checkIn).toLocaleDateString()}</td>
                       <td className="px-4 py-4 text-xs text-gray-600">{new Date(booking.checkOut).toLocaleDateString()}</td>
                       <td className="px-4 py-4 text-xs font-medium text-gray-900">₹{booking.amount}</td>
@@ -448,23 +467,13 @@ export default function BookingsPage() {
                             {paymentModeLabel[booking.finalPaymentMode]}
                             {booking.finalPaymentAmount && <span className="text-orange-500 block">₹{booking.finalPaymentAmount} pending</span>}
                           </span>
-                        ) : (
-                          <span className="text-gray-400">No</span>
-                        )}
+                        ) : <span className="text-gray-400">No</span>}
                       </td>
                       <td className="px-4 py-4 text-xs">
-                        {booking.specialRequests ? (
-                          <span className="text-blue-600">📝 {booking.specialRequests}</span>
-                        ) : (
-                          <span className="text-gray-400">No Requests</span>
-                        )}
+                        {booking.specialRequests ? <span className="text-blue-600">📝 {booking.specialRequests}</span> : <span className="text-gray-400">No Requests</span>}
                       </td>
                       <td className="px-4 py-4 text-xs">
-                        {booking.notes ? (
-                          <span className="text-gray-700">📋 {booking.notes}</span>
-                        ) : (
-                          <span className="text-gray-400">No</span>
-                        )}
+                        {booking.notes ? <span className="text-gray-700">📋 {booking.notes}</span> : <span className="text-gray-400">No</span>}
                       </td>
                       <td className="px-4 py-4">
                         <span className="bg-green-100 text-green-700 text-xs px-2 py-1 rounded-full">{booking.status}</span>
