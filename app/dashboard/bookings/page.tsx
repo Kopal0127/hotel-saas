@@ -90,18 +90,23 @@ export default function BookingsPage() {
     if (!form.checkIn || !form.checkOut) return [];
     const checkIn = new Date(form.checkIn);
     const checkOut = new Date(form.checkOut);
-    return bookings
+    console.log("Checking booked rooms for:", form.checkIn, form.checkOut);
+    console.log("All bookings:", bookings.map(b => ({ roomId: b.roomId, checkIn: b.checkIn, checkOut: b.checkOut, status: b.status })));
+    const booked = bookings
       .filter(b =>
         (b.status === "CONFIRMED" || b.status === "PENDING") &&
         new Date(b.checkIn) < checkOut &&
         new Date(b.checkOut) > checkIn
       )
-      .map(b => b.roomId || b.room?.id || b.id);
+      .map(b => b.roomId);
+    console.log("Booked room IDs:", booked);
+    return booked;
   };
 
   // ✅ Available rooms — booked rooms hatao
+  const bookedIds = getBookedRoomIds();
   const filteredRoomsByType = selectedType && form.checkIn && form.checkOut
-    ? rooms.filter(r => r.type === selectedType && !getBookedRoomIds().includes(r.id))
+    ? rooms.filter(r => r.type === selectedType && !bookedIds.includes(r.id))
     : selectedType
     ? rooms.filter(r => r.type === selectedType)
     : [];
