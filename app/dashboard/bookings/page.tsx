@@ -19,8 +19,6 @@ export default function BookingsPage() {
   const [showMoreOptions, setShowMoreOptions] = useState(false);
   const [page, setPage] = useState(1);
   const itemsPerPage = 5;
-
-  // ✅ Room Type aur Room Number alag
   const [selectedType, setSelectedType] = useState("");
   const [selectedRoomId, setSelectedRoomId] = useState("");
 
@@ -87,7 +85,7 @@ export default function BookingsPage() {
   // ✅ Unique room types
   const roomTypes = [...new Set(rooms.map(r => r.type))];
 
-  // ✅ Check dates ke hisaab se booked rooms
+  // ✅ Booked room IDs check — dates ke hisaab se
   const getBookedRoomIds = () => {
     if (!form.checkIn || !form.checkOut) return [];
     const checkIn = new Date(form.checkIn);
@@ -98,23 +96,25 @@ export default function BookingsPage() {
         new Date(b.checkIn) < checkOut &&
         new Date(b.checkOut) > checkIn
       )
-      .map(b => b.room?.id || b.roomId);
+      .map(b => b.roomId || b.room?.id);
   };
 
-  // ✅ Selected type ke available rooms (booked rooms remove)
-  const filteredRoomsByType = selectedType
+  // ✅ Available rooms — booked rooms hatao
+  const filteredRoomsByType = selectedType && form.checkIn && form.checkOut
     ? rooms.filter(r => r.type === selectedType && !getBookedRoomIds().includes(r.id))
+    : selectedType
+    ? rooms.filter(r => r.type === selectedType)
     : [];
 
   const validate = () => {
+    if (!form.checkIn) { showToast("Check-in date daalna zaroori hai!", "error"); return false; }
+    if (!form.checkOut) { showToast("Check-out date daalna zaroori hai!", "error"); return false; }
+    if (new Date(form.checkOut) <= new Date(form.checkIn)) { showToast("Check-out date, check-in ke baad honi chahiye!", "error"); return false; }
     if (!form.roomId) { showToast("Room select karna zaroori hai!", "error"); return false; }
     if (!form.guestName.trim()) { showToast("Guest ka naam daalna zaroori hai!", "error"); return false; }
     if (!form.guestEmail.trim()) { showToast("Guest ka email daalna zaroori hai!", "error"); return false; }
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(form.guestEmail)) { showToast("Sahi email daalo!", "error"); return false; }
-    if (!form.checkIn) { showToast("Check-in date daalna zaroori hai!", "error"); return false; }
-    if (!form.checkOut) { showToast("Check-out date daalna zaroori hai!", "error"); return false; }
-    if (new Date(form.checkOut) <= new Date(form.checkIn)) { showToast("Check-out date, check-in ke baad honi chahiye!", "error"); return false; }
     if (!form.amount || parseFloat(form.amount) <= 0) { showToast("Amount 0 se zyada honi chahiye!", "error"); return false; }
     if (!form.paymentAmount || parseFloat(form.paymentAmount) <= 0) { showToast("Payment amount daalna zaroori hai!", "error"); return false; }
     const isPartial = form.paymentMode.startsWith("PARTIAL");
@@ -252,11 +252,41 @@ export default function BookingsPage() {
             <h3 className="text-lg font-semibold text-gray-900 mb-4">Naya Booking Add Karo</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
 
+              {/* ✅ Check In/Out PEHLE */}
+              <div>
+                <label className="text-sm font-medium text-gray-700 mb-1 block">Check In</label>
+                <input type="date" value={form.checkIn}
+                  onChange={(e) => {
+                    setForm({ ...form, checkIn: e.target.value });
+                    setSelectedRoomId("");
+                    setSelectedType("");
+                  }}
+                  className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-blue-500" />
+              </div>
+
+              <div>
+                <label className="text-sm font-medium text-gray-700 mb-1 block">Check Out</label>
+                <input type="date" value={form.checkOut}
+                  onChange={(e) => {
+                    setForm({ ...form, checkOut: e.target.value });
+                    setSelectedRoomId("");
+                    setSelectedType("");
+                  }}
+                  className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-blue-500" />
+              </div>
+
               {/* ✅ Room Type Dropdown */}
               <div>
-                <label className="text-sm font-medium text-gray-700 mb-1 block">Room Type</label>
-                <select value={selectedType} onChange={(e) => setSelectedType(e.target.value)}
-                  className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-blue-500">
+                <label className="text-sm font-medium text-gray-700 mb-1 block">
+                  Room Type
+                  {!form.checkIn || !form.checkOut
+                    ? <span className="ml-2 text-xs text-gray-400 font-normal">Pehle dates select karo</span>
+                    : null}
+                </label>
+                <select value={selectedType}
+                  onChange={(e) => setSelectedType(e.target.value)}
+                  disabled={!form.checkIn || !form.checkOut}
+                  className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-blue-500 disabled:bg-gray-100 disabled:text-gray-400">
                   <option value="">-- Room Type chuno --</option>
                   {roomTypes.map((type) => (
                     <option key={type} value={type}>{type}</option>
@@ -266,9 +296,15 @@ export default function BookingsPage() {
 
               {/* ✅ Room Number Dropdown */}
               <div>
-                <label className="text-sm font-medium text-gray-700 mb-1 block">Room Number</label>
-                <select value={selectedRoomId} onChange={(e) => setSelectedRoomId(e.target.value)}
-                  disabled={!selectedType}
+                <label className="text-sm font-medium text-gray-700 mb-1 block">
+                  Room Number
+                  {selectedType && form.checkIn && form.checkOut && filteredRoomsByType.length === 0
+                    ? <span className="ml-2 text-xs text-red-500 font-normal">❌ Koi room available nahi!</span>
+                    : null}
+                </label>
+                <select value={selectedRoomId}
+                  onChange={(e) => setSelectedRoomId(e.target.value)}
+                  disabled={!selectedType || filteredRoomsByType.length === 0}
                   className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-blue-500 disabled:bg-gray-100 disabled:text-gray-400">
                   <option value="">-- Room Number chuno --</option>
                   {filteredRoomsByType.map((room) => (
@@ -289,20 +325,6 @@ export default function BookingsPage() {
                 <label className="text-sm font-medium text-gray-700 mb-1 block">Guest Email</label>
                 <input type="email" placeholder="guest@email.com" value={form.guestEmail}
                   onChange={(e) => setForm({ ...form, guestEmail: e.target.value })}
-                  className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-blue-500" />
-              </div>
-
-              <div>
-                <label className="text-sm font-medium text-gray-700 mb-1 block">Check In</label>
-                <input type="date" value={form.checkIn}
-                  onChange={(e) => setForm({ ...form, checkIn: e.target.value })}
-                  className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-blue-500" />
-              </div>
-
-              <div>
-                <label className="text-sm font-medium text-gray-700 mb-1 block">Check Out</label>
-                <input type="date" value={form.checkOut}
-                  onChange={(e) => setForm({ ...form, checkOut: e.target.value })}
                   className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-blue-500" />
               </div>
 
@@ -340,7 +362,6 @@ export default function BookingsPage() {
                 )}
               </div>
 
-              {/* More Options */}
               <div className="md:col-span-2">
                 <button onClick={() => setShowMoreOptions(!showMoreOptions)}
                   className="flex items-center gap-2 text-sm text-blue-600 hover:text-blue-700 font-medium py-1">
