@@ -299,11 +299,29 @@ export default function RatesPage() {
                 className="block mt-1 border rounded-lg px-3 py-2 text-sm w-32 focus:outline-none focus:ring-2 focus:ring-orange-400"
               />
             </div>
-            <div>
-              <label className="text-xs text-gray-600 font-medium">Bulk Available Rooms</label>
+           <div>
+              <label className="text-xs text-gray-600 font-medium">
+                Bulk Available Rooms
+                <span className="ml-1 text-orange-500 font-normal">
+                  (Max: {rooms.filter(r => r.type === rooms.find(r2 => r2.id === selectedRoom)?.type).length})
+                </span>
+              </label>
               <input
-                type="number" value={bulkAvailable} onChange={(e) => setBulkAvailable(e.target.value)}
+                type="number"
+                value={bulkAvailable}
+                onChange={(e) => {
+                  const maxRooms = rooms.filter(r => r.type === rooms.find(r2 => r2.id === selectedRoom)?.type).length;
+                  const val = parseInt(e.target.value);
+                  if (val > maxRooms) {
+                    showToast(`Maximum ${maxRooms} rooms available hain is type mein!`, "warning");
+                    setBulkAvailable(String(maxRooms));
+                  } else {
+                    setBulkAvailable(e.target.value);
+                  }
+                }}
                 placeholder="e.g. 5"
+                max={rooms.filter(r => r.type === rooms.find(r2 => r2.id === selectedRoom)?.type).length}
+                min={0}
                 className="block mt-1 border rounded-lg px-3 py-2 text-sm w-32 focus:outline-none focus:ring-2 focus:ring-orange-400"
               />
             </div>
