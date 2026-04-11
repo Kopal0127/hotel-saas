@@ -18,6 +18,7 @@ export async function GET(req: NextRequest) {
 
     const formattedBookings = bookings.map(b => ({
       ...b,
+      roomId: b.roomId,
       roomNumber: b.room.number,
       roomType: b.room.type,
       price: b.room.price
