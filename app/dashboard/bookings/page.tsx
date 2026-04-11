@@ -96,7 +96,7 @@ export default function BookingsPage() {
         new Date(b.checkIn) < checkOut &&
         new Date(b.checkOut) > checkIn
       )
-      .map(b => b.roomId || b.room?.id);
+      .map(b => b.roomId || b.room?.id || b.id);
   };
 
   // ✅ Available rooms — booked rooms hatao
