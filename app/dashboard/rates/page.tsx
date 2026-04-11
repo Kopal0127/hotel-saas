@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { useAuth } from "@/components/useAuth";
 import { useToast } from "@/components/useToast";
 import { Toast } from "@/components/Toast";
+import { useRouter } from "next/navigation";
 
 interface Room { id: string; number: string; type: string; price: number; }
 interface Channel { id: string; name: string; isConnected: boolean; }
@@ -16,6 +17,7 @@ const MONTHS = ["January","February","March","April","May","June","July","August
 
 export default function RatesPage() {
   useAuth();
+  const router = useRouter();
   const { toast, showToast, hideToast } = useToast();
 
   const today = new Date();
@@ -186,14 +188,18 @@ export default function RatesPage() {
           <h1 className="text-2xl font-bold text-gray-800">📅 Rate & Availability Manager</h1>
           <p className="text-gray-500 text-sm">Ek jagah update karo → Sabhi OTAs pe sync ho jata hai</p>
         </div>
-        <button
-          onClick={() => { setBulkMode(!bulkMode); setSelectedDates([]); }}
-          className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-            bulkMode ? "bg-orange-500 text-white" : "bg-blue-600 text-white hover:bg-blue-700"
-          }`}
-        >
-          {bulkMode ? "✕ Bulk Mode Band Karo" : "✏️ Bulk Edit Mode"}
-        </button>
+       <div className="flex items-center gap-3">
+          <button onClick={() => router.push("/dashboard")} className="text-sm text-gray-600 hover:text-blue-600">Dashboard</button>
+          <button onClick={() => router.push("/login")} className="text-sm text-red-500 hover:underline">Logout</button>
+          <button
+            onClick={() => { setBulkMode(!bulkMode); setSelectedDates([]); }}
+            className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+              bulkMode ? "bg-orange-500 text-white" : "bg-blue-600 text-white hover:bg-blue-700"
+            }`}
+          >
+            {bulkMode ? "✕ Bulk Mode Band Karo" : "✏️ Bulk Edit Mode"}
+          </button>
+        </div>
       </div>
 
       <div className="max-w-7xl mx-auto px-4 py-6 space-y-4">
