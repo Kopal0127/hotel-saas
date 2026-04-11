@@ -202,3 +202,12 @@ model Attendance {
   status      String    @default("PRESENT")
   createdAt   DateTime  @default(now())
 }
+model OtpVerification {
+  id        String   @id @default(cuid())
+  email     String
+  otp       String
+  type      String   @default("PASSWORD_RESET")
+  expiresAt DateTime
+  used      Boolean  @default(false)
+  createdAt DateTime @default(now())
+}

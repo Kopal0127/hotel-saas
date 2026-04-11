@@ -85,7 +85,12 @@ export default function StaffLoginPage() {
         </div>
 
         {/* Footer */}
-        <p className="text-center text-xs text-gray-400 mt-6">
+        <p className="text-center text-xs text-gray-400 mt-4">
+          <a href="/forgot-password?type=staff" className="text-blue-500 hover:underline">
+            Forgot Password?
+          </a>
+        </p>
+        <p className="text-center text-xs text-gray-400 mt-2">
           Hotel Owner?{" "}
           <a href="/login" className="text-blue-500 hover:underline">
             Owner Login
