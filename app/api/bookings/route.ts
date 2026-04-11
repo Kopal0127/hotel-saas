@@ -41,13 +41,72 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Sab fields bharo!" }, { status: 400 });
     }
 
+    // ✅ Check 1: Room blocked hai ya nahi Rates & Availability mein
+    const checkInDate = new Date(checkIn);
+    const checkOutDate = new Date(checkOut);
+
+    // Check karo koi bhi date blocked toh nahi
+    const blockedRates = await prisma.ratePlan.findMany({
+      where: {
+        roomId,
+        isBlocked: true,
+        date: {
+          gte: checkInDate,
+          lt: checkOutDate,
+        }
+      }
+    });
+
+    if (blockedRates.length > 0) {
+      return NextResponse.json({
+        error: `Yeh room ${new Date(blockedRates[0].date).toLocaleDateString("en-IN")} ko blocked hai! Pehle Rates & Availability mein unblock karo.`
+      }, { status: 400 });
+    }
+
+    // ✅ Check 2: Available rooms 0 toh nahi
+    const unavailableRates = await prisma.ratePlan.findMany({
+      where: {
+        roomId,
+        available: 0,
+        isBlocked: false,
+        date: {
+          gte: checkInDate,
+          lt: checkOutDate,
+        }
+      }
+    });
+
+    if (unavailableRates.length > 0) {
+      return NextResponse.json({
+        error: `Yeh room ${new Date(unavailableRates[0].date).toLocaleDateString("en-IN")} ko available nahi hai! Rates & Availability check karo.`
+      }, { status: 400 });
+    }
+
+    // ✅ Check 3: Koi existing booking toh nahi same dates pe
+    const existingBooking = await prisma.booking.findFirst({
+      where: {
+        roomId,
+        status: { in: ["CONFIRMED", "PENDING"] },
+        AND: [
+          { checkIn: { lt: checkOutDate } },
+          { checkOut: { gt: checkInDate } },
+        ]
+      }
+    });
+
+    if (existingBooking) {
+      return NextResponse.json({
+        error: `Yeh room already ${new Date(existingBooking.checkIn).toLocaleDateString("en-IN")} se ${new Date(existingBooking.checkOut).toLocaleDateString("en-IN")} tak booked hai!`
+      }, { status: 400 });
+    }
+
     const booking = await prisma.booking.create({
       data: {
         roomId,
         guestName,
         guestEmail,
-        checkIn: new Date(checkIn),
-        checkOut: new Date(checkOut),
+        checkIn: checkInDate,
+        checkOut: checkOutDate,
         status: "CONFIRMED",
         amount: parseFloat(amount),
         notes: notes || null,
@@ -60,7 +119,34 @@ export async function POST(req: NextRequest) {
       include: { room: { include: { hotel: true } } }
     });
 
-    // Email bhejo
+    // ✅ Booking ke baad available rooms update karo
+    const datesToUpdate: Date[] = [];
+    const cur = new Date(checkInDate);
+    while (cur < checkOutDate) {
+      datesToUpdate.push(new Date(cur));
+      cur.setDate(cur.getDate() + 1);
+    }
+
+    // Har date pe available -1 karo
+    await Promise.all(datesToUpdate.map(async (date) => {
+      const existing = await prisma.ratePlan.findFirst({
+        where: {
+          roomId,
+          date: {
+            gte: new Date(date.getFullYear(), date.getMonth(), date.getDate()),
+            lt: new Date(date.getFullYear(), date.getMonth(), date.getDate() + 1),
+          }
+        }
+      });
+      if (existing && existing.available > 0) {
+        await prisma.ratePlan.update({
+          where: { id: existing.id },
+          data: { available: existing.available - 1 }
+        });
+      }
+    }));
+
+    // Owner ko email
     resend.emails.send({
       from: "bookings@nightstays.in",
       to: "dargudetushar@gmail.com",
@@ -80,7 +166,8 @@ export async function POST(req: NextRequest) {
         ${notes ? `<p><b>Notes:</b> ${notes}</p>` : ""}
       `,
     }).catch(e => console.error("Email error:", e));
-    // ✅ Guest ko confirmation email
+
+    // Guest ko email
     if (guestEmail) {
       resend.emails.send({
         from: "bookings@nightstays.in",
@@ -91,7 +178,6 @@ export async function POST(req: NextRequest) {
             <h1 style="color: #2563eb; text-align: center;">🏨 Booking Confirmed!</h1>
             <p style="font-size: 16px;">Dear <b>${guestName}</b>,</p>
             <p>Your booking at <b>${booking.room.hotel.name}</b> has been confirmed!</p>
-            
             <div style="background: #f0f7ff; padding: 16px; border-radius: 8px; margin: 20px 0;">
               <h3 style="margin-top: 0; color: #1e40af;">📋 Booking Details</h3>
               <p><b>Room:</b> #${booking.room.number} — ${booking.room.type}</p>
@@ -106,14 +192,12 @@ export async function POST(req: NextRequest) {
                 </div>
               ` : ""}
             </div>
-
             <div style="background: #f0fff4; padding: 16px; border-radius: 8px; margin: 20px 0;">
               <h3 style="margin-top: 0; color: #166534;">🏨 Hotel Details</h3>
               <p><b>${booking.room.hotel.name}</b></p>
               ${booking.room.hotel.address ? `<p>📍 ${booking.room.hotel.address}</p>` : ""}
               ${booking.room.hotel.phone ? `<p>📞 ${booking.room.hotel.phone}</p>` : ""}
             </div>
-
             <p style="color: #6b7280; font-size: 14px; text-align: center;">
               Thank you for choosing ${booking.room.hotel.name}. We look forward to welcoming you!
             </p>
@@ -134,6 +218,40 @@ export async function DELETE(req: NextRequest) {
     const { searchParams } = new URL(req.url);
     const id = searchParams.get("id");
     if (!id) return NextResponse.json({ error: "ID chahiye!" }, { status: 400 });
+
+    // ✅ Delete hone pe available +1 karo
+    const booking = await prisma.booking.findUnique({
+      where: { id },
+      include: { room: true }
+    });
+
+    if (booking) {
+      const datesToUpdate: Date[] = [];
+      const cur = new Date(booking.checkIn);
+      while (cur < booking.checkOut) {
+        datesToUpdate.push(new Date(cur));
+        cur.setDate(cur.getDate() + 1);
+      }
+
+      await Promise.all(datesToUpdate.map(async (date) => {
+        const existing = await prisma.ratePlan.findFirst({
+          where: {
+            roomId: booking.roomId,
+            date: {
+              gte: new Date(date.getFullYear(), date.getMonth(), date.getDate()),
+              lt: new Date(date.getFullYear(), date.getMonth(), date.getDate() + 1),
+            }
+          }
+        });
+        if (existing) {
+          await prisma.ratePlan.update({
+            where: { id: existing.id },
+            data: { available: existing.available + 1 }
+          });
+        }
+      }));
+    }
+
     await prisma.booking.delete({ where: { id } });
     return NextResponse.json({ message: "Booking delete ho gayi!" });
   } catch (error) {
