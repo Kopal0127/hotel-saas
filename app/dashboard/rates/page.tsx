@@ -227,11 +227,15 @@ export default function RatesPage() {
             <label className="text-xs text-gray-500 font-medium">Room Type</label>
             <select
               value={selectedRoom}
-              onChange={(e) => setSelectedRoom(e.target.value)}
+              onChange={(e) => {
+                // Type se pehla room select karo
+                const firstRoom = rooms.find(r => r.type === e.target.value);
+                if (firstRoom) setSelectedRoom(firstRoom.id);
+              }}
               className="block mt-1 border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
-              {rooms.map((r) => (
-                <option key={r.id} value={r.id}>#{r.number} — {r.type}</option>
+              {[...new Set(rooms.map(r => r.type))].map((type) => (
+                <option key={type} value={type}>{type}</option>
               ))}
             </select>
           </div>
