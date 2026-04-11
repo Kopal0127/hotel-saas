@@ -87,17 +87,23 @@ export default function BookingsPage() {
   // ✅ Unique room types
   const roomTypes = [...new Set(rooms.map(r => r.type))];
 
-  // ✅ Booked rooms check — jo rooms aaj booked hain
-  const today = new Date();
-  const bookedRoomIds = bookings
-    .filter(b => 
-      b.status === "CONFIRMED" || b.status === "PENDING"
-    )
-    .map(b => b.roomId);
+  // ✅ Check dates ke hisaab se booked rooms
+  const getBookedRoomIds = () => {
+    if (!form.checkIn || !form.checkOut) return [];
+    const checkIn = new Date(form.checkIn);
+    const checkOut = new Date(form.checkOut);
+    return bookings
+      .filter(b =>
+        (b.status === "CONFIRMED" || b.status === "PENDING") &&
+        new Date(b.checkIn) < checkOut &&
+        new Date(b.checkOut) > checkIn
+      )
+      .map(b => b.room?.id || b.roomId);
+  };
 
   // ✅ Selected type ke available rooms (booked rooms remove)
   const filteredRoomsByType = selectedType
-    ? rooms.filter(r => r.type === selectedType && !bookedRoomIds.includes(r.id))
+    ? rooms.filter(r => r.type === selectedType && !getBookedRoomIds().includes(r.id))
     : [];
 
   const validate = () => {
