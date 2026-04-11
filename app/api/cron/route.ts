@@ -34,7 +34,7 @@ export async function GET(req: NextRequest) {
         await prisma.syncLog.create({
           data: {
             channelId: channel.id,
-            type: "PULL",
+            type: "AVAILABILITY" as any,
             status: "SUCCESS",
             message: `Auto pull: ${mockBookings} bookings synced`
           }
