@@ -146,10 +146,10 @@ export default function Dashboard() {
               <span className="text-xs md:text-sm font-medium text-purple-700 text-center">Rates</span>
             </button>
             <button
-              onClick={() => router.push("/dashboard/staff")}
-              className="flex flex-col items-center gap-2 p-3 md:p-4 rounded-xl bg-pink-50 hover:bg-pink-100 transition-colors">
-              <span className="text-xl md:text-2xl">👥</span>
-              <span className="text-xs md:text-sm font-medium text-pink-700 text-center">Staff</span>
+              onClick={() => router.push("/dashboard/ads")}
+              className="flex flex-col items-center gap-2 p-3 md:p-4 rounded-xl bg-yellow-50 hover:bg-yellow-100 transition-colors">
+              <span className="text-xl md:text-2xl">📢</span>
+              <span className="text-xs md:text-sm font-medium text-yellow-700 text-center">Digital Ads</span>
             </button>
           </div>
         </div>
