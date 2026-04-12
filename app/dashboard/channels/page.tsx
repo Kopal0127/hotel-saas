@@ -11,6 +11,38 @@ const OTA_LIST = [
   { name: 'GOOGLE_HOTEL_CENTRE', label: 'Google Hotel Centre', logo: '🔍' },
 ]
 
+// ✅ Mock OTA Ranking Data — Real API baad mein
+const OTA_RANKINGS = [
+  {
+    name: 'BOOKING_COM',
+    label: 'Booking.com',
+    logo: '🏨',
+    color: 'blue',
+    propertyRanking: 10,
+    reviewScore: 8.5,
+    totalReviews: 124,
+    profileScore: 90,
+    cancellationPolicy: 'Free Cancellation (24hrs)',
+    currentCommission: '15%',
+    conversionRate: '4.2%',
+    lastUpdated: 'Today',
+  },
+  {
+    name: 'MAKEMYTRIP',
+    label: 'MakeMyTrip',
+    logo: '✈️',
+    color: 'red',
+    propertyRanking: 7,
+    reviewScore: 4.3,
+    totalReviews: 89,
+    profileScore: 85,
+    cancellationPolicy: 'Non-Refundable',
+    currentCommission: '12%',
+    conversionRate: '3.8%',
+    lastUpdated: 'Today',
+  },
+]
+
 export default function ChannelsPage() {
   useAuth();
   const router = useRouter();
@@ -22,6 +54,7 @@ export default function ChannelsPage() {
   const [pulling, setPulling] = useState(false)
   const [connectModal, setConnectModal] = useState<string | null>(null)
   const [form, setForm] = useState({ apiKey: '', apiSecret: '', propertyId: '' })
+  const [activeTab, setActiveTab] = useState<'channels' | 'ranking'>('channels')
 
   useEffect(() => { fetchChannels() }, [])
 
@@ -48,7 +81,7 @@ export default function ChannelsPage() {
         showToast(`${OTA_LIST.find(o => o.name === name)?.label} successfully connect ho gaya! ✅`, "success")
         addLog(`✅ ${name} connected!`)
       } else {
-        showToast("Channel connect nahi ho saca!", "error")
+        showToast("Channel connect nahi ho saka!", "error")
       }
     } catch(e) {
       showToast("Kuch galat hua, dobara try karo!", "error")
@@ -114,7 +147,7 @@ export default function ChannelsPage() {
       </nav>
 
       <div className="max-w-6xl mx-auto px-4 md:px-8 py-6 md:py-10">
-        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-6 md:mb-8">
+        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-6">
           <div>
             <h1 className="text-xl md:text-2xl font-bold text-gray-800">🔗 Channel Manager</h1>
             <p className="text-gray-500 mt-1 text-sm">OTAs ko connect karo aur availability sync karo</p>
@@ -131,75 +164,165 @@ export default function ChannelsPage() {
           </div>
         </div>
 
-        {loading ? (
-          <p className="text-gray-400">Loading channels...</p>
-        ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 md:gap-6 mb-6 md:mb-8">
-            {OTA_LIST.map(ota => {
-              const status = getChannelStatus(ota.name)
-              const isConnected = status?.isConnected
-              return (
-                <div key={ota.name} className="bg-white rounded-xl border border-gray-200 p-4 md:p-6 shadow-sm">
-                  <div className="flex justify-between items-start mb-4">
-                    <div>
-                      <span className="text-3xl md:text-4xl">{ota.logo}</span>
-                      <h3 className="font-semibold text-gray-800 mt-2 text-sm md:text-base">{ota.label}</h3>
+        {/* ✅ Tabs */}
+        <div className="flex gap-3 mb-6">
+          <button onClick={() => setActiveTab('channels')}
+            className={`px-5 py-2 rounded-lg text-sm font-medium transition-colors ${activeTab === 'channels' ? 'bg-blue-600 text-white' : 'bg-white text-gray-600 border border-gray-200 hover:bg-gray-50'}`}>
+            🔗 OTA Channels
+          </button>
+          <button onClick={() => setActiveTab('ranking')}
+            className={`px-5 py-2 rounded-lg text-sm font-medium transition-colors ${activeTab === 'ranking' ? 'bg-blue-600 text-white' : 'bg-white text-gray-600 border border-gray-200 hover:bg-gray-50'}`}>
+            📊 OTA Ranking Tracker
+          </button>
+        </div>
+
+        {/* ✅ OTA Channels Tab */}
+        {activeTab === 'channels' && (
+          <>
+            {loading ? (
+              <p className="text-gray-400">Loading channels...</p>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 md:gap-6 mb-6">
+                {OTA_LIST.map(ota => {
+                  const status = getChannelStatus(ota.name)
+                  const isConnected = status?.isConnected
+                  return (
+                    <div key={ota.name} className="bg-white rounded-xl border border-gray-200 p-4 md:p-6 shadow-sm">
+                      <div className="flex justify-between items-start mb-4">
+                        <div>
+                          <span className="text-3xl md:text-4xl">{ota.logo}</span>
+                          <h3 className="font-semibold text-gray-800 mt-2 text-sm md:text-base">{ota.label}</h3>
+                        </div>
+                        <span className={`text-xs px-2 py-1 rounded-full font-medium ${isConnected ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}`}>
+                          {isConnected ? '● Connected' : '○ Not Connected'}
+                        </span>
+                      </div>
+                      <button onClick={() => setConnectModal(ota.name)}
+                        className={`w-full py-2 rounded-lg text-sm font-medium ${isConnected ? 'bg-gray-100 text-gray-700' : 'bg-blue-600 text-white hover:bg-blue-700'}`}>
+                        {isConnected ? '⚙️ Update' : '🔌 Connect'}
+                      </button>
                     </div>
-                    <span className={`text-xs px-2 py-1 rounded-full font-medium ${isConnected ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}`}>
-                      {isConnected ? '● Connected' : '○ Not Connected'}
-                    </span>
-                  </div>
-                  <button onClick={() => setConnectModal(ota.name)}
-                    className={`w-full py-2 rounded-lg text-sm font-medium ${isConnected ? 'bg-gray-100 text-gray-700' : 'bg-blue-600 text-white hover:bg-blue-700'}`}>
-                    {isConnected ? '⚙️ Update' : '🔌 Connect'}
-                  </button>
+                  )
+                })}
+              </div>
+            )}
+
+            {logs.length > 0 && (
+              <div className="bg-gray-900 rounded-xl p-4 mb-6">
+                <h3 className="text-white font-medium mb-3">📋 Activity Log</h3>
+                <div className="space-y-1 max-h-48 overflow-y-auto">
+                  {logs.map((log, i) => (
+                    <p key={i} className="text-green-400 text-xs md:text-sm font-mono">{log}</p>
+                  ))}
                 </div>
-              )
-            })}
-          </div>
+              </div>
+            )}
+          </>
         )}
 
-        {logs.length > 0 && (
-          <div className="bg-gray-900 rounded-xl p-4 mb-6">
-            <h3 className="text-white font-medium mb-3">📋 Activity Log</h3>
-            <div className="space-y-1 max-h-48 overflow-y-auto">
-              {logs.map((log, i) => (
-                <p key={i} className="text-green-400 text-xs md:text-sm font-mono">{log}</p>
-              ))}
+        {/* ✅ OTA Ranking Tracker Tab */}
+        {activeTab === 'ranking' && (
+          <div className="space-y-6">
+            <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
+              <p className="text-sm text-blue-700">
+                📊 <b>OTA Ranking Tracker</b> — Abhi demo data dikh raha hai. Real data ke liye OTA Partner API keys add karo.
+              </p>
             </div>
-          </div>
-        )}
 
-        {connectModal && (
-          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 px-4">
-            <div className="bg-white rounded-xl p-6 w-full max-w-sm shadow-xl">
-              <h3 className="font-bold text-lg mb-4">
-                Connect {OTA_LIST.find(o => o.name === connectModal)?.label}
-              </h3>
-              <div className="space-y-3">
-                <input placeholder="API Key (optional)" value={form.apiKey}
-                  onChange={e => setForm({ ...form, apiKey: e.target.value })}
-                  className="w-full border rounded-lg px-3 py-2 text-sm" />
-                <input placeholder="API Secret (optional)" value={form.apiSecret}
-                  onChange={e => setForm({ ...form, apiSecret: e.target.value })}
-                  className="w-full border rounded-lg px-3 py-2 text-sm" />
-                <input placeholder="Property ID (optional)" value={form.propertyId}
-                  onChange={e => setForm({ ...form, propertyId: e.target.value })}
-                  className="w-full border rounded-lg px-3 py-2 text-sm" />
-                <p className="text-xs text-blue-600 bg-blue-50 p-2 rounded">
-                  💡 Fields blank chhod sakte ho — mock mode mein kaam karega
-                </p>
+            {OTA_RANKINGS.map((ota) => (
+              <div key={ota.name} className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                {/* Header */}
+                <div className={`px-6 py-4 flex items-center justify-between ${ota.name === 'BOOKING_COM' ? 'bg-blue-600' : 'bg-red-500'}`}>
+                  <div className="flex items-center gap-3">
+                    <span className="text-3xl">{ota.logo}</span>
+                    <div>
+                      <h3 className="font-bold text-white text-lg">{ota.label}</h3>
+                      <p className="text-white/80 text-xs">Last Updated: {ota.lastUpdated}</p>
+                    </div>
+                  </div>
+                  <span className="bg-white/20 text-white text-xs px-3 py-1 rounded-full font-medium">
+                    Demo Data
+                  </span>
+                </div>
+
+                {/* Stats Grid */}
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-4 p-6">
+                  <div className="bg-gray-50 rounded-xl p-4">
+                    <p className="text-xs text-gray-500 mb-1">🏆 Property Ranking</p>
+                    <p className="text-2xl font-bold text-gray-900">#{ota.propertyRanking}</p>
+                    <p className="text-xs text-gray-400">in your area</p>
+                  </div>
+
+                  <div className="bg-gray-50 rounded-xl p-4">
+                    <p className="text-xs text-gray-500 mb-1">⭐ Review Score</p>
+                    <p className="text-2xl font-bold text-yellow-500">{ota.reviewScore}</p>
+                    <p className="text-xs text-gray-400">{ota.totalReviews} reviews</p>
+                  </div>
+
+                  <div className="bg-gray-50 rounded-xl p-4">
+                    <p className="text-xs text-gray-500 mb-1">📈 Profile Score</p>
+                    <div className="flex items-center gap-2">
+                      <p className="text-2xl font-bold text-green-600">{ota.profileScore}%</p>
+                    </div>
+                    <div className="w-full bg-gray-200 rounded-full h-1.5 mt-1">
+                      <div className="bg-green-500 h-1.5 rounded-full" style={{ width: `${ota.profileScore}%` }}></div>
+                    </div>
+                  </div>
+
+                  <div className="bg-gray-50 rounded-xl p-4">
+                    <p className="text-xs text-gray-500 mb-1">📋 Cancellation Policy</p>
+                    <p className="text-sm font-semibold text-gray-800">{ota.cancellationPolicy}</p>
+                  </div>
+
+                  <div className="bg-gray-50 rounded-xl p-4">
+                    <p className="text-xs text-gray-500 mb-1">💰 Current Commission</p>
+                    <p className="text-2xl font-bold text-orange-500">{ota.currentCommission}</p>
+                    <p className="text-xs text-gray-400">per booking</p>
+                  </div>
+
+                  <div className="bg-gray-50 rounded-xl p-4">
+                    <p className="text-xs text-gray-500 mb-1">🎯 Conversion Rate</p>
+                    <p className="text-2xl font-bold text-purple-600">{ota.conversionRate}</p>
+                    <div className="w-full bg-gray-200 rounded-full h-1.5 mt-1">
+                      <div className="bg-purple-500 h-1.5 rounded-full" style={{ width: ota.conversionRate }}></div>
+                    </div>
+                  </div>
+                </div>
               </div>
-              <div className="flex gap-3 mt-4">
-                <button onClick={() => setConnectModal(null)}
-                  className="flex-1 py-2 border rounded-lg text-sm">Cancel</button>
-                <button onClick={() => connectChannel(connectModal)}
-                  className="flex-1 py-2 bg-blue-600 text-white rounded-lg text-sm">Connect ✓</button>
-              </div>
-            </div>
+            ))}
           </div>
         )}
       </div>
+
+      {connectModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 px-4">
+          <div className="bg-white rounded-xl p-6 w-full max-w-sm shadow-xl">
+            <h3 className="font-bold text-lg mb-4">
+              Connect {OTA_LIST.find(o => o.name === connectModal)?.label}
+            </h3>
+            <div className="space-y-3">
+              <input placeholder="API Key (optional)" value={form.apiKey}
+                onChange={e => setForm({ ...form, apiKey: e.target.value })}
+                className="w-full border rounded-lg px-3 py-2 text-sm" />
+              <input placeholder="API Secret (optional)" value={form.apiSecret}
+                onChange={e => setForm({ ...form, apiSecret: e.target.value })}
+                className="w-full border rounded-lg px-3 py-2 text-sm" />
+              <input placeholder="Property ID (optional)" value={form.propertyId}
+                onChange={e => setForm({ ...form, propertyId: e.target.value })}
+                className="w-full border rounded-lg px-3 py-2 text-sm" />
+              <p className="text-xs text-blue-600 bg-blue-50 p-2 rounded">
+                💡 Fields blank chhod sakte ho — mock mode mein kaam karega
+              </p>
+            </div>
+            <div className="flex gap-3 mt-4">
+              <button onClick={() => setConnectModal(null)}
+                className="flex-1 py-2 border rounded-lg text-sm">Cancel</button>
+              <button onClick={() => connectChannel(connectModal)}
+                className="flex-1 py-2 bg-blue-600 text-white rounded-lg text-sm">Connect</button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {toast && <Toast message={toast.message} type={toast.type} onClose={hideToast} />}
     </div>
