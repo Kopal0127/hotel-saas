@@ -27,15 +27,7 @@ const MOCK_OTA_RANKINGS = {
 
 export async function GET(req: NextRequest) {
   try {
-   // Security check — Vercel cron ya authorized request
-    const authHeader = req.headers.get("authorization");
-    const cronSecret = process.env.CRON_SECRET || "hotelpro-cron-secret";
-    const isVercelCron = req.headers.get("x-vercel-cron") === "1";
-    if (!isVercelCron && authHeader !== `Bearer ${cronSecret}`) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    const hotels = await prisma.hotel.findMany({
+      const hotels = await prisma.hotel.findMany({
       include: { channels: { where: { isConnected: true } } }
     });
 
