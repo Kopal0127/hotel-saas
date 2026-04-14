@@ -11,9 +11,9 @@ export default function Dashboard() {
   const { toast, showToast, hideToast } = useToast();
   const [stats, setStats] = useState({
     totalRooms: 0,
-    bookingsToday: 0,
-    revenueToday: 0,
-    totalHotels: 0,
+    totalBookings: 0,
+    checkInsToday: 0,
+    checkOutsToday: 0,
   });
   const [recentBookings, setRecentBookings] = useState<any[]>([]);
 
@@ -36,19 +36,20 @@ export default function Dashboard() {
         const bookingsData = await bookingsRes.json();
 
         const today = new Date().toDateString();
-        const todayBookings = bookingsData.bookings?.filter((b: any) =>
-          new Date(b.createdAt).toDateString() === today
-        ) || [];
 
-        const revenueToday = todayBookings.reduce(
-          (sum: number, b: any) => sum + parseFloat(b.amount), 0
-        );
+        const checkInsToday = bookingsData.bookings?.filter((b: any) =>
+          new Date(b.checkIn).toDateString() === today
+        ).length || 0;
+
+        const checkOutsToday = bookingsData.bookings?.filter((b: any) =>
+          new Date(b.checkOut).toDateString() === today
+        ).length || 0;
 
         setStats({
-          totalHotels: hotelsData.hotels.length,
           totalRooms: roomsData.rooms?.length || 0,
-          bookingsToday: todayBookings.length,
-          revenueToday,
+          totalBookings: bookingsData.bookings?.length || 0,
+          checkInsToday,
+          checkOutsToday,
         });
 
         setRecentBookings(bookingsData.bookings?.slice(0, 5) || []);
@@ -81,31 +82,7 @@ export default function Dashboard() {
 
       <div className="max-w-6xl mx-auto px-4 md:px-8 py-6 md:py-10">
 
-        {/* Stats Cards */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-6 mb-6 md:mb-10">
-          <div className="bg-white rounded-2xl p-4 md:p-6 shadow-sm border border-gray-100">
-            <div className="text-2xl md:text-3xl mb-2">🏨</div>
-            <div className="text-xl md:text-2xl font-bold text-gray-900">{stats.totalHotels}</div>
-            <div className="text-gray-500 text-xs md:text-sm">Total Hotels</div>
-          </div>
-          <div className="bg-white rounded-2xl p-4 md:p-6 shadow-sm border border-gray-100">
-            <div className="text-2xl md:text-3xl mb-2">🛏️</div>
-            <div className="text-xl md:text-2xl font-bold text-gray-900">{stats.totalRooms}</div>
-            <div className="text-gray-500 text-xs md:text-sm">Total Rooms</div>
-          </div>
-          <div className="bg-white rounded-2xl p-4 md:p-6 shadow-sm border border-gray-100">
-            <div className="text-2xl md:text-3xl mb-2">📅</div>
-            <div className="text-xl md:text-2xl font-bold text-gray-900">{stats.bookingsToday}</div>
-            <div className="text-gray-500 text-xs md:text-sm">Bookings Today</div>
-          </div>
-          <div className="bg-white rounded-2xl p-4 md:p-6 shadow-sm border border-gray-100">
-            <div className="text-2xl md:text-3xl mb-2">💰</div>
-            <div className="text-xl md:text-2xl font-bold text-gray-900">₹{stats.revenueToday}</div>
-            <div className="text-gray-500 text-xs md:text-sm">Revenue Today</div>
-          </div>
-        </div>
-
-        {/* Quick Actions */}
+        {/* Quick Actions — UPAR */}
         <div className="bg-white rounded-2xl p-4 md:p-8 shadow-sm border border-gray-100 mb-6 md:mb-8">
           <h2 className="text-lg md:text-xl font-bold text-gray-900 mb-4 md:mb-6">Quick Actions</h2>
           <div className="grid grid-cols-3 md:grid-cols-7 gap-3">
@@ -154,7 +131,57 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* Recent Bookings */}
+        {/* Bookings Dashboard — Stats Cards */}
+        <div className="mb-6 md:mb-10">
+          <h2 className="text-lg md:text-xl font-bold text-gray-900 mb-4">Bookings Dashboard</h2>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-6 mb-3 md:mb-6">
+            {/* Total Bookings */}
+            <div className="bg-white rounded-2xl p-4 md:p-6 shadow-sm border border-gray-100">
+              <div className="text-2xl md:text-3xl mb-2">📋</div>
+              <div className="text-xl md:text-2xl font-bold text-gray-900">{stats.totalBookings}</div>
+              <div className="text-gray-500 text-xs md:text-sm">Total Bookings</div>
+            </div>
+            {/* Today's Check-ins */}
+            <div className="bg-white rounded-2xl p-4 md:p-6 shadow-sm border border-gray-100">
+              <div className="text-2xl md:text-3xl mb-2">🏨</div>
+              <div className="text-xl md:text-2xl font-bold text-green-600">{stats.checkInsToday}</div>
+              <div className="text-gray-500 text-xs md:text-sm">Today's Check-ins</div>
+            </div>
+            {/* Today's Check-outs */}
+            <div className="bg-white rounded-2xl p-4 md:p-6 shadow-sm border border-gray-100">
+              <div className="text-2xl md:text-3xl mb-2">🚪</div>
+              <div className="text-xl md:text-2xl font-bold text-orange-500">{stats.checkOutsToday}</div>
+              <div className="text-gray-500 text-xs md:text-sm">Today's Check-outs</div>
+            </div>
+            {/* Total Rooms */}
+            <div className="bg-white rounded-2xl p-4 md:p-6 shadow-sm border border-gray-100">
+              <div className="text-2xl md:text-3xl mb-2">🛏️</div>
+              <div className="text-xl md:text-2xl font-bold text-gray-900">{stats.totalRooms}</div>
+              <div className="text-gray-500 text-xs md:text-sm">Total Rooms</div>
+            </div>
+          </div>
+
+          {/* Second Row — Room Service, Housekeeping, Inventory */}
+          <div className="grid grid-cols-3 gap-3 md:gap-6">
+            <div className="bg-white rounded-2xl p-4 md:p-6 shadow-sm border border-gray-100">
+              <div className="text-2xl md:text-3xl mb-2">🍽️</div>
+              <div className="text-xl md:text-2xl font-bold text-yellow-600">Active</div>
+              <div className="text-gray-500 text-xs md:text-sm">Room Service</div>
+            </div>
+            <div className="bg-white rounded-2xl p-4 md:p-6 shadow-sm border border-gray-100">
+              <div className="text-2xl md:text-3xl mb-2">🧹</div>
+              <div className="text-xl md:text-2xl font-bold text-teal-600">On Duty</div>
+              <div className="text-gray-500 text-xs md:text-sm">Housekeeping</div>
+            </div>
+            <div className="bg-white rounded-2xl p-4 md:p-6 shadow-sm border border-gray-100">
+              <div className="text-2xl md:text-3xl mb-2">📦</div>
+              <div className="text-xl md:text-2xl font-bold text-purple-600">In Stock</div>
+              <div className="text-gray-500 text-xs md:text-sm">Inventory</div>
+            </div>
+          </div>
+        </div>
+
+        {/* Recent Bookings — SAME AS BEFORE */}
         <div className="bg-white rounded-2xl p-4 md:p-8 shadow-sm border border-gray-100">
           <h2 className="text-lg md:text-xl font-bold text-gray-900 mb-4 md:mb-6">Recent Bookings</h2>
           {recentBookings.length === 0 ? (
