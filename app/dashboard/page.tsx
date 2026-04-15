@@ -80,7 +80,7 @@ export default function Dashboard() {
         </div>
       </nav>
 
-      <div className="max-w-6xl mx-auto px-4 md:px-8 py-6 md:py-10">
+      <div className="max-w-full mx-auto px-4 md:px-6 py-6">
 
         {/* Quick Actions — UPAR */}
         <div className="bg-white rounded-2xl p-4 md:p-8 shadow-sm border border-gray-100 mb-6 md:mb-8">
