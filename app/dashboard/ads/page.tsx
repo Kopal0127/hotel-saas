@@ -340,7 +340,7 @@ export default function AdsPage() {
                       <td className="px-4 py-3 text-xs text-gray-700">{isGoogle ? (campaign as any).cost : (campaign as any).spend}</td>
                       <td className="px-4 py-3 text-xs text-purple-600 font-medium">{campaign.conversions}</td>
                       <td className="px-4 py-3 text-xs text-orange-500">{isGoogle ? (campaign as any).convRate : (campaign as any).ctr}</td>
-                      <td className="px-4 py-3 text-xs text-red-500">{campaign.costPerResult || (campaign as any).costPerConv}</td>
+                      <td className="px-4 py-3 text-xs text-red-500">{(campaign as any).costPerResult || (campaign as any).costPerConv}</td>
                     </tr>
                   ))}
                 </tbody>
