@@ -135,25 +135,21 @@ export default function Dashboard() {
         <div className="mb-6 md:mb-10">
           <h2 className="text-lg md:text-xl font-bold text-gray-900 mb-4">Bookings Dashboard</h2>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-6 mb-3 md:mb-6">
-            {/* Total Bookings */}
             <div className="bg-white rounded-2xl p-4 md:p-6 shadow-sm border border-gray-100">
               <div className="text-2xl md:text-3xl mb-2">📋</div>
               <div className="text-xl md:text-2xl font-bold text-gray-900">{stats.totalBookings}</div>
               <div className="text-gray-500 text-xs md:text-sm">Total Bookings</div>
             </div>
-            {/* Today's Check-ins */}
             <div className="bg-white rounded-2xl p-4 md:p-6 shadow-sm border border-gray-100">
               <div className="text-2xl md:text-3xl mb-2">🏨</div>
               <div className="text-xl md:text-2xl font-bold text-green-600">{stats.checkInsToday}</div>
               <div className="text-gray-500 text-xs md:text-sm">Today's Check-ins</div>
             </div>
-            {/* Today's Check-outs */}
             <div className="bg-white rounded-2xl p-4 md:p-6 shadow-sm border border-gray-100">
               <div className="text-2xl md:text-3xl mb-2">🚪</div>
               <div className="text-xl md:text-2xl font-bold text-orange-500">{stats.checkOutsToday}</div>
               <div className="text-gray-500 text-xs md:text-sm">Today's Check-outs</div>
             </div>
-            {/* Total Rooms */}
             <div className="bg-white rounded-2xl p-4 md:p-6 shadow-sm border border-gray-100">
               <div className="text-2xl md:text-3xl mb-2">🛏️</div>
               <div className="text-xl md:text-2xl font-bold text-gray-900">{stats.totalRooms}</div>
@@ -161,7 +157,7 @@ export default function Dashboard() {
             </div>
           </div>
 
-          {/* Second Row — Room Service, Housekeeping, Inventory */}
+          {/* Second Row */}
           <div className="grid grid-cols-3 gap-3 md:gap-6">
             <div className="bg-white rounded-2xl p-4 md:p-6 shadow-sm border border-gray-100">
               <div className="text-2xl md:text-3xl mb-2">🍽️</div>
@@ -181,9 +177,18 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* Recent Bookings — SAME AS BEFORE */}
+        {/* Recent Bookings */}
         <div className="bg-white rounded-2xl p-4 md:p-8 shadow-sm border border-gray-100">
-          <h2 className="text-lg md:text-xl font-bold text-gray-900 mb-4 md:mb-6">Recent Bookings</h2>
+          <div className="flex items-center justify-between mb-4 md:mb-6">
+            <h2 className="text-lg md:text-xl font-bold text-gray-900">Recent Bookings</h2>
+            <button
+              onClick={() => router.push("/dashboard/bookings")}
+              className="text-sm text-blue-600 hover:text-blue-800 font-medium"
+            >
+              View All →
+            </button>
+          </div>
+
           {recentBookings.length === 0 ? (
             <div className="text-center py-8 md:py-12 text-gray-400">
               <div className="text-4xl md:text-5xl mb-4">📭</div>
@@ -191,35 +196,91 @@ export default function Dashboard() {
             </div>
           ) : (
             <div className="overflow-x-auto">
-              <table className="w-full min-w-[500px]">
+              <table className="w-full min-w-[900px]">
                 <thead className="bg-gray-50">
                   <tr>
-                    <th className="text-left px-3 md:px-4 py-3 text-xs md:text-sm font-medium text-gray-600">Guest</th>
-                    <th className="text-left px-3 md:px-4 py-3 text-xs md:text-sm font-medium text-gray-600">Room</th>
-                    <th className="text-left px-3 md:px-4 py-3 text-xs md:text-sm font-medium text-gray-600">Check In</th>
-                    <th className="text-left px-3 md:px-4 py-3 text-xs md:text-sm font-medium text-gray-600">Amount</th>
-                    <th className="text-left px-3 md:px-4 py-3 text-xs md:text-sm font-medium text-gray-600">Status</th>
+                    <th className="text-left px-3 md:px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Booking ID</th>
+                    <th className="text-left px-3 md:px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Guest Name</th>
+                    <th className="text-left px-3 md:px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Check-in</th>
+                    <th className="text-left px-3 md:px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Check-out</th>
+                    <th className="text-left px-3 md:px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Amount</th>
+                    <th className="text-left px-3 md:px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Payment</th>
+                    <th className="text-left px-3 md:px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Status</th>
+                    <th className="text-left px-3 md:px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Action</th>
                   </tr>
                 </thead>
-                <tbody>
-                  {recentBookings.map((booking) => (
-                    <tr key={booking.id} className="border-t border-gray-50 hover:bg-gray-50">
-                      <td className="px-3 md:px-4 py-3">
-                        <p className="text-xs md:text-sm font-medium text-gray-900">{booking.guestName}</p>
-                        <p className="text-xs text-gray-500 hidden md:block">{booking.guestEmail}</p>
-                      </td>
-                      <td className="px-3 md:px-4 py-3 text-xs md:text-sm text-gray-600">#{booking.roomNumber}</td>
-                      <td className="px-3 md:px-4 py-3 text-xs md:text-sm text-gray-600">
-                        {new Date(booking.checkIn).toLocaleDateString()}
-                      </td>
-                      <td className="px-3 md:px-4 py-3 text-xs md:text-sm font-medium text-gray-900">₹{booking.amount}</td>
-                      <td className="px-3 md:px-4 py-3">
-                        <span className="bg-green-100 text-green-700 text-xs px-2 py-1 rounded-full">
-                          {booking.status}
-                        </span>
-                      </td>
-                    </tr>
-                  ))}
+                <tbody className="divide-y divide-gray-50">
+                  {recentBookings.map((booking) => {
+                    const today = new Date().toDateString();
+                    const isCheckInToday = new Date(booking.checkIn).toDateString() === today;
+                    const isCheckOutToday = new Date(booking.checkOut).toDateString() === today;
+                    const paymentPaid = booking.paymentAmount || 0;
+                    const totalAmount = parseFloat(booking.amount) || 0;
+                    const isDue = paymentPaid < totalAmount;
+
+                    return (
+                      <tr key={booking.id} className="hover:bg-gray-50 transition-colors">
+                        <td className="px-3 md:px-4 py-3">
+                          <span className="text-xs font-mono bg-gray-100 text-gray-600 px-2 py-1 rounded">
+                            #{booking.id?.slice(0, 8).toUpperCase()}
+                          </span>
+                        </td>
+                        <td className="px-3 md:px-4 py-3">
+                          <p className="text-sm font-medium text-gray-900">{booking.guestName}</p>
+                          <p className="text-xs text-gray-400">{booking.guestEmail}</p>
+                        </td>
+                        <td className="px-3 md:px-4 py-3">
+                          <p className="text-sm text-gray-700">
+                            {new Date(booking.checkIn).toLocaleDateString("en-IN")}
+                          </p>
+                          {isCheckInToday && (
+                            <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-medium">Today</span>
+                          )}
+                        </td>
+                        <td className="px-3 md:px-4 py-3">
+                          <p className="text-sm text-gray-700">
+                            {new Date(booking.checkOut).toLocaleDateString("en-IN")}
+                          </p>
+                          {isCheckOutToday && (
+                            <span className="text-xs bg-orange-100 text-orange-700 px-2 py-0.5 rounded-full font-medium">Today</span>
+                          )}
+                        </td>
+                        <td className="px-3 md:px-4 py-3">
+                          <p className="text-sm font-semibold text-gray-900">₹{booking.amount}</p>
+                        </td>
+                        <td className="px-3 md:px-4 py-3">
+                          {isDue ? (
+                            <span className="text-xs bg-red-100 text-red-700 px-2 py-1 rounded-full font-medium">Due</span>
+                          ) : (
+                            <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full font-medium">Paid</span>
+                          )}
+                        </td>
+                        <td className="px-3 md:px-4 py-3">
+                          <span className={`text-xs px-2 py-1 rounded-full font-medium ${
+                            booking.status === "CONFIRMED"
+                              ? "bg-green-100 text-green-700"
+                              : booking.status === "CHECKED_IN"
+                              ? "bg-blue-100 text-blue-700"
+                              : booking.status === "CHECKED_OUT"
+                              ? "bg-gray-100 text-gray-600"
+                              : booking.status === "CANCELLED"
+                              ? "bg-red-100 text-red-700"
+                              : "bg-yellow-100 text-yellow-700"
+                          }`}>
+                            {booking.status}
+                          </span>
+                        </td>
+                        <td className="px-3 md:px-4 py-3">
+                          <button
+                            onClick={() => router.push("/dashboard/bookings")}
+                            className="text-xs bg-blue-600 text-white px-3 py-1.5 rounded-lg hover:bg-blue-700 transition-colors font-medium"
+                          >
+                            View
+                          </button>
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             </div>
