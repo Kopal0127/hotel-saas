@@ -52,7 +52,7 @@ export default function Dashboard() {
           checkOutsToday,
         });
 
-        setRecentBookings(bookingsData.bookings?.slice(0, 5) || []);
+        setRecentBookings(bookingsData.bookings?.slice(0, 8) || []);
       }
     } catch (error) {
       showToast("Data load nahi ho saka!", "error");
@@ -80,107 +80,113 @@ export default function Dashboard() {
         </div>
       </nav>
 
-      <div className="max-w-full mx-auto px-4 md:px-6 py-6">
+      <div className="px-4 md:px-6 py-6">
 
-        {/* Quick Actions — UPAR */}
-        <div className="bg-white rounded-2xl p-4 md:p-8 shadow-sm border border-gray-100 mb-6 md:mb-8">
-          <h2 className="text-lg md:text-xl font-bold text-gray-900 mb-4 md:mb-6">Quick Actions</h2>
-          <div className="grid grid-cols-3 md:grid-cols-7 gap-3">
-            <button
-              onClick={() => router.push("/dashboard/rooms")}
-              className="flex flex-col items-center gap-2 p-3 md:p-4 rounded-xl bg-blue-50 hover:bg-blue-100 transition-colors">
-              <span className="text-xl md:text-2xl">🛏️</span>
-              <span className="text-xs md:text-sm font-medium text-blue-700 text-center">Rooms</span>
-            </button>
-            <button
-              onClick={() => router.push("/dashboard/bookings")}
-              className="flex flex-col items-center gap-2 p-3 md:p-4 rounded-xl bg-green-50 hover:bg-green-100 transition-colors">
-              <span className="text-xl md:text-2xl">📅</span>
-              <span className="text-xs md:text-sm font-medium text-green-700 text-center">Bookings</span>
-            </button>
-            <button
-              onClick={() => router.push("/dashboard/channels")}
-              className="flex flex-col items-center gap-2 p-3 md:p-4 rounded-xl bg-purple-50 hover:bg-purple-100 transition-colors">
-              <span className="text-xl md:text-2xl">🌐</span>
-              <span className="text-xs md:text-sm font-medium text-purple-700 text-center">OTA Sync</span>
-            </button>
-            <button
-              onClick={() => router.push("/dashboard/payments")}
-              className="flex flex-col items-center gap-2 p-3 md:p-4 rounded-xl bg-green-50 hover:bg-green-100 transition-colors">
-              <span className="text-xl md:text-2xl">💳</span>
-              <span className="text-xs md:text-sm font-medium text-green-700 text-center">Payments</span>
-            </button>
-            <button
-              onClick={() => router.push("/dashboard/reports")}
-              className="flex flex-col items-center gap-2 p-3 md:p-4 rounded-xl bg-orange-50 hover:bg-orange-100 transition-colors">
-              <span className="text-xl md:text-2xl">📊</span>
-              <span className="text-xs md:text-sm font-medium text-orange-700 text-center">Reports</span>
-            </button>
-            <button
-              onClick={() => router.push("/dashboard/rates")}
-              className="flex flex-col items-center gap-2 p-3 md:p-4 rounded-xl bg-purple-50 hover:bg-purple-100 transition-colors">
-              <span className="text-xl md:text-2xl">📅</span>
-              <span className="text-xs md:text-sm font-medium text-purple-700 text-center">Rates</span>
-            </button>
-            <button
-              onClick={() => router.push("/dashboard/ads")}
-              className="flex flex-col items-center gap-2 p-3 md:p-4 rounded-xl bg-yellow-50 hover:bg-yellow-100 transition-colors">
-              <span className="text-xl md:text-2xl">📢</span>
-              <span className="text-xs md:text-sm font-medium text-yellow-700 text-center">Digital Ads</span>
-            </button>
+        {/* TOP ROW — Left: Bookings Dashboard | Right: Quick Actions */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+
+          {/* LEFT — Bookings Dashboard */}
+          <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100">
+            <h2 className="text-base font-bold text-gray-900 mb-4">Bookings Dashboard</h2>
+
+            {/* Row 1 — 4 stats */}
+            <div className="grid grid-cols-2 gap-3 mb-3">
+              <div className="bg-gray-50 rounded-xl p-4 border border-gray-100">
+                <div className="text-2xl mb-1">📋</div>
+                <div className="text-xl font-bold text-gray-900">{stats.totalBookings}</div>
+                <div className="text-gray-500 text-xs">Total Bookings</div>
+              </div>
+              <div className="bg-gray-50 rounded-xl p-4 border border-gray-100">
+                <div className="text-2xl mb-1">🏨</div>
+                <div className="text-xl font-bold text-green-600">{stats.checkInsToday}</div>
+                <div className="text-gray-500 text-xs">Today's Check-ins</div>
+              </div>
+              <div className="bg-gray-50 rounded-xl p-4 border border-gray-100">
+                <div className="text-2xl mb-1">🚪</div>
+                <div className="text-xl font-bold text-orange-500">{stats.checkOutsToday}</div>
+                <div className="text-gray-500 text-xs">Today's Check-outs</div>
+              </div>
+              <div className="bg-gray-50 rounded-xl p-4 border border-gray-100">
+                <div className="text-2xl mb-1">🛏️</div>
+                <div className="text-xl font-bold text-gray-900">{stats.totalRooms}</div>
+                <div className="text-gray-500 text-xs">Total Rooms</div>
+              </div>
+            </div>
+
+            {/* Row 2 — 3 service cards */}
+            <div className="grid grid-cols-3 gap-3">
+              <div className="bg-gray-50 rounded-xl p-4 border border-gray-100">
+                <div className="text-2xl mb-1">🍽️</div>
+                <div className="text-sm font-bold text-yellow-600">Active</div>
+                <div className="text-gray-500 text-xs">Room Service</div>
+              </div>
+              <div className="bg-gray-50 rounded-xl p-4 border border-gray-100">
+                <div className="text-2xl mb-1">🧹</div>
+                <div className="text-sm font-bold text-teal-600">On Duty</div>
+                <div className="text-gray-500 text-xs">Housekeeping</div>
+              </div>
+              <div className="bg-gray-50 rounded-xl p-4 border border-gray-100">
+                <div className="text-2xl mb-1">📦</div>
+                <div className="text-sm font-bold text-purple-600">In Stock</div>
+                <div className="text-gray-500 text-xs">Inventory</div>
+              </div>
+            </div>
+          </div>
+
+          {/* RIGHT — Quick Actions */}
+          <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100">
+            <h2 className="text-base font-bold text-gray-900 mb-4">Quick Actions</h2>
+            <div className="grid grid-cols-2 gap-3">
+              <button
+                onClick={() => router.push("/dashboard/rooms")}
+                className="flex flex-col items-center gap-2 p-4 rounded-xl bg-blue-50 hover:bg-blue-100 transition-colors border border-blue-100">
+                <span className="text-2xl">🛏️</span>
+                <span className="text-sm font-medium text-blue-700">Rooms</span>
+              </button>
+              <button
+                onClick={() => router.push("/dashboard/bookings")}
+                className="flex flex-col items-center gap-2 p-4 rounded-xl bg-green-50 hover:bg-green-100 transition-colors border border-green-100">
+                <span className="text-2xl">📅</span>
+                <span className="text-sm font-medium text-green-700">Bookings</span>
+              </button>
+              <button
+                onClick={() => router.push("/dashboard/channels")}
+                className="flex flex-col items-center gap-2 p-4 rounded-xl bg-purple-50 hover:bg-purple-100 transition-colors border border-purple-100">
+                <span className="text-2xl">🌐</span>
+                <span className="text-sm font-medium text-purple-700">OTA Sync</span>
+              </button>
+              <button
+                onClick={() => router.push("/dashboard/payments")}
+                className="flex flex-col items-center gap-2 p-4 rounded-xl bg-cyan-50 hover:bg-cyan-100 transition-colors border border-cyan-100">
+                <span className="text-2xl">💳</span>
+                <span className="text-sm font-medium text-cyan-700">Payments</span>
+              </button>
+              <button
+                onClick={() => router.push("/dashboard/reports")}
+                className="flex flex-col items-center gap-2 p-4 rounded-xl bg-orange-50 hover:bg-orange-100 transition-colors border border-orange-100">
+                <span className="text-2xl">📊</span>
+                <span className="text-sm font-medium text-orange-700">Reports</span>
+              </button>
+              <button
+                onClick={() => router.push("/dashboard/rates")}
+                className="flex flex-col items-center gap-2 p-4 rounded-xl bg-yellow-50 hover:bg-yellow-100 transition-colors border border-yellow-100">
+                <span className="text-2xl">🏷️</span>
+                <span className="text-sm font-medium text-yellow-700">Rates</span>
+              </button>
+              <button
+                onClick={() => router.push("/dashboard/ads")}
+                className="flex flex-col items-center gap-2 p-4 rounded-xl bg-red-50 hover:bg-red-100 transition-colors border border-red-100 col-span-2">
+                <span className="text-2xl">📢</span>
+                <span className="text-sm font-medium text-red-700">Digital Ads</span>
+              </button>
+            </div>
           </div>
         </div>
 
-        {/* Bookings Dashboard — Stats Cards */}
-        <div className="mb-6 md:mb-10">
-          <h2 className="text-lg md:text-xl font-bold text-gray-900 mb-4">Bookings Dashboard</h2>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-6 mb-3 md:mb-6">
-            <div className="bg-white rounded-2xl p-4 md:p-6 shadow-sm border border-gray-100">
-              <div className="text-2xl md:text-3xl mb-2">📋</div>
-              <div className="text-xl md:text-2xl font-bold text-gray-900">{stats.totalBookings}</div>
-              <div className="text-gray-500 text-xs md:text-sm">Total Bookings</div>
-            </div>
-            <div className="bg-white rounded-2xl p-4 md:p-6 shadow-sm border border-gray-100">
-              <div className="text-2xl md:text-3xl mb-2">🏨</div>
-              <div className="text-xl md:text-2xl font-bold text-green-600">{stats.checkInsToday}</div>
-              <div className="text-gray-500 text-xs md:text-sm">Today's Check-ins</div>
-            </div>
-            <div className="bg-white rounded-2xl p-4 md:p-6 shadow-sm border border-gray-100">
-              <div className="text-2xl md:text-3xl mb-2">🚪</div>
-              <div className="text-xl md:text-2xl font-bold text-orange-500">{stats.checkOutsToday}</div>
-              <div className="text-gray-500 text-xs md:text-sm">Today's Check-outs</div>
-            </div>
-            <div className="bg-white rounded-2xl p-4 md:p-6 shadow-sm border border-gray-100">
-              <div className="text-2xl md:text-3xl mb-2">🛏️</div>
-              <div className="text-xl md:text-2xl font-bold text-gray-900">{stats.totalRooms}</div>
-              <div className="text-gray-500 text-xs md:text-sm">Total Rooms</div>
-            </div>
-          </div>
-
-          {/* Second Row */}
-          <div className="grid grid-cols-3 gap-3 md:gap-6">
-            <div className="bg-white rounded-2xl p-4 md:p-6 shadow-sm border border-gray-100">
-              <div className="text-2xl md:text-3xl mb-2">🍽️</div>
-              <div className="text-xl md:text-2xl font-bold text-yellow-600">Active</div>
-              <div className="text-gray-500 text-xs md:text-sm">Room Service</div>
-            </div>
-            <div className="bg-white rounded-2xl p-4 md:p-6 shadow-sm border border-gray-100">
-              <div className="text-2xl md:text-3xl mb-2">🧹</div>
-              <div className="text-xl md:text-2xl font-bold text-teal-600">On Duty</div>
-              <div className="text-gray-500 text-xs md:text-sm">Housekeeping</div>
-            </div>
-            <div className="bg-white rounded-2xl p-4 md:p-6 shadow-sm border border-gray-100">
-              <div className="text-2xl md:text-3xl mb-2">📦</div>
-              <div className="text-xl md:text-2xl font-bold text-purple-600">In Stock</div>
-              <div className="text-gray-500 text-xs md:text-sm">Inventory</div>
-            </div>
-          </div>
-        </div>
-
-        {/* Recent Bookings */}
-        <div className="bg-white rounded-2xl p-4 md:p-8 shadow-sm border border-gray-100">
-          <div className="flex items-center justify-between mb-4 md:mb-6">
-            <h2 className="text-lg md:text-xl font-bold text-gray-900">Recent Bookings</h2>
+        {/* BOTTOM — Recent Bookings full width */}
+        <div className="bg-white rounded-2xl p-4 md:p-6 shadow-sm border border-gray-100">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-base font-bold text-gray-900">Recent Bookings</h2>
             <button
               onClick={() => router.push("/dashboard/bookings")}
               className="text-sm text-blue-600 hover:text-blue-800 font-medium"
@@ -190,8 +196,8 @@ export default function Dashboard() {
           </div>
 
           {recentBookings.length === 0 ? (
-            <div className="text-center py-8 md:py-12 text-gray-400">
-              <div className="text-4xl md:text-5xl mb-4">📭</div>
+            <div className="text-center py-8 text-gray-400">
+              <div className="text-4xl mb-3">📭</div>
               <p>Abhi koi booking nahi hai</p>
             </div>
           ) : (
@@ -199,14 +205,14 @@ export default function Dashboard() {
               <table className="w-full min-w-[900px]">
                 <thead className="bg-gray-50">
                   <tr>
-                    <th className="text-left px-3 md:px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Booking ID</th>
-                    <th className="text-left px-3 md:px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Guest Name</th>
-                    <th className="text-left px-3 md:px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Check-in</th>
-                    <th className="text-left px-3 md:px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Check-out</th>
-                    <th className="text-left px-3 md:px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Amount</th>
-                    <th className="text-left px-3 md:px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Payment</th>
-                    <th className="text-left px-3 md:px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Status</th>
-                    <th className="text-left px-3 md:px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Action</th>
+                    <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Booking ID</th>
+                    <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Guest Name</th>
+                    <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Check-in</th>
+                    <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Check-out</th>
+                    <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Amount</th>
+                    <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Payment</th>
+                    <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Status</th>
+                    <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Action</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-50">
@@ -220,57 +226,49 @@ export default function Dashboard() {
 
                     return (
                       <tr key={booking.id} className="hover:bg-gray-50 transition-colors">
-                        <td className="px-3 md:px-4 py-3">
+                        <td className="px-4 py-3">
                           <span className="text-xs font-mono bg-gray-100 text-gray-600 px-2 py-1 rounded">
                             #{booking.id?.slice(0, 8).toUpperCase()}
                           </span>
                         </td>
-                        <td className="px-3 md:px-4 py-3">
+                        <td className="px-4 py-3">
                           <p className="text-sm font-medium text-gray-900">{booking.guestName}</p>
                           <p className="text-xs text-gray-400">{booking.guestEmail}</p>
                         </td>
-                        <td className="px-3 md:px-4 py-3">
-                          <p className="text-sm text-gray-700">
-                            {new Date(booking.checkIn).toLocaleDateString("en-IN")}
-                          </p>
+                        <td className="px-4 py-3">
+                          <p className="text-sm text-gray-700">{new Date(booking.checkIn).toLocaleDateString("en-IN")}</p>
                           {isCheckInToday && (
                             <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-medium">Today</span>
                           )}
                         </td>
-                        <td className="px-3 md:px-4 py-3">
-                          <p className="text-sm text-gray-700">
-                            {new Date(booking.checkOut).toLocaleDateString("en-IN")}
-                          </p>
+                        <td className="px-4 py-3">
+                          <p className="text-sm text-gray-700">{new Date(booking.checkOut).toLocaleDateString("en-IN")}</p>
                           {isCheckOutToday && (
                             <span className="text-xs bg-orange-100 text-orange-700 px-2 py-0.5 rounded-full font-medium">Today</span>
                           )}
                         </td>
-                        <td className="px-3 md:px-4 py-3">
+                        <td className="px-4 py-3">
                           <p className="text-sm font-semibold text-gray-900">₹{booking.amount}</p>
                         </td>
-                        <td className="px-3 md:px-4 py-3">
+                        <td className="px-4 py-3">
                           {isDue ? (
                             <span className="text-xs bg-red-100 text-red-700 px-2 py-1 rounded-full font-medium">Due</span>
                           ) : (
                             <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full font-medium">Paid</span>
                           )}
                         </td>
-                        <td className="px-3 md:px-4 py-3">
+                        <td className="px-4 py-3">
                           <span className={`text-xs px-2 py-1 rounded-full font-medium ${
-                            booking.status === "CONFIRMED"
-                              ? "bg-green-100 text-green-700"
-                              : booking.status === "CHECKED_IN"
-                              ? "bg-blue-100 text-blue-700"
-                              : booking.status === "CHECKED_OUT"
-                              ? "bg-gray-100 text-gray-600"
-                              : booking.status === "CANCELLED"
-                              ? "bg-red-100 text-red-700"
-                              : "bg-yellow-100 text-yellow-700"
+                            booking.status === "CONFIRMED" ? "bg-green-100 text-green-700"
+                            : booking.status === "CHECKED_IN" ? "bg-blue-100 text-blue-700"
+                            : booking.status === "CHECKED_OUT" ? "bg-gray-100 text-gray-600"
+                            : booking.status === "CANCELLED" ? "bg-red-100 text-red-700"
+                            : "bg-yellow-100 text-yellow-700"
                           }`}>
                             {booking.status}
                           </span>
                         </td>
-                        <td className="px-3 md:px-4 py-3">
+                        <td className="px-4 py-3">
                           <button
                             onClick={() => router.push("/dashboard/bookings")}
                             className="text-xs bg-blue-600 text-white px-3 py-1.5 rounded-lg hover:bg-blue-700 transition-colors font-medium"
