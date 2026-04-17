@@ -136,7 +136,7 @@ export default function Dashboard() {
           {/* RIGHT — Quick Actions */}
           <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100">
             <h2 className="text-base font-bold text-gray-900 mb-4">Quick Actions</h2>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-3 gap-3">
               <button
                 onClick={() => router.push("/dashboard/rooms")}
                 className="flex flex-col items-center gap-2 p-4 rounded-xl bg-blue-50 hover:bg-blue-100 transition-colors border border-blue-100">
@@ -175,7 +175,7 @@ export default function Dashboard() {
               </button>
               <button
                 onClick={() => router.push("/dashboard/ads")}
-                className="flex flex-col items-center gap-2 p-4 rounded-xl bg-red-50 hover:bg-red-100 transition-colors border border-red-100 col-span-2">
+               className="flex flex-col items-center gap-2 p-4 rounded-xl bg-red-50 hover:bg-red-100 transition-colors border border-red-100">
                 <span className="text-2xl">📢</span>
                 <span className="text-sm font-medium text-red-700">Digital Ads</span>
               </button>
