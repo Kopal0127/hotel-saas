@@ -89,8 +89,8 @@ export default function Dashboard() {
           <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100">
             <h2 className="text-base font-bold text-gray-900 mb-4">Bookings Dashboard</h2>
 
-            {/* Row 1 — 4 stats */}
-            <div <div className="grid grid-cols-3 gap-3 mb-3">
+            {/* Row 1 — 3 stats */}
+            <div className="grid grid-cols-3 gap-3 mb-3">
               <div className="bg-gray-50 rounded-xl p-4 border border-gray-100">
                 <div className="text-2xl mb-1">📋</div>
                 <div className="text-xl font-bold text-gray-900">{stats.totalBookings}</div>
@@ -106,15 +106,15 @@ export default function Dashboard() {
                 <div className="text-xl font-bold text-orange-500">{stats.checkOutsToday}</div>
                 <div className="text-gray-500 text-xs">Today's Check-outs</div>
               </div>
+            </div>
+
+            {/* Row 2 — Total Rooms + Room Service + Housekeeping + Inventory */}
+            <div className="grid grid-cols-3 gap-3">
               <div className="bg-gray-50 rounded-xl p-4 border border-gray-100">
                 <div className="text-2xl mb-1">🛏️</div>
                 <div className="text-xl font-bold text-gray-900">{stats.totalRooms}</div>
                 <div className="text-gray-500 text-xs">Total Rooms</div>
               </div>
-            </div>
-
-            {/* Row 2 — 3 service cards */}
-            <div className="grid grid-cols-3 gap-3">
               <div className="bg-gray-50 rounded-xl p-4 border border-gray-100">
                 <div className="text-2xl mb-1">🍽️</div>
                 <div className="text-sm font-bold text-yellow-600">Active</div>
@@ -125,6 +125,10 @@ export default function Dashboard() {
                 <div className="text-sm font-bold text-teal-600">On Duty</div>
                 <div className="text-gray-500 text-xs">Housekeeping</div>
               </div>
+            </div>
+
+            {/* Row 3 — Inventory */}
+            <div className="grid grid-cols-3 gap-3 mt-3">
               <div className="bg-gray-50 rounded-xl p-4 border border-gray-100">
                 <div className="text-2xl mb-1">📦</div>
                 <div className="text-sm font-bold text-purple-600">In Stock</div>
@@ -175,7 +179,7 @@ export default function Dashboard() {
               </button>
               <button
                 onClick={() => router.push("/dashboard/ads")}
-               className="flex flex-col items-center gap-2 p-4 rounded-xl bg-red-50 hover:bg-red-100 transition-colors border border-red-100">
+                className="flex flex-col items-center gap-2 p-4 rounded-xl bg-red-50 hover:bg-red-100 transition-colors border border-red-100">
                 <span className="text-2xl">📢</span>
                 <span className="text-sm font-medium text-red-700">Digital Ads</span>
               </button>
