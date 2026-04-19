@@ -15,7 +15,9 @@ export default function Dashboard() {
     checkInsToday: 0,
     checkOutsToday: 0,
   });
+  const [allBookings, setAllBookings] = useState<any[]>([]);
   const [recentBookings, setRecentBookings] = useState<any[]>([]);
+  const [activeFilter, setActiveFilter] = useState<"recent" | "all" | "checkin" | "checkout">("recent");
 
   useEffect(() => {
     fetchStats();
@@ -52,12 +54,32 @@ export default function Dashboard() {
           checkOutsToday,
         });
 
+        setAllBookings(bookingsData.bookings || []);
         setRecentBookings(bookingsData.bookings?.slice(0, 8) || []);
       }
     } catch (error) {
       showToast("Data load nahi ho saka!", "error");
     }
   };
+
+  // Filter logic
+  const today = new Date().toDateString();
+
+  const getFilteredBookings = () => {
+    if (activeFilter === "all") return allBookings;
+    if (activeFilter === "checkin") return allBookings.filter((b) => new Date(b.checkIn).toDateString() === today);
+    if (activeFilter === "checkout") return allBookings.filter((b) => new Date(b.checkOut).toDateString() === today);
+    return recentBookings;
+  };
+
+  const getTableTitle = () => {
+    if (activeFilter === "all") return `All Bookings (${allBookings.length})`;
+    if (activeFilter === "checkin") return `Today's Check-ins (${allBookings.filter((b) => new Date(b.checkIn).toDateString() === today).length})`;
+    if (activeFilter === "checkout") return `Today's Check-outs (${allBookings.filter((b) => new Date(b.checkOut).toDateString() === today).length})`;
+    return "Recent Bookings";
+  };
+
+  const filteredBookings = getFilteredBookings();
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -89,26 +111,50 @@ export default function Dashboard() {
           <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100">
             <h2 className="text-base font-bold text-gray-900 mb-4">Bookings Dashboard</h2>
 
-            {/* Row 1 — 3 stats */}
+            {/* Row 1 — 3 clickable stats */}
             <div className="grid grid-cols-3 gap-3 mb-3">
-              <div className="bg-gray-50 rounded-xl p-4 border border-gray-100">
+
+              {/* Total Bookings */}
+              <div
+                onClick={() => setActiveFilter("all")}
+                className={`rounded-xl p-4 border cursor-pointer transition-all ${
+                  activeFilter === "all"
+                    ? "bg-blue-50 border-blue-300 shadow-sm"
+                    : "bg-gray-50 border-gray-100 hover:bg-blue-50 hover:border-blue-200"
+                }`}>
                 <div className="text-2xl mb-1">📋</div>
                 <div className="text-xl font-bold text-gray-900">{stats.totalBookings}</div>
                 <div className="text-gray-500 text-xs">Total Bookings</div>
               </div>
-              <div className="bg-gray-50 rounded-xl p-4 border border-gray-100">
+
+              {/* Today's Check-ins */}
+              <div
+                onClick={() => setActiveFilter("checkin")}
+                className={`rounded-xl p-4 border cursor-pointer transition-all ${
+                  activeFilter === "checkin"
+                    ? "bg-green-50 border-green-300 shadow-sm"
+                    : "bg-gray-50 border-gray-100 hover:bg-green-50 hover:border-green-200"
+                }`}>
                 <div className="text-2xl mb-1">🏨</div>
                 <div className="text-xl font-bold text-green-600">{stats.checkInsToday}</div>
                 <div className="text-gray-500 text-xs">Today's Check-ins</div>
               </div>
-              <div className="bg-gray-50 rounded-xl p-4 border border-gray-100">
+
+              {/* Today's Check-outs */}
+              <div
+                onClick={() => setActiveFilter("checkout")}
+                className={`rounded-xl p-4 border cursor-pointer transition-all ${
+                  activeFilter === "checkout"
+                    ? "bg-red-50 border-red-300 shadow-sm"
+                    : "bg-gray-50 border-gray-100 hover:bg-red-50 hover:border-red-200"
+                }`}>
                 <div className="text-2xl mb-1">🚪</div>
                 <div className="text-xl font-bold text-orange-500">{stats.checkOutsToday}</div>
                 <div className="text-gray-500 text-xs">Today's Check-outs</div>
               </div>
             </div>
 
-            {/* Row 2 — Total Rooms + Room Service + Housekeeping + Inventory */}
+            {/* Row 2 — Total Rooms + Room Service + Housekeeping */}
             <div className="grid grid-cols-3 gap-3">
               <div className="bg-gray-50 rounded-xl p-4 border border-gray-100">
                 <div className="text-2xl mb-1">🛏️</div>
@@ -187,22 +233,32 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* BOTTOM — Recent Bookings full width */}
+        {/* BOTTOM — Bookings Table */}
         <div className="bg-white rounded-2xl p-4 md:p-6 shadow-sm border border-gray-100">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-base font-bold text-gray-900">Recent Bookings</h2>
-            <button
-              onClick={() => router.push("/dashboard/bookings")}
-              className="text-sm text-blue-600 hover:text-blue-800 font-medium"
-            >
-              View All →
-            </button>
+            <h2 className="text-base font-bold text-gray-900">{getTableTitle()}</h2>
+            <div className="flex gap-2">
+              {activeFilter !== "recent" && (
+                <button
+                  onClick={() => setActiveFilter("recent")}
+                  className="text-xs bg-gray-100 text-gray-600 px-3 py-1.5 rounded-lg hover:bg-gray-200 transition-colors font-medium"
+                >
+                  ← Back
+                </button>
+              )}
+              <button
+                onClick={() => router.push("/dashboard/bookings")}
+                className="text-sm text-blue-600 hover:text-blue-800 font-medium"
+              >
+                View All →
+              </button>
+            </div>
           </div>
 
-          {recentBookings.length === 0 ? (
+          {filteredBookings.length === 0 ? (
             <div className="text-center py-8 text-gray-400">
               <div className="text-4xl mb-3">📭</div>
-              <p>Abhi koi booking nahi hai</p>
+              <p>Koi booking nahi mili</p>
             </div>
           ) : (
             <div className="overflow-x-auto">
@@ -211,8 +267,12 @@ export default function Dashboard() {
                   <tr>
                     <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Booking ID</th>
                     <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Guest Name</th>
-                    <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Check-in</th>
-                    <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Check-out</th>
+                    <th className={`text-left px-4 py-3 text-xs font-semibold uppercase tracking-wider ${
+                      activeFilter === "checkin" ? "text-green-600" : "text-gray-500"
+                    }`}>Check-in</th>
+                    <th className={`text-left px-4 py-3 text-xs font-semibold uppercase tracking-wider ${
+                      activeFilter === "checkout" ? "text-red-500" : "text-gray-500"
+                    }`}>Check-out</th>
                     <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Amount</th>
                     <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Payment</th>
                     <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Status</th>
@@ -220,8 +280,7 @@ export default function Dashboard() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-50">
-                  {recentBookings.map((booking) => {
-                    const today = new Date().toDateString();
+                  {filteredBookings.map((booking) => {
                     const isCheckInToday = new Date(booking.checkIn).toDateString() === today;
                     const isCheckOutToday = new Date(booking.checkOut).toDateString() === today;
                     const paymentPaid = booking.paymentAmount || 0;
@@ -239,18 +298,27 @@ export default function Dashboard() {
                           <p className="text-sm font-medium text-gray-900">{booking.guestName}</p>
                           <p className="text-xs text-gray-400">{booking.guestEmail}</p>
                         </td>
-                        <td className="px-4 py-3">
-                          <p className="text-sm text-gray-700">{new Date(booking.checkIn).toLocaleDateString("en-IN")}</p>
-                          {isCheckInToday && (
+
+                        {/* Check-in column — green when checkin filter */}
+                        <td className={`px-4 py-3 ${activeFilter === "checkin" ? "bg-green-50" : ""}`}>
+                          <p className={`text-sm font-medium ${activeFilter === "checkin" ? "text-green-700" : "text-gray-700"}`}>
+                            {new Date(booking.checkIn).toLocaleDateString("en-IN")}
+                          </p>
+                          {isCheckInToday && activeFilter !== "checkin" && (
                             <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-medium">Today</span>
                           )}
                         </td>
-                        <td className="px-4 py-3">
-                          <p className="text-sm text-gray-700">{new Date(booking.checkOut).toLocaleDateString("en-IN")}</p>
-                          {isCheckOutToday && (
+
+                        {/* Check-out column — red when checkout filter */}
+                        <td className={`px-4 py-3 ${activeFilter === "checkout" ? "bg-red-50" : ""}`}>
+                          <p className={`text-sm font-medium ${activeFilter === "checkout" ? "text-red-600" : "text-gray-700"}`}>
+                            {new Date(booking.checkOut).toLocaleDateString("en-IN")}
+                          </p>
+                          {isCheckOutToday && activeFilter !== "checkout" && (
                             <span className="text-xs bg-orange-100 text-orange-700 px-2 py-0.5 rounded-full font-medium">Today</span>
                           )}
                         </td>
+
                         <td className="px-4 py-3">
                           <p className="text-sm font-semibold text-gray-900">₹{booking.amount}</p>
                         </td>
