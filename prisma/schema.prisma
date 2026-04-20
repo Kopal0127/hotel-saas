@@ -58,7 +58,8 @@ model Booking {
   notes              String?
   specialRequests    String?
   adults             Int?          @default(1)
-children           Int?          @default(0)
+  children           Int?          @default(0)
+  source             String?       @default("WALK_IN")
   paymentMode        String?       @default("CASH")
   paymentAmount      Float?
   finalPaymentMode   String?
