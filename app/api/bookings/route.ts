@@ -35,7 +35,7 @@ export async function POST(req: NextRequest) {
     const {
       roomId, guestName, guestEmail, checkIn, checkOut, amount,
       notes, specialRequests, paymentMode, paymentAmount,
-      finalPaymentMode, finalPaymentAmount
+      finalPaymentMode, finalPaymentAmount, adults, children, source
     } = await req.json();
 
     if (!roomId || !guestName || !guestEmail || !checkIn || !checkOut || !amount) {
@@ -116,6 +116,9 @@ export async function POST(req: NextRequest) {
         paymentAmount: paymentAmount ? parseFloat(paymentAmount) : null,
         finalPaymentMode: finalPaymentMode || null,
         finalPaymentAmount: finalPaymentAmount ? parseFloat(finalPaymentAmount) : null,
+        adults: adults ? parseInt(adults) : 1,
+        children: children ? parseInt(children) : 0,
+        source: source || "WALK_IN",
       },
       include: { room: { include: { hotel: true } } }
     });
