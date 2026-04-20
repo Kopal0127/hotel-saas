@@ -29,6 +29,7 @@ model Hotel {
   channels     OtaChannel[]
   otaBookings  OtaBooking[]
   staffMembers Staff[]
+  serviceCategories ServiceCategory[]
 }
 
 model Room {
@@ -210,4 +211,39 @@ model OtpVerification {
   expiresAt DateTime
   used      Boolean  @default(false)
   createdAt DateTime @default(now())
+}
+model ServiceCategory {
+  id          String        @id @default(cuid())
+  hotelId     String
+  hotel       Hotel         @relation(fields: [hotelId], references: [id])
+  name        String
+  serviceType ServiceType
+  createdAt   DateTime      @default(now())
+  items       ServiceItem[]
+}
+
+model ServiceItem {
+  id           String          @id @default(cuid())
+  categoryId   String
+  category     ServiceCategory @relation(fields: [categoryId], references: [id])
+  name         String
+  itemCategory String
+  price        Float           @default(0)
+  minBaseline  Int             @default(0)
+  stock        Int             @default(0)
+  stockUpdated DateTime        @default(now())
+  status       StockStatus     @default(NORMAL)
+  createdAt    DateTime        @default(now())
+  updatedAt    DateTime        @updatedAt
+}
+
+enum ServiceType {
+  FOOD
+  DRINKS
+  OTHER
+}
+
+enum StockStatus {
+  NORMAL
+  LOW
 }
