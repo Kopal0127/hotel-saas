@@ -308,20 +308,50 @@ export default function BookingsPage() {
             <h3 className="text-lg font-semibold text-gray-900 mb-4">Naya Booking Add Karo</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
 
-              <div>
-                <label className="text-sm font-medium text-gray-700 mb-1 block">Check In</label>
-                <input type="date" value={form.checkIn}
-                  min={new Date().toISOString().split("T")[0]}
-                  onChange={(e) => { setForm({ ...form, checkIn: e.target.value }); setSelectedRoomId(""); setSelectedType(""); }}
-                  className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-blue-500" />
-              </div>
-
-              <div>
-                <label className="text-sm font-medium text-gray-700 mb-1 block">Check Out</label>
-                <input type="date" value={form.checkOut}
-                  min={form.checkIn || new Date().toISOString().split("T")[0]}
-                  onChange={(e) => { setForm({ ...form, checkOut: e.target.value }); setSelectedRoomId(""); setSelectedType(""); }}
-                  className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-blue-500" />
+              <div className="md:col-span-2">
+                <label className="text-sm font-medium text-gray-700 mb-2 block">
+                  Check-in → Check-out Date
+                  {form.checkIn && form.checkOut && (
+                    <span className="ml-2 text-xs text-blue-500 font-normal">
+                      {calculateNights()} night{calculateNights() > 1 ? "s" : ""}
+                    </span>
+                  )}
+                </label>
+                <div className="flex items-center gap-3 bg-gray-50 border border-gray-200 rounded-xl px-4 py-3">
+                  <div className="flex-1">
+                    <p className="text-xs text-gray-400 mb-1">Check-in</p>
+                    <input
+                      type="date"
+                      value={form.checkIn}
+                      min={new Date().toISOString().split("T")[0]}
+                      onChange={(e) => {
+                        setForm({ ...form, checkIn: e.target.value, checkOut: "" });
+                        setSelectedRoomId(""); setSelectedType("");
+                      }}
+                      className="w-full bg-transparent text-sm font-medium text-gray-900 focus:outline-none"
+                    />
+                  </div>
+                  <div className="text-gray-400 font-bold text-lg">→</div>
+                  <div className="flex-1">
+                    <p className="text-xs text-gray-400 mb-1">Check-out</p>
+                    <input
+                      type="date"
+                      value={form.checkOut}
+                      min={form.checkIn || new Date().toISOString().split("T")[0]}
+                      disabled={!form.checkIn}
+                      onChange={(e) => {
+                        setForm({ ...form, checkOut: e.target.value });
+                        setSelectedRoomId(""); setSelectedType("");
+                      }}
+                      className="w-full bg-transparent text-sm font-medium text-gray-900 focus:outline-none disabled:opacity-40"
+                    />
+                  </div>
+                </div>
+                {form.checkIn && form.checkOut && (
+                  <p className="text-xs text-blue-600 mt-1">
+                    📅 {new Date(form.checkIn).toLocaleDateString("en-IN")} → {new Date(form.checkOut).toLocaleDateString("en-IN")}
+                  </p>
+                )}
               </div>
 
               <div>
