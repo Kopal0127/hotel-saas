@@ -33,7 +33,9 @@ export default function BookingsPage() {
     paymentMode: "CASH", paymentAmount: "",
     finalPaymentMode: "", finalPaymentAmount: "",
     adults: "1", children: "0",
-    source: "WALK_IN", // Always WALK_IN for software bookings
+    source: "WALK_IN",// Always WALK_IN for software bookings
+    guestPhone: form.guestPhone || null,
+    guestPhone: "", 
   });
 
   useEffect(() => { fetchData(); }, []);
@@ -166,7 +168,7 @@ export default function BookingsPage() {
           notes: "", specialRequests: "",
           paymentMode: "CASH", paymentAmount: "",
           finalPaymentMode: "", finalPaymentAmount: "",
-          adults: "1", children: "0", source: "WALK_IN",
+          adults: "1", children: "0", source: "WALK_IN", guestPhone: "",
         });
         setSelectedType(""); setSelectedRoomId("");
         setShowForm(false); setShowFinalPayment(false); setShowMoreOptions(false);
@@ -383,6 +385,12 @@ export default function BookingsPage() {
                   onChange={(e) => setForm({ ...form, guestEmail: e.target.value })}
                   className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-blue-500" />
               </div>
+              <div>
+                <label className="text-sm font-medium text-gray-700 mb-1 block">Guest Phone</label>
+                <input type="tel" placeholder="+91 9999999999" value={form.guestPhone}
+                  onChange={(e) => setForm({ ...form, guestPhone: e.target.value })}
+                  className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-blue-500" />
+              </div>
 
               {/* Adults & Children - ek row mein */}
               <div className="md:col-span-2 grid grid-cols-2 gap-4">
@@ -561,6 +569,7 @@ export default function BookingsPage() {
                         <td className="px-4 py-3">
                           <p className="text-sm font-medium text-gray-900">{booking.guestName}</p>
                           <p className="text-xs text-gray-400">{booking.guestEmail}</p>
+                          {booking.guestPhone && <p className="text-xs text-gray-400">📞 {booking.guestPhone}</p>}
                         </td>
 
                         {/* Guests — ek line mein */}

@@ -60,6 +60,7 @@ model Booking {
   adults             Int?          @default(1)
   children           Int?          @default(0)
   source             String?       @default("WALK_IN")
+  guestPhone         String?
   paymentMode        String?       @default("CASH")
   paymentAmount      Float?
   finalPaymentMode   String?

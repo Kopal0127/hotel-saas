@@ -33,7 +33,7 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   try {
     const {
-      roomId, guestName, guestEmail, checkIn, checkOut, amount,
+      roomId, guestName, guestEmail, guestPhone, checkIn, checkOut, amount,
       notes, specialRequests, paymentMode, paymentAmount,
       finalPaymentMode, finalPaymentAmount, adults, children, source
     } = await req.json();
@@ -119,6 +119,7 @@ export async function POST(req: NextRequest) {
         adults: adults ? parseInt(adults) : 1,
         children: children ? parseInt(children) : 0,
         source: source || "WALK_IN",
+        guestPhone: guestPhone || null,
       },
       include: { room: { include: { hotel: true } } }
     });
