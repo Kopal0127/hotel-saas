@@ -1,4 +1,6 @@
 "use client";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { Toast } from "@/components/Toast";
@@ -317,36 +319,28 @@ export default function BookingsPage() {
                     </span>
                   )}
                 </label>
-                <div className="flex items-center gap-3 bg-gray-50 border border-gray-200 rounded-xl px-4 py-3">
-                  <div className="flex-1">
-                    <p className="text-xs text-gray-400 mb-1">Check-in</p>
-                    <input
-                      type="date"
-                      value={form.checkIn}
-                      min={new Date().toISOString().split("T")[0]}
-                      onChange={(e) => {
-                        setForm({ ...form, checkIn: e.target.value, checkOut: "" });
-                        setSelectedRoomId(""); setSelectedType("");
-                      }}
-                      className="w-full bg-transparent text-sm font-medium text-gray-900 focus:outline-none"
-                    />
-                  </div>
-                  <div className="text-gray-400 font-bold text-lg">→</div>
-                  <div className="flex-1">
-                    <p className="text-xs text-gray-400 mb-1">Check-out</p>
-                    <input
-                      type="date"
-                      value={form.checkOut}
-                      min={form.checkIn || new Date().toISOString().split("T")[0]}
-                      disabled={!form.checkIn}
-                      onChange={(e) => {
-                        setForm({ ...form, checkOut: e.target.value });
-                        setSelectedRoomId(""); setSelectedType("");
-                      }}
-                      className="w-full bg-transparent text-sm font-medium text-gray-900 focus:outline-none disabled:opacity-40"
-                    />
-                  </div>
-                </div>
+                <DatePicker
+                  selectsRange
+                  startDate={form.checkIn ? new Date(form.checkIn) : null}
+                  endDate={form.checkOut ? new Date(form.checkOut) : null}
+                  onChange={(dates: [Date | null, Date | null]) => {
+                    const [start, end] = dates;
+                    setForm({
+                      ...form,
+                      checkIn: start ? start.toISOString().split("T")[0] : "",
+                      checkOut: end ? end.toISOString().split("T")[0] : "",
+                    });
+                    setSelectedRoomId("");
+                    setSelectedType("");
+                  }}
+                  minDate={new Date()}
+                  placeholderText="Check-in → Check-out select karo"
+                  className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-blue-500 cursor-pointer"
+                  wrapperClassName="w-full"
+                  monthsShown={2}
+                  dateFormat="dd/MM/yyyy"
+                  isClearable
+                />
                 {form.checkIn && form.checkOut && (
                   <p className="text-xs text-blue-600 mt-1">
                     📅 {new Date(form.checkIn).toLocaleDateString("en-IN")} → {new Date(form.checkOut).toLocaleDateString("en-IN")}
