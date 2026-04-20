@@ -259,3 +259,29 @@ export async function DELETE(req: NextRequest) {
     return NextResponse.json({ error: "Kuch galat hua!" }, { status: 500 });
   }
 }
+export async function PUT(req: NextRequest) {
+  try {
+    const body = await req.json();
+    const { id, status } = body;
+
+    if (!id || !status) {
+      return NextResponse.json({ error: "ID aur status chahiye!" }, { status: 400 });
+    }
+
+    const validStatuses = ["CONFIRMED", "CHECKED_IN", "CHECKED_OUT", "CANCELLED", "UPGRADED"];
+    if (!validStatuses.includes(status)) {
+      return NextResponse.json({ error: "Invalid status!" }, { status: 400 });
+    }
+
+    const booking = await prisma.booking.update({
+      where: { id },
+      data: { status },
+      include: { room: true },
+    });
+
+    return NextResponse.json({ message: "Status update ho gaya!", booking });
+  } catch (error) {
+    console.error(error);
+    return NextResponse.json({ error: "Status update nahi ho saka!" }, { status: 500 });
+  }
+}

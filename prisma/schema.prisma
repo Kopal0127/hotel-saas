@@ -136,6 +136,9 @@ enum BookingStatus {
   CONFIRMED
   CANCELLED
   COMPLETED
+  CHECKED_IN
+  CHECKED_OUT
+  UPGRADED
 }
 
 enum OtaName {
