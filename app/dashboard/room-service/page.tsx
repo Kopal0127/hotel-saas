@@ -28,6 +28,14 @@ interface OrderItem {
   qty: number;
 }
 
+interface OccupiedRoom {
+  id: string;
+  roomNumber: string;
+  guestName: string;
+  checkIn: string;
+  checkOut: string;
+}
+
 export default function RoomServicePage() {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<ServiceType>("FOOD");
@@ -40,6 +48,11 @@ export default function RoomServicePage() {
   const [notes, setNotes] = useState("");
   const [discount, setDiscount] = useState(0);
   const [activeView, setActiveView] = useState<"pos" | "manage">("pos");
+
+  // Occupied rooms
+  const [occupiedRooms, setOccupiedRooms] = useState<OccupiedRoom[]>([]);
+  const [selectedRoom, setSelectedRoom] = useState<string>("");
+  const [roomSearch, setRoomSearch] = useState("");
 
   // Modals
   const [showCatModal, setShowCatModal] = useState(false);
@@ -54,6 +67,32 @@ export default function RoomServicePage() {
   const [itemForm, setItemForm] = useState({
     name: "", itemCategory: "", price: "", minBaseline: "", stock: "",
   });
+
+  // Fetch occupied rooms (CHECKED_IN status)
+  const fetchOccupiedRooms = useCallback(async (hId: string) => {
+    try {
+      const res = await fetch(`/api/bookings?hotelId=${hId}`);
+      const data = await res.json();
+      const bookings = data.bookings || [];
+
+      const checkedIn = bookings
+        .filter((b: any) => b.status === "CHECKED_IN")
+        .map((b: any) => ({
+          id: b.id,
+          roomNumber: b.room?.number || b.roomNumber || "?",
+          guestName: b.guestName,
+          checkIn: b.checkIn,
+          checkOut: b.checkOut,
+        }));
+
+      setOccupiedRooms(checkedIn);
+      if (checkedIn.length > 0 && !selectedRoom) {
+        setSelectedRoom(checkedIn[0].id);
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  }, []);
 
   const fetchData = useCallback(async () => {
     setLoading(true);
@@ -71,11 +110,13 @@ export default function RoomServicePage() {
       if (cats.length > 0 && !selectedCategoryId) {
         setSelectedCategoryId(cats[0].id);
       }
+
+      await fetchOccupiedRooms(hId);
     } catch (e) {
       console.error(e);
     }
     setLoading(false);
-  }, [activeTab]);
+  }, [activeTab, fetchOccupiedRooms]);
 
   useEffect(() => {
     fetchData();
@@ -97,16 +138,23 @@ export default function RoomServicePage() {
   };
 
   const updateQty = (itemId: string, delta: number) => {
-    setOrderItems(prev => {
-      return prev
-        .map(o => o.item.id === itemId ? { ...o, qty: o.qty + delta } : o)
-        .filter(o => o.qty > 0);
-    });
+    setOrderItems(prev =>
+      prev.map(o => o.item.id === itemId ? { ...o, qty: o.qty + delta } : o)
+        .filter(o => o.qty > 0)
+    );
   };
 
   const subtotal = orderItems.reduce((sum, o) => sum + o.item.price * o.qty, 0);
   const discountAmount = Math.round(subtotal * discount / 100);
   const total = subtotal - discountAmount;
+
+  // Filtered rooms by search
+  const filteredRooms = occupiedRooms.filter(r =>
+    r.roomNumber.toLowerCase().includes(roomSearch.toLowerCase()) ||
+    r.guestName.toLowerCase().includes(roomSearch.toLowerCase())
+  );
+
+  const selectedRoomData = occupiedRooms.find(r => r.id === selectedRoom);
 
   // Category CRUD
   const handleSaveCategory = async () => {
@@ -248,9 +296,7 @@ export default function RoomServicePage() {
                       key={cat.id}
                       onClick={() => setSelectedCategoryId(cat.id)}
                       className={`w-full text-left px-3 py-2.5 rounded-xl text-sm font-medium transition-all ${
-                        selectedCategoryId === cat.id
-                          ? "bg-blue-600 text-white"
-                          : "text-gray-700 hover:bg-gray-50"
+                        selectedCategoryId === cat.id ? "bg-blue-600 text-white" : "text-gray-700 hover:bg-gray-50"
                       }`}
                     >
                       {cat.name}
@@ -292,7 +338,6 @@ export default function RoomServicePage() {
                           orderItem ? "border-blue-400 bg-blue-50" : "border-gray-200 bg-white hover:border-gray-300"
                         }`}
                       >
-                        {/* Green dot */}
                         <div className="flex items-center gap-1.5 mb-2">
                           <div className="w-2 h-2 rounded-full bg-green-500"></div>
                           <span className="text-xs text-gray-500">{item.itemCategory}</span>
@@ -300,25 +345,19 @@ export default function RoomServicePage() {
                         <p className="text-sm font-semibold text-gray-900 mb-1">{item.name}</p>
                         <p className="text-sm font-bold text-blue-600">₹{item.price}</p>
 
-                        {/* Qty badge */}
                         {orderItem && (
                           <div className="absolute top-2 right-2 bg-blue-600 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center font-bold">
                             {orderItem.qty}
                           </div>
                         )}
 
-                        {/* +/- buttons */}
                         {orderItem && (
                           <div className="flex items-center gap-2 mt-2" onClick={(e) => e.stopPropagation()}>
-                            <button
-                              onClick={() => updateQty(item.id, -1)}
-                              className="w-6 h-6 bg-red-100 text-red-600 rounded-full text-sm font-bold hover:bg-red-200 flex items-center justify-center"
-                            >−</button>
+                            <button onClick={() => updateQty(item.id, -1)}
+                              className="w-6 h-6 bg-red-100 text-red-600 rounded-full text-sm font-bold hover:bg-red-200 flex items-center justify-center">−</button>
                             <span className="text-sm font-semibold text-gray-900">{orderItem.qty}</span>
-                            <button
-                              onClick={() => updateQty(item.id, 1)}
-                              className="w-6 h-6 bg-green-100 text-green-600 rounded-full text-sm font-bold hover:bg-green-200 flex items-center justify-center"
-                            >+</button>
+                            <button onClick={() => updateQty(item.id, 1)}
+                              className="w-6 h-6 bg-green-100 text-green-600 rounded-full text-sm font-bold hover:bg-green-200 flex items-center justify-center">+</button>
                           </div>
                         )}
                       </div>
@@ -334,6 +373,49 @@ export default function RoomServicePage() {
                 <h3 className="text-sm font-bold text-gray-900">Order Summary</h3>
               </div>
 
+              {/* Room Selector */}
+              <div className="p-3 border-b border-gray-100 bg-gray-50">
+                <p className="text-xs font-semibold text-gray-500 uppercase mb-2">Select Room</p>
+                {/* Search */}
+                <input
+                  type="text"
+                  value={roomSearch}
+                  onChange={(e) => setRoomSearch(e.target.value)}
+                  placeholder="🔍 Search room / guest..."
+                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-xs focus:outline-none focus:border-blue-400 mb-2 bg-white"
+                />
+                {/* Dropdown */}
+                {occupiedRooms.length === 0 ? (
+                  <div className="text-xs text-red-500 bg-red-50 px-3 py-2 rounded-lg">
+                    ⚠️ Koi checked-in room nahi hai
+                  </div>
+                ) : (
+                  <select
+                    value={selectedRoom}
+                    onChange={(e) => setSelectedRoom(e.target.value)}
+                    className="w-full border border-gray-200 rounded-lg px-3 py-2 text-xs focus:outline-none focus:border-blue-400 bg-white"
+                  >
+                    <option value="">-- Room select karo --</option>
+                    {filteredRooms.map((r) => (
+                      <option key={r.id} value={r.id}>
+                        Room #{r.roomNumber} — {r.guestName}
+                      </option>
+                    ))}
+                  </select>
+                )}
+
+                {/* Selected room info */}
+                {selectedRoomData && (
+                  <div className="mt-2 bg-blue-50 border border-blue-100 rounded-lg px-3 py-2">
+                    <p className="text-xs font-semibold text-blue-700">🏨 Room #{selectedRoomData.roomNumber}</p>
+                    <p className="text-xs text-blue-600">{selectedRoomData.guestName}</p>
+                    <p className="text-xs text-gray-400 mt-0.5">
+                      {new Date(selectedRoomData.checkIn).toLocaleDateString("en-IN")} → {new Date(selectedRoomData.checkOut).toLocaleDateString("en-IN")}
+                    </p>
+                  </div>
+                )}
+              </div>
+
               {/* Items list */}
               <div className="flex-1 overflow-y-auto p-3">
                 {orderItems.length === 0 ? (
@@ -343,7 +425,6 @@ export default function RoomServicePage() {
                   </div>
                 ) : (
                   <div className="space-y-2">
-                    {/* Header */}
                     <div className="grid grid-cols-4 text-xs font-semibold text-gray-400 uppercase px-1">
                       <span className="col-span-2">Items</span>
                       <span className="text-center">Qty</span>
@@ -368,13 +449,10 @@ export default function RoomServicePage() {
 
               {/* Summary Footer */}
               <div className="p-4 border-t border-gray-100 space-y-3">
-                {/* Subtotal */}
                 <div className="flex justify-between text-sm text-gray-600">
                   <span>Subtotal</span>
                   <span className="font-medium">₹{subtotal}</span>
                 </div>
-
-                {/* Discount */}
                 <div className="flex items-center gap-2">
                   <span className="text-xs text-gray-500">Discount %</span>
                   <input
@@ -386,8 +464,6 @@ export default function RoomServicePage() {
                   />
                   {discount > 0 && <span className="text-xs text-red-500">-₹{discountAmount}</span>}
                 </div>
-
-                {/* Notes */}
                 <input
                   type="text"
                   value={notes}
@@ -395,8 +471,6 @@ export default function RoomServicePage() {
                   placeholder="✏️ Notes..."
                   className="w-full border border-gray-200 rounded-lg px-3 py-2 text-xs focus:outline-none focus:border-blue-400"
                 />
-
-                {/* Total */}
                 <div className="flex justify-between items-center">
                   <span className="text-sm font-bold text-gray-900">Total</span>
                   <span className="text-lg font-bold text-blue-600">₹{total}</span>
@@ -408,14 +482,8 @@ export default function RoomServicePage() {
                   <div className="flex gap-2">
                     {(["Cash", "Online", "Due"] as const).map((m) => (
                       <label key={m} className="flex items-center gap-1 cursor-pointer">
-                        <input
-                          type="radio"
-                          name="payment"
-                          value={m}
-                          checked={paymentMethod === m}
-                          onChange={() => setPaymentMethod(m)}
-                          className="accent-blue-600"
-                        />
+                        <input type="radio" name="payment" value={m} checked={paymentMethod === m}
+                          onChange={() => setPaymentMethod(m)} className="accent-blue-600" />
                         <span className="text-xs text-gray-600">{m}</span>
                       </label>
                     ))}
@@ -426,8 +494,9 @@ export default function RoomServicePage() {
                 <div className="space-y-2">
                   <button
                     onClick={() => {
+                      if (!selectedRoom) return alert("Pehle room select karo!");
                       if (orderItems.length === 0) return alert("Koi item add nahi kiya!");
-                      alert(`Order saved!\nTotal: ₹${total}\nPayment: ${paymentMethod}`);
+                      alert(`Order saved!\nRoom: #${selectedRoomData?.roomNumber}\nGuest: ${selectedRoomData?.guestName}\nTotal: ₹${total}\nPayment: ${paymentMethod}`);
                       setOrderItems([]);
                       setDiscount(0);
                       setNotes("");
@@ -438,8 +507,9 @@ export default function RoomServicePage() {
                   </button>
                   <button
                     onClick={() => {
+                      if (!selectedRoom) return alert("Pehle room select karo!");
                       if (orderItems.length === 0) return alert("Koi item add nahi kiya!");
-                      alert(`eBill generated!\nTotal: ₹${total}\nPayment: ${paymentMethod}`);
+                      alert(`eBill generated!\nRoom: #${selectedRoomData?.roomNumber}\nTotal: ₹${total}`);
                     }}
                     className="w-full bg-blue-600 text-white py-2 rounded-xl text-sm font-medium hover:bg-blue-700 transition-colors"
                   >
@@ -447,8 +517,9 @@ export default function RoomServicePage() {
                   </button>
                   <button
                     onClick={() => {
+                      if (!selectedRoom) return alert("Pehle room select karo!");
                       if (orderItems.length === 0) return alert("Koi item add nahi kiya!");
-                      alert(`KOT sent!\n${orderItems.map(o => `${o.item.name} x${o.qty}`).join('\n')}`);
+                      alert(`KOT sent!\nRoom: #${selectedRoomData?.roomNumber}\n${orderItems.map(o => `${o.item.name} x${o.qty}`).join('\n')}`);
                     }}
                     className="w-full bg-blue-700 text-white py-2 rounded-xl text-sm font-medium hover:bg-blue-800 transition-colors"
                   >
@@ -464,22 +535,17 @@ export default function RoomServicePage() {
         {activeView === "manage" && (
           <div>
             <div className="flex gap-3 mb-4">
-              <button
-                onClick={() => { setEditingCat(null); setCatForm({ name: "" }); setShowCatModal(true); }}
-                className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors"
-              >
+              <button onClick={() => { setEditingCat(null); setCatForm({ name: "" }); setShowCatModal(true); }}
+                className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors">
                 + Add Category
               </button>
-              <button
-                onClick={() => {
-                  if (categories.length === 0) return alert("Pehle ek category banao!");
-                  setEditingItem(null);
-                  setSelectedCatId(categories[0].id);
-                  setItemForm({ name: "", itemCategory: "", price: "", minBaseline: "", stock: "" });
-                  setShowItemModal(true);
-                }}
-                className="bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-green-700 transition-colors"
-              >
+              <button onClick={() => {
+                if (categories.length === 0) return alert("Pehle ek category banao!");
+                setEditingItem(null);
+                setSelectedCatId(categories[0].id);
+                setItemForm({ name: "", itemCategory: "", price: "", minBaseline: "", stock: "" });
+                setShowItemModal(true);
+              }} className="bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-green-700 transition-colors">
                 + Add Item
               </button>
             </div>
@@ -531,15 +597,15 @@ export default function RoomServicePage() {
                           <td className="px-4 py-3">
                             <div className="flex items-center gap-2">
                               <button onClick={() => { setViewingItem(item); setShowViewModal(true); }}
-                                className="p-1.5 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-600" title="View">👁️</button>
+                                className="p-1.5 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-600">👁️</button>
                               <button onClick={() => {
                                 setEditingItem(item);
                                 setItemForm({ name: item.name, itemCategory: item.itemCategory, price: String(item.price), minBaseline: String(item.minBaseline), stock: String(item.stock) });
                                 setSelectedCatId(item.categoryId);
                                 setShowItemModal(true);
-                              }} className="p-1.5 rounded-lg bg-blue-50 hover:bg-blue-100 text-blue-600" title="Edit">✏️</button>
+                              }} className="p-1.5 rounded-lg bg-blue-50 hover:bg-blue-100 text-blue-600">✏️</button>
                               <button onClick={() => handleDeleteItem(item.id)}
-                                className="p-1.5 rounded-lg bg-red-50 hover:bg-red-100 text-red-600" title="Delete">🗑️</button>
+                                className="p-1.5 rounded-lg bg-red-50 hover:bg-red-100 text-red-600">🗑️</button>
                             </div>
                           </td>
                         </tr>
@@ -547,8 +613,6 @@ export default function RoomServicePage() {
                     </tbody>
                   </table>
                 </div>
-
-                {/* Categories chips */}
                 <div className="border-t border-gray-100 p-4">
                   <p className="text-xs font-semibold text-gray-500 uppercase mb-3">Categories</p>
                   <div className="flex flex-wrap gap-2">
@@ -578,13 +642,15 @@ export default function RoomServicePage() {
             <div className="mb-4">
               <label className="text-sm font-medium text-gray-700 block mb-1">Category Name</label>
               <input type="text" value={catForm.name} onChange={(e) => setCatForm({ name: e.target.value })}
-                placeholder="e.g. Mocktails, Starters" className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-blue-500" />
+                placeholder="e.g. Mocktails, Starters"
+                className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-blue-500" />
             </div>
             <div className="flex gap-3">
               <button onClick={handleSaveCategory} className="flex-1 bg-blue-600 text-white py-2.5 rounded-xl font-medium hover:bg-blue-700">
                 {editingCat ? "Update" : "Add Category"}
               </button>
-              <button onClick={() => { setShowCatModal(false); setEditingCat(null); }} className="flex-1 border border-gray-200 text-gray-600 py-2.5 rounded-xl font-medium hover:bg-gray-50">
+              <button onClick={() => { setShowCatModal(false); setEditingCat(null); }}
+                className="flex-1 border border-gray-200 text-gray-600 py-2.5 rounded-xl font-medium hover:bg-gray-50">
                 Cancel
               </button>
             </div>
@@ -608,28 +674,33 @@ export default function RoomServicePage() {
               <div>
                 <label className="text-sm font-medium text-gray-700 block mb-1">Item Category</label>
                 <input type="text" value={itemForm.itemCategory} onChange={(e) => setItemForm({ ...itemForm, itemCategory: e.target.value })}
-                  placeholder="e.g. Food, Drinks" className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-blue-500" />
+                  placeholder="e.g. Food, Drinks"
+                  className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-blue-500" />
               </div>
               <div>
                 <label className="text-sm font-medium text-gray-700 block mb-1">Item Name</label>
                 <input type="text" value={itemForm.name} onChange={(e) => setItemForm({ ...itemForm, name: e.target.value })}
-                  placeholder="e.g. Blue Lagoon" className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-blue-500" />
+                  placeholder="e.g. Blue Lagoon"
+                  className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-blue-500" />
               </div>
               <div>
                 <label className="text-sm font-medium text-gray-700 block mb-1">Price (₹)</label>
                 <input type="number" value={itemForm.price} onChange={(e) => setItemForm({ ...itemForm, price: e.target.value })}
-                  placeholder="250" className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-blue-500" />
+                  placeholder="250"
+                  className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-blue-500" />
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="text-sm font-medium text-gray-700 block mb-1">Min Baseline</label>
                   <input type="number" value={itemForm.minBaseline} onChange={(e) => setItemForm({ ...itemForm, minBaseline: e.target.value })}
-                    placeholder="5" className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-blue-500" />
+                    placeholder="5"
+                    className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-blue-500" />
                 </div>
                 <div>
                   <label className="text-sm font-medium text-gray-700 block mb-1">Stock</label>
                   <input type="number" value={itemForm.stock} onChange={(e) => setItemForm({ ...itemForm, stock: e.target.value })}
-                    placeholder="20" className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-blue-500" />
+                    placeholder="20"
+                    className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-blue-500" />
                 </div>
               </div>
             </div>
@@ -637,7 +708,8 @@ export default function RoomServicePage() {
               <button onClick={handleSaveItem} className="flex-1 bg-green-600 text-white py-2.5 rounded-xl font-medium hover:bg-green-700">
                 {editingItem ? "Update Item" : "Add Item"}
               </button>
-              <button onClick={() => { setShowItemModal(false); setEditingItem(null); }} className="flex-1 border border-gray-200 text-gray-600 py-2.5 rounded-xl font-medium hover:bg-gray-50">
+              <button onClick={() => { setShowItemModal(false); setEditingItem(null); }}
+                className="flex-1 border border-gray-200 text-gray-600 py-2.5 rounded-xl font-medium hover:bg-gray-50">
                 Cancel
               </button>
             </div>
@@ -666,7 +738,8 @@ export default function RoomServicePage() {
                 </div>
               ))}
             </div>
-            <button onClick={() => setShowViewModal(false)} className="w-full mt-4 border border-gray-200 text-gray-600 py-2.5 rounded-xl font-medium hover:bg-gray-50">
+            <button onClick={() => setShowViewModal(false)}
+              className="w-full mt-4 border border-gray-200 text-gray-600 py-2.5 rounded-xl font-medium hover:bg-gray-50">
               Close
             </button>
           </div>
