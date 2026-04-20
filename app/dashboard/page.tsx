@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { Toast } from "@/components/Toast";
 import { useToast } from "@/components/useToast";
@@ -19,9 +19,19 @@ export default function Dashboard() {
   const [recentBookings, setRecentBookings] = useState<any[]>([]);
   const [availableRooms, setAvailableRooms] = useState<any[]>([]);
   const [activeFilter, setActiveFilter] = useState<"recent" | "all" | "checkin" | "checkout" | "rooms">("recent");
+  const [openActionId, setOpenActionId] = useState<string | null>(null);
+  const actionRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => { fetchStats(); }, []);
 
   useEffect(() => {
-    fetchStats();
+    const handleClick = (e: MouseEvent) => {
+      if (actionRef.current && !actionRef.current.contains(e.target as Node)) {
+        setOpenActionId(null);
+      }
+    };
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
   }, []);
 
   const fetchStats = async () => {
@@ -50,13 +60,6 @@ export default function Dashboard() {
           new Date(b.checkOut).toDateString() === today
         ).length || 0;
 
-        // Unavailable rooms:
-        // 1. CONFIRMED — guest aane wala hai (aaj ya future checkIn)
-        // 2. CHECKED_IN — guest abhi andar hai
-        // Available rooms:
-        // 1. CANCELLED — booking cancel, room free
-        // 2. CHECKED_OUT — guest ja chuka (status manually change hua)
-        // 3. Koi booking nahi
         const unavailableRoomIds = new Set(
           bookingsData.bookings
             ?.filter((b: any) => {
@@ -75,20 +78,37 @@ export default function Dashboard() {
         ) || [];
 
         setAvailableRooms(available);
-
         setStats({
-          totalRooms: available.length, // Available rooms count dikhayenge
+          totalRooms: available.length,
           totalBookings: bookingsData.bookings?.length || 0,
           checkInsToday,
           checkOutsToday,
         });
-
         setAllBookings(bookingsData.bookings || []);
         setRecentBookings(bookingsData.bookings?.slice(0, 8) || []);
       }
     } catch (error) {
       showToast("Data load nahi ho saka!", "error");
     }
+  };
+
+  const handleStatusChange = async (bookingId: string, newStatus: string) => {
+    try {
+      const res = await fetch("/api/bookings", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: bookingId, status: newStatus }),
+      });
+      if (res.ok) {
+        showToast(`Status "${newStatus}" ho gaya! ✅`, "success");
+        fetchStats();
+      } else {
+        showToast("Status update nahi ho saka!", "error");
+      }
+    } catch {
+      showToast("Kuch galat hua!", "error");
+    }
+    setOpenActionId(null);
   };
 
   const today = new Date().toDateString();
@@ -109,12 +129,172 @@ export default function Dashboard() {
 
   const filteredBookings = getFilteredBookings();
 
-  // Group available rooms by type
   const groupedAvailableRooms = availableRooms.reduce((acc: any, room: any) => {
     if (!acc[room.type]) acc[room.type] = [];
     acc[room.type].push(room);
     return acc;
   }, {});
+
+  const statusColors: Record<string, string> = {
+    CONFIRMED: "bg-green-100 text-green-700",
+    CANCELLED: "bg-red-100 text-red-700",
+    CHECKED_IN: "bg-blue-100 text-blue-700",
+    CHECKED_OUT: "bg-gray-100 text-gray-600",
+    PENDING: "bg-yellow-100 text-yellow-700",
+    UPGRADED: "bg-purple-100 text-purple-700",
+  };
+
+  const sourceLabel: Record<string, string> = {
+    WALK_IN: "🚶 Walk-in",
+    BOOKING_COM: "🌐 Booking.com",
+    MAKEMYTRIP: "✈️ MakeMyTrip",
+    GOOGLE_HOTEL_CENTRE: "🔍 GHC",
+    EXPEDIA: "🌍 Expedia",
+    AGODA: "🏨 Agoda",
+    PHONE: "📞 Phone",
+    OTHER: "📋 Other",
+  };
+
+  const actionOptions = [
+    { value: "CHECKED_IN", label: "✅ Check-in", color: "text-blue-600" },
+    { value: "CHECKED_OUT", label: "🚪 Check-out", color: "text-orange-600" },
+    { value: "CANCELLED", label: "❌ Cancel", color: "text-red-600" },
+    { value: "UPGRADED", label: "⬆️ Upgrade", color: "text-purple-600" },
+  ];
+
+  // Booking Table Component (reusable)
+  const BookingTable = () => (
+    <div className="overflow-x-auto">
+      <table className="w-full min-w-[1100px]">
+        <thead className="bg-gray-50">
+          <tr>
+            <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase">Booking ID</th>
+            <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase">Guest Name</th>
+            <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase">Guests</th>
+            <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase">Room</th>
+            <th className={`text-left px-4 py-3 text-xs font-semibold uppercase ${activeFilter === "checkin" ? "text-green-600" : "text-gray-500"}`}>Check-in</th>
+            <th className={`text-left px-4 py-3 text-xs font-semibold uppercase ${activeFilter === "checkout" ? "text-red-500" : "text-gray-500"}`}>Check-out</th>
+            <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase">Amount</th>
+            <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase">Payment</th>
+            <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase">Source</th>
+            <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase">Status</th>
+            <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase">Action</th>
+          </tr>
+        </thead>
+        <tbody className="divide-y divide-gray-50">
+          {filteredBookings.map((booking) => {
+            const isCheckInToday = new Date(booking.checkIn).toDateString() === today;
+            const isCheckOutToday = new Date(booking.checkOut).toDateString() === today;
+            const paymentPaid = booking.paymentAmount || 0;
+            const totalAmount = parseFloat(booking.amount) || 0;
+            const isDue = paymentPaid < totalAmount;
+
+            return (
+              <tr key={booking.id} className="hover:bg-gray-50 transition-colors">
+                {/* Booking ID */}
+                <td className="px-4 py-3">
+                  <span className="text-xs font-mono bg-gray-100 text-gray-600 px-2 py-1 rounded">
+                    #{booking.id?.slice(0, 8).toUpperCase()}
+                  </span>
+                </td>
+
+                {/* Guest Name */}
+                <td className="px-4 py-3">
+                  <p className="text-sm font-medium text-gray-900">{booking.guestName}</p>
+                  <p className="text-xs text-gray-400">{booking.guestEmail}</p>
+                </td>
+
+                {/* Guests */}
+                <td className="px-4 py-3">
+                  <p className="text-xs text-gray-700">👤 {booking.adults || 1} Adult{(booking.adults || 1) > 1 ? "s" : ""}</p>
+                  {(booking.children || 0) > 0 && (
+                    <p className="text-xs text-gray-500">🧒 {booking.children} Child</p>
+                  )}
+                </td>
+
+                {/* Room */}
+                <td className="px-4 py-3">
+                  <p className="text-sm font-medium text-gray-900">#{booking.roomNumber}</p>
+                  <p className="text-xs text-gray-400">{booking.roomType}</p>
+                </td>
+
+                {/* Check-in */}
+                <td className={`px-4 py-3 ${activeFilter === "checkin" ? "bg-green-50" : ""}`}>
+                  <p className={`text-sm font-medium ${activeFilter === "checkin" ? "text-green-700" : "text-gray-700"}`}>
+                    {new Date(booking.checkIn).toLocaleDateString("en-IN")}
+                  </p>
+                  {isCheckInToday && activeFilter !== "checkin" && (
+                    <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-medium">Today</span>
+                  )}
+                </td>
+
+                {/* Check-out */}
+                <td className={`px-4 py-3 ${activeFilter === "checkout" ? "bg-red-50" : ""}`}>
+                  <p className={`text-sm font-medium ${activeFilter === "checkout" ? "text-red-600" : "text-gray-700"}`}>
+                    {new Date(booking.checkOut).toLocaleDateString("en-IN")}
+                  </p>
+                  {isCheckOutToday && activeFilter !== "checkout" && (
+                    <span className="text-xs bg-orange-100 text-orange-700 px-2 py-0.5 rounded-full font-medium">Today</span>
+                  )}
+                </td>
+
+                {/* Amount */}
+                <td className="px-4 py-3">
+                  <p className="text-sm font-semibold text-gray-900">₹{booking.amount}</p>
+                </td>
+
+                {/* Payment */}
+                <td className="px-4 py-3">
+                  {isDue ? (
+                    <span className="text-xs bg-red-100 text-red-700 px-2 py-1 rounded-full font-medium">Due</span>
+                  ) : (
+                    <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full font-medium">Paid</span>
+                  )}
+                </td>
+
+                {/* Source */}
+                <td className="px-4 py-3">
+                  <span className="text-xs text-gray-600">{sourceLabel[booking.source] || "🚶 Walk-in"}</span>
+                </td>
+
+                {/* Status */}
+                <td className="px-4 py-3">
+                  <span className={`text-xs px-2 py-1 rounded-full font-medium ${statusColors[booking.status] || "bg-gray-100 text-gray-600"}`}>
+                    {booking.status}
+                  </span>
+                </td>
+
+                {/* Action Dropdown */}
+                <td className="px-4 py-3 relative">
+                  <div ref={openActionId === booking.id ? actionRef : null}>
+                    <button
+                      onClick={() => setOpenActionId(openActionId === booking.id ? null : booking.id)}
+                      className="bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors"
+                    >
+                      Action ▾
+                    </button>
+                    {openActionId === booking.id && (
+                      <div className="absolute right-0 top-10 z-50 bg-white border border-gray-200 rounded-xl shadow-lg w-40 overflow-hidden">
+                        {actionOptions.map((opt) => (
+                          <button
+                            key={opt.value}
+                            onClick={() => handleStatusChange(booking.id, opt.value)}
+                            className={`w-full text-left px-4 py-2.5 text-sm hover:bg-gray-50 transition-colors ${opt.color} ${booking.status === opt.value ? "bg-gray-50 font-semibold" : ""}`}
+                          >
+                            {opt.label}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
+    </div>
+  );
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -140,24 +320,20 @@ export default function Dashboard() {
           <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100">
             <h2 className="text-base font-bold text-gray-900 mb-4">Bookings Dashboard</h2>
 
-            {/* Row 1 — 3 clickable stats */}
             <div className="grid grid-cols-3 gap-3 mb-3">
-              <div
-                onClick={() => setActiveFilter("all")}
+              <div onClick={() => setActiveFilter("all")}
                 className={`rounded-xl p-4 border cursor-pointer transition-all ${activeFilter === "all" ? "bg-blue-50 border-blue-300 shadow-sm" : "bg-gray-50 border-gray-100 hover:bg-blue-50 hover:border-blue-200"}`}>
                 <div className="text-2xl mb-1">📋</div>
                 <div className="text-xl font-bold text-gray-900">{stats.totalBookings}</div>
                 <div className="text-gray-500 text-xs">Total Bookings</div>
               </div>
-              <div
-                onClick={() => setActiveFilter("checkin")}
+              <div onClick={() => setActiveFilter("checkin")}
                 className={`rounded-xl p-4 border cursor-pointer transition-all ${activeFilter === "checkin" ? "bg-green-50 border-green-300 shadow-sm" : "bg-gray-50 border-gray-100 hover:bg-green-50 hover:border-green-200"}`}>
                 <div className="text-2xl mb-1">🏨</div>
                 <div className="text-xl font-bold text-green-600">{stats.checkInsToday}</div>
                 <div className="text-gray-500 text-xs">Today's Check-ins</div>
               </div>
-              <div
-                onClick={() => setActiveFilter("checkout")}
+              <div onClick={() => setActiveFilter("checkout")}
                 className={`rounded-xl p-4 border cursor-pointer transition-all ${activeFilter === "checkout" ? "bg-red-50 border-red-300 shadow-sm" : "bg-gray-50 border-gray-100 hover:bg-red-50 hover:border-red-200"}`}>
                 <div className="text-2xl mb-1">🚪</div>
                 <div className="text-xl font-bold text-orange-500">{stats.checkOutsToday}</div>
@@ -165,17 +341,14 @@ export default function Dashboard() {
               </div>
             </div>
 
-            {/* Row 2 — Available Rooms (clickable) + Room Service + Housekeeping */}
             <div className="grid grid-cols-3 gap-3">
-              <div
-                onClick={() => setActiveFilter("rooms")}
+              <div onClick={() => setActiveFilter("rooms")}
                 className={`rounded-xl p-4 border cursor-pointer transition-all ${activeFilter === "rooms" ? "bg-indigo-50 border-indigo-300 shadow-sm" : "bg-gray-50 border-gray-100 hover:bg-indigo-50 hover:border-indigo-200"}`}>
                 <div className="text-2xl mb-1">🛏️</div>
                 <div className="text-xl font-bold text-indigo-600">{availableRooms.length}</div>
                 <div className="text-gray-500 text-xs">Available Rooms</div>
               </div>
-              <div
-                onClick={() => router.push("/dashboard/room-service")}
+              <div onClick={() => router.push("/dashboard/room-service")}
                 className="bg-gray-50 rounded-xl p-4 border border-gray-100 cursor-pointer hover:bg-yellow-50 hover:border-yellow-200 transition-all">
                 <div className="text-2xl mb-1">🍽️</div>
                 <div className="text-sm font-bold text-yellow-600">Active</div>
@@ -188,7 +361,6 @@ export default function Dashboard() {
               </div>
             </div>
 
-            {/* Row 3 — Inventory */}
             <div className="grid grid-cols-3 gap-3 mt-3">
               <div className="bg-gray-50 rounded-xl p-4 border border-gray-100">
                 <div className="text-2xl mb-1">📦</div>
@@ -241,26 +413,20 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* BOTTOM — Available Rooms OR Bookings Table */}
+        {/* BOTTOM */}
         {activeFilter === "rooms" ? (
           <div className="bg-white rounded-2xl p-4 md:p-6 shadow-sm border border-gray-100">
             <div className="flex items-center justify-between mb-6">
-              <h2 className="text-base font-bold text-gray-900">
-                Available Rooms ({availableRooms.length})
-              </h2>
-              <button
-                onClick={() => setActiveFilter("recent")}
-                className="text-xs bg-gray-100 text-gray-600 px-3 py-1.5 rounded-lg hover:bg-gray-200 transition-colors font-medium"
-              >
+              <h2 className="text-base font-bold text-gray-900">Available Rooms ({availableRooms.length})</h2>
+              <button onClick={() => setActiveFilter("recent")}
+                className="text-xs bg-gray-100 text-gray-600 px-3 py-1.5 rounded-lg hover:bg-gray-200 font-medium">
                 ← Back
               </button>
             </div>
-
             {availableRooms.length === 0 ? (
               <div className="text-center py-12 text-gray-400">
                 <div className="text-5xl mb-3">🛏️</div>
                 <p className="font-medium">Koi room available nahi hai</p>
-                <p className="text-sm mt-1">Sabhi rooms booked hain!</p>
               </div>
             ) : (
               <div className="space-y-6">
@@ -268,14 +434,11 @@ export default function Dashboard() {
                   <div key={type}>
                     <div className="flex items-center gap-2 mb-3">
                       <span className="text-sm font-semibold text-gray-700">{type}</span>
-                      <span className="bg-indigo-100 text-indigo-700 text-xs font-bold px-2 py-0.5 rounded-full">
-                        {rooms.length} Available
-                      </span>
+                      <span className="bg-indigo-100 text-indigo-700 text-xs font-bold px-2 py-0.5 rounded-full">{rooms.length} Available</span>
                     </div>
                     <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-3">
                       {rooms.map((room: any) => (
-                        <div key={room.id}
-                          className="bg-green-50 border border-green-200 rounded-xl p-3 text-center hover:bg-green-100 transition-colors">
+                        <div key={room.id} className="bg-green-50 border border-green-200 rounded-xl p-3 text-center hover:bg-green-100 transition-colors">
                           <div className="text-lg mb-1">🛏️</div>
                           <div className="text-sm font-bold text-gray-800">#{room.number}</div>
                           <div className="text-xs text-gray-500 mt-0.5">{room.type}</div>
@@ -294,17 +457,13 @@ export default function Dashboard() {
               <h2 className="text-base font-bold text-gray-900">{getTableTitle()}</h2>
               <div className="flex gap-2">
                 {activeFilter !== "recent" && (
-                  <button
-                    onClick={() => setActiveFilter("recent")}
-                    className="text-xs bg-gray-100 text-gray-600 px-3 py-1.5 rounded-lg hover:bg-gray-200 transition-colors font-medium"
-                  >
+                  <button onClick={() => setActiveFilter("recent")}
+                    className="text-xs bg-gray-100 text-gray-600 px-3 py-1.5 rounded-lg hover:bg-gray-200 font-medium">
                     ← Back
                   </button>
                 )}
-                <button
-                  onClick={() => router.push("/dashboard/bookings")}
-                  className="text-sm text-blue-600 hover:text-blue-800 font-medium"
-                >
+                <button onClick={() => router.push("/dashboard/bookings")}
+                  className="text-sm text-blue-600 hover:text-blue-800 font-medium">
                   View All →
                 </button>
               </div>
@@ -316,99 +475,13 @@ export default function Dashboard() {
                 <p>Koi booking nahi mili</p>
               </div>
             ) : (
-              <div className="overflow-x-auto">
-                <table className="w-full min-w-[900px]">
-                  <thead className="bg-gray-50">
-                    <tr>
-                      <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Booking ID</th>
-                      <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Guest Name</th>
-                      <th className={`text-left px-4 py-3 text-xs font-semibold uppercase tracking-wider ${activeFilter === "checkin" ? "text-green-600" : "text-gray-500"}`}>Check-in</th>
-                      <th className={`text-left px-4 py-3 text-xs font-semibold uppercase tracking-wider ${activeFilter === "checkout" ? "text-red-500" : "text-gray-500"}`}>Check-out</th>
-                      <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Amount</th>
-                      <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Payment</th>
-                      <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Status</th>
-                      <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Action</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-gray-50">
-                    {filteredBookings.map((booking) => {
-                      const isCheckInToday = new Date(booking.checkIn).toDateString() === today;
-                      const isCheckOutToday = new Date(booking.checkOut).toDateString() === today;
-                      const paymentPaid = booking.paymentAmount || 0;
-                      const totalAmount = parseFloat(booking.amount) || 0;
-                      const isDue = paymentPaid < totalAmount;
-
-                      return (
-                        <tr key={booking.id} className="hover:bg-gray-50 transition-colors">
-                          <td className="px-4 py-3">
-                            <span className="text-xs font-mono bg-gray-100 text-gray-600 px-2 py-1 rounded">
-                              #{booking.id?.slice(0, 8).toUpperCase()}
-                            </span>
-                          </td>
-                          <td className="px-4 py-3">
-                            <p className="text-sm font-medium text-gray-900">{booking.guestName}</p>
-                            <p className="text-xs text-gray-400">{booking.guestEmail}</p>
-                          </td>
-                          <td className={`px-4 py-3 ${activeFilter === "checkin" ? "bg-green-50" : ""}`}>
-                            <p className={`text-sm font-medium ${activeFilter === "checkin" ? "text-green-700" : "text-gray-700"}`}>
-                              {new Date(booking.checkIn).toLocaleDateString("en-IN")}
-                            </p>
-                            {isCheckInToday && activeFilter !== "checkin" && (
-                              <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-medium">Today</span>
-                            )}
-                          </td>
-                          <td className={`px-4 py-3 ${activeFilter === "checkout" ? "bg-red-50" : ""}`}>
-                            <p className={`text-sm font-medium ${activeFilter === "checkout" ? "text-red-600" : "text-gray-700"}`}>
-                              {new Date(booking.checkOut).toLocaleDateString("en-IN")}
-                            </p>
-                            {isCheckOutToday && activeFilter !== "checkout" && (
-                              <span className="text-xs bg-orange-100 text-orange-700 px-2 py-0.5 rounded-full font-medium">Today</span>
-                            )}
-                          </td>
-                          <td className="px-4 py-3">
-                            <p className="text-sm font-semibold text-gray-900">₹{booking.amount}</p>
-                          </td>
-                          <td className="px-4 py-3">
-                            {isDue ? (
-                              <span className="text-xs bg-red-100 text-red-700 px-2 py-1 rounded-full font-medium">Due</span>
-                            ) : (
-                              <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full font-medium">Paid</span>
-                            )}
-                          </td>
-                          <td className="px-4 py-3">
-                            <span className={`text-xs px-2 py-1 rounded-full font-medium ${
-                              booking.status === "CONFIRMED" ? "bg-green-100 text-green-700"
-                              : booking.status === "CHECKED_IN" ? "bg-blue-100 text-blue-700"
-                              : booking.status === "CHECKED_OUT" ? "bg-gray-100 text-gray-600"
-                              : booking.status === "CANCELLED" ? "bg-red-100 text-red-700"
-                              : "bg-yellow-100 text-yellow-700"
-                            }`}>
-                              {booking.status}
-                            </span>
-                          </td>
-                          <td className="px-4 py-3">
-                            <button
-                              onClick={() => router.push("/dashboard/bookings")}
-                              className="text-xs bg-blue-600 text-white px-3 py-1.5 rounded-lg hover:bg-blue-700 transition-colors font-medium"
-                            >
-                              View
-                            </button>
-                          </td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-              </div>
+              <BookingTable />
             )}
           </div>
         )}
-
       </div>
 
-      {toast && (
-        <Toast message={toast.message} type={toast.type} onClose={hideToast} />
-      )}
+      {toast && <Toast message={toast.message} type={toast.type} onClose={hideToast} />}
     </div>
   );
 }
