@@ -159,7 +159,6 @@ export default function BookingsPage() {
           children: parseInt(form.children) || 0,
           infants: parseInt(form.infants) || 0,
           source: "WALK_IN",
-          source: "WALK_IN",
           guestPhone: form.guestPhone ? `${form.countryCode || "+91"} ${form.guestPhone}` : null,
         }),
       });
