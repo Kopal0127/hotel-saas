@@ -163,29 +163,7 @@ export default function RoomsPage() {
           <div className="bg-white rounded-2xl p-4 md:p-6 shadow-sm border border-gray-100 mb-6 md:mb-8">
             <h3 className="text-lg font-semibold text-gray-900 mb-4">Naya Room Add Karo</h3>
 
-            {/* Tabs */}
-            <div className="flex border-b border-gray-200 mb-6">
-              <button
-                onClick={() => setActiveTab("details")}
-                className={`px-6 py-3 text-sm font-medium transition-colors ${
-                  activeTab === "details"
-                    ? "text-blue-600 border-b-2 border-blue-600"
-                    : "text-gray-500 hover:text-gray-700"
-                }`}>
-                Room Details
-              </button>
-              <button
-                onClick={() => setActiveTab("other")}
-                className={`px-6 py-3 text-sm font-medium transition-colors ${
-                  activeTab === "other"
-                    ? "text-blue-600 border-b-2 border-blue-600"
-                    : "text-gray-500 hover:text-gray-700"
-                }`}>
-                Other Details
-              </button>
-            </div>
-
-            {/* Room Details Tab */}
+                    {/* Room Details Tab */}
             {activeTab === "details" && (
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
 
@@ -298,85 +276,12 @@ export default function RoomsPage() {
               </div>
             )}
 
-            {/* Other Details Tab */}
-            {activeTab === "other" && (
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div>
-                  <label className="text-sm font-medium text-gray-700 mb-1 block">
-                    <span className="text-red-500">*</span> Max Adults
-                  </label>
-                  <input type="number" min="1" placeholder="2" value={form.maxAdults}
-                    onChange={(e) => setForm({ ...form, maxAdults: e.target.value })}
-                    className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-blue-500" />
-                  <p className="text-xs text-gray-400 mt-1">Room mein maximum kitne adults reh sakte hain</p>
-                </div>
-
-                <div>
-                  <label className="text-sm font-medium text-gray-700 mb-1 block">
-                    <span className="text-red-500">*</span> Max Children
-                  </label>
-                  <input type="number" min="0" placeholder="2" value={form.maxChildren}
-                    onChange={(e) => setForm({ ...form, maxChildren: e.target.value })}
-                    className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-blue-500" />
-                  <p className="text-xs text-gray-400 mt-1">Room mein maximum kitne children reh sakte hain</p>
-                </div>
-
-                <div>
-                  <label className="text-sm font-medium text-gray-700 mb-1 block">
-                    <span className="text-red-500">*</span> Max Infants
-                  </label>
-                  <input type="number" min="0" placeholder="1" value={form.maxInfants}
-                    onChange={(e) => setForm({ ...form, maxInfants: e.target.value })}
-                    className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-blue-500" />
-                  <p className="text-xs text-gray-400 mt-1">Room mein maximum kitne infants reh sakte hain</p>
-                </div>
-
-                <div className="md:col-span-3 bg-blue-50 rounded-xl p-4 mt-2">
-                  <p className="text-sm font-semibold text-blue-900 mb-2">📋 Summary</p>
-                  <div className="grid grid-cols-3 gap-4 text-sm">
-                    <div>
-                      <p className="text-xs text-blue-600">Default Stay</p>
-                      <p className="text-gray-700">👤 {form.defaultAdultStay || 0} Adult / 🧒 {form.defaultChildStay || 0} Child / 👶 {form.defaultInfantStay || 0} Infant</p>
-                    </div>
-                    <div>
-                      <p className="text-xs text-blue-600">Max Capacity</p>
-                      <p className="text-gray-700">👤 {form.maxAdults || 0} Adult / 🧒 {form.maxChildren || 0} Child / 👶 {form.maxInfants || 0} Infant</p>
-                    </div>
-                    <div>
-                      <p className="text-xs text-blue-600">Extra Rates</p>
-                      <p className="text-gray-700">₹{form.extraAdultRate || 0} / ₹{form.extraChildRate || 0} / ₹{form.extraInfantRate || 0}</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            <div className="flex gap-3 mt-6">
-              {activeTab === "details" && (
-                <>
-                  <button onClick={() => setActiveTab("other")}
-                    className="bg-blue-600 text-white px-6 py-2 rounded-lg text-sm hover:bg-blue-700">
-                    Next →
-                  </button>
-                  <button onClick={handleSubmit} disabled={loading}
-                    className="bg-green-600 text-white px-6 py-2 rounded-lg text-sm hover:bg-green-700 disabled:opacity-50">
-                    {loading ? "Adding..." : "Save Rooms"}
-                  </button>
-                </>
-              )}
-              {activeTab === "other" && (
-                <>
-                  <button onClick={() => setActiveTab("details")}
-                    className="bg-gray-100 text-gray-600 px-6 py-2 rounded-lg text-sm hover:bg-gray-200">
-                    ← Back
-                  </button>
-                  <button onClick={handleSubmit} disabled={loading}
-                    className="bg-green-600 text-white px-6 py-2 rounded-lg text-sm hover:bg-green-700 disabled:opacity-50">
-                    {loading ? "Adding..." : "Save Rooms"}
-                  </button>
-                </>
-              )}
-              <button onClick={() => { setShowForm(false); setActiveTab("details"); }}
+                       <div className="flex gap-3 mt-6">
+              <button onClick={handleSubmit} disabled={loading}
+                className="bg-green-600 text-white px-6 py-2 rounded-lg text-sm hover:bg-green-700 disabled:opacity-50">
+                {loading ? "Adding..." : "Save Rooms"}
+              </button>
+              <button onClick={() => setShowForm(false)}
                 className="bg-gray-100 text-gray-600 px-6 py-2 rounded-lg text-sm hover:bg-gray-200">
                 Cancel
               </button>
