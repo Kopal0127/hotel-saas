@@ -33,8 +33,7 @@ export default function BookingsPage() {
     paymentMode: "CASH", paymentAmount: "",
     finalPaymentMode: "", finalPaymentAmount: "",
     adults: "1", children: "0",
-    source: "WALK_IN",// Always WALK_IN for software bookings
-    guestPhone: form.guestPhone || null,
+    source: "WALK_IN",
     guestPhone: "", 
   });
 
