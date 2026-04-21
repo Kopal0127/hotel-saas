@@ -41,6 +41,32 @@ export async function POST(req: NextRequest) {
     if (!roomId || !guestName || !guestEmail || !checkIn || !checkOut || !amount) {
       return NextResponse.json({ error: "Sab fields bharo!" }, { status: 400 });
     }
+    
+    // ✅ Check 0: Room max capacity check
+    const roomData = await prisma.room.findUnique({
+      where: { id: roomId },
+    });
+
+    if (!roomData) {
+      return NextResponse.json({ error: "Room nahi mila!" }, { status: 400 });
+    }
+
+    const adultsCount = parseInt(adults) || 1;
+    const childrenCount = parseInt(children) || 0;
+    const maxAdults = roomData.maxAdults || 2;
+    const maxChildren = roomData.maxChildren || 0;
+
+    if (adultsCount > maxAdults) {
+      return NextResponse.json({
+        error: `Is room mein maximum ${maxAdults} adult allowed hain, aapne ${adultsCount} daale hain!`
+      }, { status: 400 });
+    }
+
+    if (childrenCount > maxChildren) {
+      return NextResponse.json({
+        error: `Is room mein maximum ${maxChildren} children allowed hain, aapne ${childrenCount} daale hain!`
+      }, { status: 400 });
+    }
 
     // ✅ Check 1: Room blocked hai ya nahi Rates & Availability mein
     const checkInDate = new Date(checkIn);

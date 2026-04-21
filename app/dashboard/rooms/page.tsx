@@ -300,9 +300,54 @@ export default function RoomsPage() {
 
             {/* Other Details Tab */}
             {activeTab === "other" && (
-              <div className="text-center py-12 text-gray-400">
-                <div className="text-4xl mb-3">⚙️</div>
-                <p>Other Details section coming soon...</p>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                  <label className="text-sm font-medium text-gray-700 mb-1 block">
+                    <span className="text-red-500">*</span> Max Adults
+                  </label>
+                  <input type="number" min="1" placeholder="2" value={form.maxAdults}
+                    onChange={(e) => setForm({ ...form, maxAdults: e.target.value })}
+                    className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-blue-500" />
+                  <p className="text-xs text-gray-400 mt-1">Room mein maximum kitne adults reh sakte hain</p>
+                </div>
+
+                <div>
+                  <label className="text-sm font-medium text-gray-700 mb-1 block">
+                    <span className="text-red-500">*</span> Max Children
+                  </label>
+                  <input type="number" min="0" placeholder="2" value={form.maxChildren}
+                    onChange={(e) => setForm({ ...form, maxChildren: e.target.value })}
+                    className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-blue-500" />
+                  <p className="text-xs text-gray-400 mt-1">Room mein maximum kitne children reh sakte hain</p>
+                </div>
+
+                <div>
+                  <label className="text-sm font-medium text-gray-700 mb-1 block">
+                    <span className="text-red-500">*</span> Max Infants
+                  </label>
+                  <input type="number" min="0" placeholder="1" value={form.maxInfants}
+                    onChange={(e) => setForm({ ...form, maxInfants: e.target.value })}
+                    className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-blue-500" />
+                  <p className="text-xs text-gray-400 mt-1">Room mein maximum kitne infants reh sakte hain</p>
+                </div>
+
+                <div className="md:col-span-3 bg-blue-50 rounded-xl p-4 mt-2">
+                  <p className="text-sm font-semibold text-blue-900 mb-2">📋 Summary</p>
+                  <div className="grid grid-cols-3 gap-4 text-sm">
+                    <div>
+                      <p className="text-xs text-blue-600">Default Stay</p>
+                      <p className="text-gray-700">👤 {form.defaultAdultStay || 0} Adult / 🧒 {form.defaultChildStay || 0} Child / 👶 {form.defaultInfantStay || 0} Infant</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-blue-600">Max Capacity</p>
+                      <p className="text-gray-700">👤 {form.maxAdults || 0} Adult / 🧒 {form.maxChildren || 0} Child / 👶 {form.maxInfants || 0} Infant</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-blue-600">Extra Rates</p>
+                      <p className="text-gray-700">₹{form.extraAdultRate || 0} / ₹{form.extraChildRate || 0} / ₹{form.extraInfantRate || 0}</p>
+                    </div>
+                  </div>
+                </div>
               </div>
             )}
 
