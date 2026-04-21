@@ -27,14 +27,13 @@ export default function BookingsPage() {
   const actionRef = useRef<HTMLDivElement>(null);
 
   const [form, setForm] = useState({
-    roomId: "", guestName: "", guestEmail: "",
+    roomId: "", guestName: "", guestEmail: "", guestPhone: "",
     checkIn: "", checkOut: "", amount: "",
     notes: "", specialRequests: "",
     paymentMode: "CASH", paymentAmount: "",
     finalPaymentMode: "", finalPaymentAmount: "",
     adults: "1", children: "0",
     source: "WALK_IN",
-    guestPhone: "", 
   });
 
   useEffect(() => { fetchData(); }, []);
@@ -155,19 +154,20 @@ export default function BookingsPage() {
           ...form,
           adults: parseInt(form.adults) || 1,
           children: parseInt(form.children) || 0,
-          source: "WALK_IN", // Software pe bani booking = Walk-in
+          source: "WALK_IN",
+          guestPhone: form.guestPhone || null,
         }),
       });
       const data = await res.json();
       if (res.ok) {
         showToast("Booking ho gayi! ✅", "success");
         setForm({
-          roomId: "", guestName: "", guestEmail: "",
+          roomId: "", guestName: "", guestEmail: "", guestPhone: "",
           checkIn: "", checkOut: "", amount: "",
           notes: "", specialRequests: "",
           paymentMode: "CASH", paymentAmount: "",
           finalPaymentMode: "", finalPaymentAmount: "",
-          adults: "1", children: "0", source: "WALK_IN", guestPhone: "",
+          adults: "1", children: "0", source: "WALK_IN",
         });
         setSelectedType(""); setSelectedRoomId("");
         setShowForm(false); setShowFinalPayment(false); setShowMoreOptions(false);
@@ -184,10 +184,10 @@ export default function BookingsPage() {
   const handleExportCSV = () => {
     if (bookings.length === 0) { showToast("Koi booking nahi!", "warning"); return; }
     const csv = [
-      ["Booking ID", "Guest Name", "Email", "Adults", "Children", "Room", "Type", "Check In", "Check Out", "Amount", "Payment", "Source", "Status"],
+      ["Booking ID", "Guest Name", "Email", "Phone", "Adults", "Children", "Room", "Type", "Check In", "Check Out", "Amount", "Payment", "Source", "Status"],
       ...bookings.map(b => [
         b.id?.slice(0, 8).toUpperCase(),
-        b.guestName, b.guestEmail,
+        b.guestName, b.guestEmail, b.guestPhone || "",
         b.adults || 1, b.children || 0,
         `#${b.roomNumber}`, b.roomType,
         new Date(b.checkIn).toLocaleDateString(),
@@ -309,11 +309,10 @@ export default function BookingsPage() {
         {showForm && (
           <div className="bg-white rounded-2xl p-4 md:p-6 shadow-sm border border-gray-100 mb-6">
             <h3 className="text-lg font-semibold text-gray-900 mb-4">Naya Booking Add Karo</h3>
-            <div className="md:col-span-3">
-                <label className="text-sm font-medium text-gray-700 mb-2 block">
-                  Check-in → Check-out Date
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
 
-              <div className="md:col-span-2">
+              {/* Date Picker — full width */}
+              <div className="md:col-span-3">
                 <label className="text-sm font-medium text-gray-700 mb-2 block">
                   Check-in → Check-out Date
                   {form.checkIn && form.checkOut && (
@@ -351,6 +350,7 @@ export default function BookingsPage() {
                 )}
               </div>
 
+              {/* Row 2 — Room Type, Room Number (2 cols, 1 empty) */}
               <div>
                 <label className="text-sm font-medium text-gray-700 mb-1 block">Room Type</label>
                 <select value={selectedType} onChange={(e) => setSelectedType(e.target.value)}
@@ -373,6 +373,10 @@ export default function BookingsPage() {
                 </select>
               </div>
 
+              {/* Empty col */}
+              <div></div>
+
+              {/* Row 3 — Guest Name, Email, Phone */}
               <div>
                 <label className="text-sm font-medium text-gray-700 mb-1 block">Guest Name</label>
                 <input type="text" placeholder="Guest ka naam" value={form.guestName}
@@ -386,6 +390,7 @@ export default function BookingsPage() {
                   onChange={(e) => setForm({ ...form, guestEmail: e.target.value })}
                   className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-blue-500" />
               </div>
+
               <div>
                 <label className="text-sm font-medium text-gray-700 mb-1 block">Guest Phone</label>
                 <input type="tel" placeholder="+91 9999999999" value={form.guestPhone}
@@ -393,22 +398,25 @@ export default function BookingsPage() {
                   className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-blue-500" />
               </div>
 
-              {/* Adults & Children - ek row mein */}
-              <div className="md:col-span-3 grid grid-cols-2 gap-4">
-                <div>
-                  <label className="text-sm font-medium text-gray-700 mb-1 block">Adults</label>
-                  <input type="number" min="1" value={form.adults}
-                    onChange={(e) => setForm({ ...form, adults: e.target.value })}
-                    className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-blue-500" />
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-gray-700 mb-1 block">Children</label>
-                  <input type="number" min="0" value={form.children}
-                    onChange={(e) => setForm({ ...form, children: e.target.value })}
-                    className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-blue-500" />
-                </div>
+              {/* Row 4 — Adults, Children */}
+              <div>
+                <label className="text-sm font-medium text-gray-700 mb-1 block">Adults</label>
+                <input type="number" min="1" value={form.adults}
+                  onChange={(e) => setForm({ ...form, adults: e.target.value })}
+                  className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-blue-500" />
               </div>
 
+              <div>
+                <label className="text-sm font-medium text-gray-700 mb-1 block">Children</label>
+                <input type="number" min="0" value={form.children}
+                  onChange={(e) => setForm({ ...form, children: e.target.value })}
+                  className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-blue-500" />
+              </div>
+
+              {/* Empty col */}
+              <div></div>
+
+              {/* Row 5 — Amount, Payment Mode, Payment Amount */}
               <div>
                 <label className="text-sm font-medium text-gray-700 mb-1 block">
                   Total Amount (₹)
@@ -439,7 +447,8 @@ export default function BookingsPage() {
                 )}
               </div>
 
-              <div className="md:col-span-2">
+              {/* More Options */}
+              <div className="md:col-span-3">
                 <button onClick={() => setShowMoreOptions(!showMoreOptions)}
                   className="text-sm text-blue-600 hover:text-blue-700 font-medium">
                   {showMoreOptions ? "▲ Less Options" : "▼ More Options"}
@@ -449,7 +458,7 @@ export default function BookingsPage() {
               {showMoreOptions && (
                 <>
                   {!showFinalPayment ? (
-                    <div className="md:col-span-2">
+                    <div className="md:col-span-3">
                       <button onClick={() => { setShowFinalPayment(true); setForm({ ...form, finalPaymentMode: "CHECKOUT_PAYMENT" }); }}
                         className="w-full border-2 border-dashed border-blue-300 text-blue-600 rounded-lg px-4 py-3 text-sm hover:bg-blue-50">
                         + Add Final Payment Mode
@@ -478,15 +487,16 @@ export default function BookingsPage() {
                               ? "bg-green-50 border-green-300 text-green-700" : "border-blue-300 bg-blue-50"
                           }`} />
                       </div>
+                      <div></div>
                     </>
                   )}
-                  <div className="md:col-span-2">
+                  <div className="md:col-span-3">
                     <label className="text-sm font-medium text-gray-700 mb-1 block">Special Requests</label>
                     <input type="text" placeholder="Optional" value={form.specialRequests}
                       onChange={(e) => setForm({ ...form, specialRequests: e.target.value })}
                       className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-blue-500" />
                   </div>
-                  <div className="md:col-span-2">
+                  <div className="md:col-span-3">
                     <label className="text-sm font-medium text-gray-700 mb-1 block">Notes</label>
                     <textarea placeholder="Internal notes" value={form.notes}
                       onChange={(e) => setForm({ ...form, notes: e.target.value })} rows={2}
@@ -572,15 +582,12 @@ export default function BookingsPage() {
                           <p className="text-xs text-gray-400">{booking.guestEmail}</p>
                           {booking.guestPhone && <p className="text-xs text-gray-400">📞 {booking.guestPhone}</p>}
                         </td>
-
-                        {/* Guests — ek line mein */}
                         <td className="px-4 py-3">
                           <p className="text-xs text-gray-700">
                             {adults} Adult{adults > 1 ? "s" : ""}
                             {children > 0 ? ` / ${children} Child${children > 1 ? "ren" : ""}` : ""}
                           </p>
                         </td>
-
                         <td className="px-4 py-3">
                           <p className="text-sm font-medium text-gray-900">#{booking.roomNumber}</p>
                           <p className="text-xs text-gray-400">{booking.roomType}</p>
