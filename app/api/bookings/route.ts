@@ -67,6 +67,14 @@ export async function POST(req: NextRequest) {
         error: `Is room mein maximum ${maxChildren} children allowed hain, aapne ${childrenCount} daale hain!`
       }, { status: 400 });
     }
+    const infantsCount = parseInt(infants) || 0;
+    const maxInfants = roomData.maxInfants || 0;
+
+    if (infantsCount > maxInfants) {
+      return NextResponse.json({
+        error: `Is room mein maximum ${maxInfants} infants allowed hain, aapne ${infantsCount} daale hain!`
+      }, { status: 400 });
+    }
 
     // ✅ Check 1: Room blocked hai ya nahi Rates & Availability mein
     const checkInDate = new Date(checkIn);
