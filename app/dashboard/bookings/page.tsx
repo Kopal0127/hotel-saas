@@ -173,8 +173,8 @@ export default function BookingsPage() {
           extraMattress: "0", extraPillow: "0", extraBedsheet: "0", blanket: "0",
         });
         setSelectedType(""); setSelectedRoomId("");
-        setShowForm(false); setShowFinalPayment(false); setShowMoreOptions(false);
-        setShowExtraItems(false);
+        setShowForm(false); setShowFinalPayment(false);
+        setShowMoreOptions(false); setShowExtraItems(false);
         fetchData();
       } else {
         showToast(data.error || "Booking nahi ho saki!", "error");
@@ -251,9 +251,9 @@ export default function BookingsPage() {
   ];
 
   const extraItems = [
-    { key: "extraMattress", label: "🛏️ Extra Mattress" },
-    { key: "extraPillow", label: "🪆 Extra Pillow" },
-    { key: "extraBedsheet", label: "🏳️ Extra Bedsheet" },
+    { key: "extraMattress", label: "🛏️ Mattress" },
+    { key: "extraPillow", label: "🪆 Pillow" },
+    { key: "extraBedsheet", label: "🏳️ Bedsheet" },
     { key: "blanket", label: "🧣 Blanket" },
   ];
 
@@ -268,6 +268,11 @@ export default function BookingsPage() {
   const selectedRoomPrice = rooms.find(r => r.id === form.roomId)?.price;
   const remainingAmount = form.amount && form.paymentAmount
     ? parseFloat(form.amount) - parseFloat(form.paymentAmount) : 0;
+
+  const extraSummary = extraItems
+    .filter(item => parseInt((form as any)[item.key]) > 0)
+    .map(item => `${(form as any)[item.key]} ${item.label}`)
+    .join(", ");
 
   const firstPaymentOptions = [
     { value: "CASH", label: "💵 Cash" },
@@ -315,15 +320,15 @@ export default function BookingsPage() {
             <h3 className="text-lg font-semibold text-gray-900 mb-4">Naya Booking Add Karo</h3>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
 
-              {/* Row 1 — Date picker, Room Type, Room Number */}
+              {/* Row 1 — Date, Room Type, Room No — ek hi row */}
               <div className="md:col-span-3">
                 <label className="text-sm font-medium text-gray-700 mb-2 block">
-                  Check-in → Check-out Date
+                  Check-in → Check-out / Room Type / Room Number
                   {form.checkIn && form.checkOut && (
                     <span className="ml-2 text-xs text-blue-500 font-normal">{calculateNights()} night{calculateNights() > 1 ? "s" : ""}</span>
                   )}
                 </label>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                   <div>
                     <DatePicker
                       selectsRange
@@ -387,7 +392,7 @@ export default function BookingsPage() {
                   className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-blue-500" />
               </div>
 
-              {/* Row 3 — Adults, Children, Empty */}
+              {/* Row 3 — Adults, Children, Extra Beds dropdown */}
               <div>
                 <label className="text-sm font-medium text-gray-700 mb-1 block">Adults</label>
                 <input type="number" min="1" value={form.adults}
@@ -400,21 +405,19 @@ export default function BookingsPage() {
                   onChange={(e) => setForm({ ...form, children: e.target.value })}
                   className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-blue-500" />
               </div>
-              <div></div>
-
-              {/* Row 4 — Extra Items Dropdown */}
-              <div className="md:col-span-3">
+              <div className="relative">
+                <label className="text-sm font-medium text-gray-700 mb-1 block">Extra Beds</label>
                 <button type="button"
                   onClick={() => setShowExtraItems(!showExtraItems)}
-                  className="w-full flex items-center justify-between border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-600 bg-gray-50 hover:bg-gray-100 transition-colors">
-                  <span>🛏️ Extra Items (Mattress, Pillow, Bedsheet, Blanket)</span>
-                  <span>{showExtraItems ? "▲" : "▾"}</span>
+                  className="w-full flex items-center justify-between border border-gray-200 rounded-lg px-4 py-3 text-sm text-gray-600 bg-white hover:bg-gray-50 transition-colors">
+                  <span className="truncate">{extraSummary || "Select Extra Items ▾"}</span>
+                  <span className="ml-2">{showExtraItems ? "▲" : "▾"}</span>
                 </button>
                 {showExtraItems && (
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mt-3 p-4 border border-gray-200 rounded-xl bg-gray-50">
+                  <div className="absolute top-full left-0 right-0 z-50 mt-1 bg-white border border-gray-200 rounded-xl shadow-lg p-3">
                     {extraItems.map((item) => (
-                      <div key={item.key} className="bg-white border border-gray-200 rounded-xl p-3">
-                        <p className="text-xs font-medium text-gray-700 mb-2">{item.label}</p>
+                      <div key={item.key} className="flex items-center justify-between py-2 border-b border-gray-50 last:border-0">
+                        <span className="text-sm text-gray-700">{item.label}</span>
                         <div className="flex items-center gap-2">
                           <button type="button"
                             onClick={() => setForm(prev => ({ ...prev, [item.key]: Math.max(0, (parseInt((prev as any)[item.key]) || 0) - 1).toString() }))}
@@ -426,11 +429,13 @@ export default function BookingsPage() {
                         </div>
                       </div>
                     ))}
+                    <button type="button" onClick={() => setShowExtraItems(false)}
+                      className="w-full mt-2 text-xs text-center text-blue-600 hover:underline">Done ✓</button>
                   </div>
                 )}
               </div>
 
-              {/* Row 5 — Amount, Payment Mode, Payment Amount */}
+              {/* Row 4 — Amount, Payment Mode, Payment Amount */}
               <div>
                 <label className="text-sm font-medium text-gray-700 mb-1 block">
                   Total Amount (₹)
