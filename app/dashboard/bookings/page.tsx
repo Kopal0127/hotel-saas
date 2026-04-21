@@ -33,7 +33,7 @@ export default function BookingsPage() {
     notes: "", specialRequests: "",
     paymentMode: "CASH", paymentAmount: "",
     finalPaymentMode: "", finalPaymentAmount: "",
-    adults: "1", children: "0",
+    adults: "1", children: "0", infants: "0",
     source: "WALK_IN",
     extraMattress: "0", extraPillow: "0", extraBedsheet: "0", blanket: "0",
   });
@@ -156,6 +156,7 @@ export default function BookingsPage() {
           ...form,
           adults: parseInt(form.adults) || 1,
           children: parseInt(form.children) || 0,
+          infants: parseInt(form.infants) || 0,
           source: "WALK_IN",
           guestPhone: form.guestPhone || null,
         }),
@@ -169,7 +170,7 @@ export default function BookingsPage() {
           notes: "", specialRequests: "",
           paymentMode: "CASH", paymentAmount: "",
           finalPaymentMode: "", finalPaymentAmount: "",
-          adults: "1", children: "0", source: "WALK_IN",
+          adults: "1", children: "0", infants: "0", source: "WALK_IN",
           extraMattress: "0", extraPillow: "0", extraBedsheet: "0", blanket: "0",
         });
         setSelectedType(""); setSelectedRoomId("");
@@ -188,11 +189,11 @@ export default function BookingsPage() {
   const handleExportCSV = () => {
     if (bookings.length === 0) { showToast("Koi booking nahi!", "warning"); return; }
     const csv = [
-      ["Booking ID", "Guest Name", "Email", "Phone", "Adults", "Children", "Room", "Type", "Check In", "Check Out", "Amount", "Payment", "Source", "Status"],
+      ["Booking ID", "Guest Name", "Email", "Phone", "Adults", "Children", "Infants", "Room", "Type", "Check In", "Check Out", "Amount", "Payment", "Source", "Status"],
       ...bookings.map(b => [
         b.id?.slice(0, 8).toUpperCase(),
         b.guestName, b.guestEmail, b.guestPhone || "",
-        b.adults || 1, b.children || 0,
+        b.adults || 1, b.children || 0, b.infants || 0,
         `#${b.roomNumber}`, b.roomType,
         new Date(b.checkIn).toLocaleDateString(),
         new Date(b.checkOut).toLocaleDateString(),
@@ -320,7 +321,7 @@ export default function BookingsPage() {
             <h3 className="text-lg font-semibold text-gray-900 mb-4">Naya Booking Add Karo</h3>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
 
-              {/* Row 1 — Date, Room Type, Room No — ek hi row */}
+              {/* Row 1 — Date, Room Type, Room No */}
               <div className="md:col-span-3">
                 <label className="text-sm font-medium text-gray-700 mb-2 block">
                   Check-in → Check-out / Room Type / Room Number
@@ -392,47 +393,55 @@ export default function BookingsPage() {
                   className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-blue-500" />
               </div>
 
-              {/* Row 3 — Adults, Children, Extra Beds dropdown */}
-              <div>
-                <label className="text-sm font-medium text-gray-700 mb-1 block">Adults</label>
-                <input type="number" min="1" value={form.adults}
-                  onChange={(e) => setForm({ ...form, adults: e.target.value })}
-                  className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-blue-500" />
-              </div>
-              <div>
-                <label className="text-sm font-medium text-gray-700 mb-1 block">Children</label>
-                <input type="number" min="0" value={form.children}
-                  onChange={(e) => setForm({ ...form, children: e.target.value })}
-                  className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-blue-500" />
-              </div>
-              <div className="relative">
-                <label className="text-sm font-medium text-gray-700 mb-1 block">Extra Beds</label>
-                <button type="button"
-                  onClick={() => setShowExtraItems(!showExtraItems)}
-                  className="w-full flex items-center justify-between border border-gray-200 rounded-lg px-4 py-3 text-sm text-gray-600 bg-white hover:bg-gray-50 transition-colors">
-                  <span className="truncate">{extraSummary || "Select Extra Items ▾"}</span>
-                  <span className="ml-2">{showExtraItems ? "▲" : "▾"}</span>
-                </button>
-                {showExtraItems && (
-                  <div className="absolute top-full left-0 right-0 z-50 mt-1 bg-white border border-gray-200 rounded-xl shadow-lg p-3">
-                    {extraItems.map((item) => (
-                      <div key={item.key} className="flex items-center justify-between py-2 border-b border-gray-50 last:border-0">
-                        <span className="text-sm text-gray-700">{item.label}</span>
-                        <div className="flex items-center gap-2">
-                          <button type="button"
-                            onClick={() => setForm(prev => ({ ...prev, [item.key]: Math.max(0, (parseInt((prev as any)[item.key]) || 0) - 1).toString() }))}
-                            className="w-7 h-7 bg-red-100 text-red-600 rounded-full font-bold hover:bg-red-200 flex items-center justify-center text-sm">−</button>
-                          <span className="text-sm font-semibold text-gray-900 w-6 text-center">{(form as any)[item.key] || "0"}</span>
-                          <button type="button"
-                            onClick={() => setForm(prev => ({ ...prev, [item.key]: ((parseInt((prev as any)[item.key]) || 0) + 1).toString() }))}
-                            className="w-7 h-7 bg-green-100 text-green-600 rounded-full font-bold hover:bg-green-200 flex items-center justify-center text-sm">+</button>
+              {/* Row 3 — Adults, Children, Infants, Extra Beds (4 columns) */}
+              <div className="md:col-span-3 grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div>
+                  <label className="text-sm font-medium text-gray-700 mb-1 block">Adults</label>
+                  <input type="number" min="1" value={form.adults}
+                    onChange={(e) => setForm({ ...form, adults: e.target.value })}
+                    className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-blue-500" />
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-gray-700 mb-1 block">Children</label>
+                  <input type="number" min="0" value={form.children}
+                    onChange={(e) => setForm({ ...form, children: e.target.value })}
+                    className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-blue-500" />
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-gray-700 mb-1 block">Infants</label>
+                  <input type="number" min="0" value={form.infants}
+                    onChange={(e) => setForm({ ...form, infants: e.target.value })}
+                    className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-blue-500" />
+                </div>
+                <div className="relative">
+                  <label className="text-sm font-medium text-gray-700 mb-1 block">Extra Beds</label>
+                  <button type="button"
+                    onClick={() => setShowExtraItems(!showExtraItems)}
+                    className="w-full flex items-center justify-between border border-gray-200 rounded-lg px-4 py-3 text-sm text-gray-600 bg-white hover:bg-gray-50 transition-colors">
+                    <span className="truncate">{extraSummary || "Select ▾"}</span>
+                    <span className="ml-2">{showExtraItems ? "▲" : "▾"}</span>
+                  </button>
+                  {showExtraItems && (
+                    <div className="absolute top-full left-0 right-0 z-50 mt-1 bg-white border border-gray-200 rounded-xl shadow-lg p-3">
+                      {extraItems.map((item) => (
+                        <div key={item.key} className="flex items-center justify-between py-2 border-b border-gray-50 last:border-0">
+                          <span className="text-sm text-gray-700">{item.label}</span>
+                          <div className="flex items-center gap-2">
+                            <button type="button"
+                              onClick={() => setForm(prev => ({ ...prev, [item.key]: Math.max(0, (parseInt((prev as any)[item.key]) || 0) - 1).toString() }))}
+                              className="w-7 h-7 bg-red-100 text-red-600 rounded-full font-bold hover:bg-red-200 flex items-center justify-center text-sm">−</button>
+                            <span className="text-sm font-semibold text-gray-900 w-6 text-center">{(form as any)[item.key] || "0"}</span>
+                            <button type="button"
+                              onClick={() => setForm(prev => ({ ...prev, [item.key]: ((parseInt((prev as any)[item.key]) || 0) + 1).toString() }))}
+                              className="w-7 h-7 bg-green-100 text-green-600 rounded-full font-bold hover:bg-green-200 flex items-center justify-center text-sm">+</button>
+                          </div>
                         </div>
-                      </div>
-                    ))}
-                    <button type="button" onClick={() => setShowExtraItems(false)}
-                      className="w-full mt-2 text-xs text-center text-blue-600 hover:underline">Done ✓</button>
-                  </div>
-                )}
+                      ))}
+                      <button type="button" onClick={() => setShowExtraItems(false)}
+                        className="w-full mt-2 text-xs text-center text-blue-600 hover:underline">Done ✓</button>
+                    </div>
+                  )}
+                </div>
               </div>
 
               {/* Row 4 — Amount, Payment Mode, Payment Amount */}
@@ -464,7 +473,6 @@ export default function BookingsPage() {
                 )}
               </div>
 
-              {/* More Options */}
               <div className="md:col-span-3">
                 <button type="button" onClick={() => setShowMoreOptions(!showMoreOptions)}
                   className="text-sm text-blue-600 hover:text-blue-700 font-medium">
@@ -533,7 +541,6 @@ export default function BookingsPage() {
           </div>
         )}
 
-        {/* Search & Filter */}
         <div className="flex flex-col sm:flex-row gap-3 mb-6">
           <input type="text" placeholder="🔍 Guest naam ya email..."
             value={searchTerm} onChange={(e) => { setSearchTerm(e.target.value); setPage(1); }}
@@ -582,6 +589,7 @@ export default function BookingsPage() {
                     const isCheckOutToday = new Date(booking.checkOut).toDateString() === today;
                     const adults = booking.adults || 1;
                     const children = booking.children || 0;
+                    const infants = booking.infants || 0;
 
                     return (
                       <tr key={booking.id} className="hover:bg-gray-50 transition-colors">
@@ -599,6 +607,7 @@ export default function BookingsPage() {
                           <p className="text-xs text-gray-700">
                             {adults} Adult{adults > 1 ? "s" : ""}
                             {children > 0 ? ` / ${children} Child${children > 1 ? "ren" : ""}` : ""}
+                            {infants > 0 ? ` / ${infants} Infant${infants > 1 ? "s" : ""}` : ""}
                           </p>
                         </td>
                         <td className="px-4 py-3">

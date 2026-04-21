@@ -70,6 +70,7 @@ model Booking {
   specialRequests    String?
   adults             Int?          @default(1)
   children           Int?          @default(0)
+  infants            Int?          @default(0)
   source             String?       @default("WALK_IN")
   guestPhone         String?
   paymentMode        String?       @default("CASH")

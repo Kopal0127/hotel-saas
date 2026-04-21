@@ -35,7 +35,7 @@ export async function POST(req: NextRequest) {
     const {
       roomId, guestName, guestEmail, guestPhone, checkIn, checkOut, amount,
       notes, specialRequests, paymentMode, paymentAmount,
-      finalPaymentMode, finalPaymentAmount, adults, children, source
+      finalPaymentMode, finalPaymentAmount, adults, children, infants, source
     } = await req.json();
 
     if (!roomId || !guestName || !guestEmail || !checkIn || !checkOut || !amount) {
@@ -144,6 +144,7 @@ export async function POST(req: NextRequest) {
         finalPaymentAmount: finalPaymentAmount ? parseFloat(finalPaymentAmount) : null,
         adults: adults ? parseInt(adults) : 1,
         children: children ? parseInt(children) : 0,
+        infants: infants ? parseInt(infants) : 0,
         source: source || "WALK_IN",
         guestPhone: guestPhone || null,
       },
