@@ -34,7 +34,7 @@ export default function BookingsPage() {
     paymentMode: "CASH", paymentAmount: "",
     finalPaymentMode: "", finalPaymentAmount: "",
     adults: "1", children: "0", infants: "0",
-    source: "WALK_IN",
+    source: "WALK_IN", countryCode: "+91",
     extraMattress: "0", extraPillow: "0", extraBedsheet: "0", blanket: "0",
   });
 
@@ -140,6 +140,7 @@ export default function BookingsPage() {
     if (!form.roomId) { showToast("Room select karo!", "error"); return false; }
     if (!form.guestName.trim()) { showToast("Guest naam daalo!", "error"); return false; }
     if (!form.guestEmail.trim()) { showToast("Guest email daalo!", "error"); return false; }
+    if (form.guestPhone && form.guestPhone.length !== 10) { showToast("Phone number 10 digits ka hona chahiye!", "error"); return false; }
     if (!form.amount || parseFloat(form.amount) <= 0) { showToast("Amount daalo!", "error"); return false; }
     if (!form.paymentAmount || parseFloat(form.paymentAmount) <= 0) { showToast("Payment amount daalo!", "error"); return false; }
     return true;
@@ -158,7 +159,8 @@ export default function BookingsPage() {
           children: parseInt(form.children) || 0,
           infants: parseInt(form.infants) || 0,
           source: "WALK_IN",
-          guestPhone: form.guestPhone || null,
+          source: "WALK_IN",
+          guestPhone: form.guestPhone ? `${form.countryCode || "+91"} ${form.guestPhone}` : null,
         }),
       });
       const data = await res.json();
@@ -388,9 +390,31 @@ export default function BookingsPage() {
               </div>
               <div>
                 <label className="text-sm font-medium text-gray-700 mb-1 block">Guest Phone</label>
-                <input type="tel" placeholder="+91 9999999999" value={form.guestPhone}
-                  onChange={(e) => setForm({ ...form, guestPhone: e.target.value })}
-                  className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-blue-500" />
+                <div className="flex gap-2">
+                  <select value={form.countryCode || "+91"}
+                    onChange={(e) => setForm({ ...form, countryCode: e.target.value })}
+                    className="border border-gray-200 rounded-lg px-2 py-3 text-sm focus:outline-none focus:border-blue-500 bg-gray-50">
+                    <option value="+91">🇮🇳 +91</option>
+                    <option value="+1">🇺🇸 +1</option>
+                    <option value="+44">🇬🇧 +44</option>
+                    <option value="+971">🇦🇪 +971</option>
+                    <option value="+966">🇸🇦 +966</option>
+                    <option value="+65">🇸🇬 +65</option>
+                    <option value="+61">🇦🇺 +61</option>
+                    <option value="+81">🇯🇵 +81</option>
+                    <option value="+86">🇨🇳 +86</option>
+                  </select>
+                  <input type="tel" placeholder="9999999999" value={form.guestPhone}
+                    maxLength={10}
+                    onChange={(e) => {
+                      const val = e.target.value.replace(/\D/g, "");
+                      if (val.length <= 10) setForm({ ...form, guestPhone: val });
+                    }}
+                    className="flex-1 w-full border border-gray-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-blue-500" />
+                </div>
+                {form.guestPhone && form.guestPhone.length !== 10 && (
+                  <p className="text-xs text-red-500 mt-1">⚠️ Phone number 10 digits ka hona chahiye</p>
+                )}
               </div>
 
               {/* Row 3 — Adults, Children, Infants, Extra Beds (4 columns) */}
