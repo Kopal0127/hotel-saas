@@ -309,7 +309,9 @@ export default function BookingsPage() {
         {showForm && (
           <div className="bg-white rounded-2xl p-4 md:p-6 shadow-sm border border-gray-100 mb-6">
             <h3 className="text-lg font-semibold text-gray-900 mb-4">Naya Booking Add Karo</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="md:col-span-3">
+                <label className="text-sm font-medium text-gray-700 mb-2 block">
+                  Check-in → Check-out Date
 
               <div className="md:col-span-2">
                 <label className="text-sm font-medium text-gray-700 mb-2 block">
@@ -392,7 +394,7 @@ export default function BookingsPage() {
               </div>
 
               {/* Adults & Children - ek row mein */}
-              <div className="md:col-span-2 grid grid-cols-2 gap-4">
+              <div className="md:col-span-3 grid grid-cols-2 gap-4">
                 <div>
                   <label className="text-sm font-medium text-gray-700 mb-1 block">Adults</label>
                   <input type="number" min="1" value={form.adults}
