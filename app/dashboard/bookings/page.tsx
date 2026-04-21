@@ -171,7 +171,7 @@ export default function BookingsPage() {
           notes: "", specialRequests: "",
           paymentMode: "CASH", paymentAmount: "",
           finalPaymentMode: "", finalPaymentAmount: "",
-          adults: "1", children: "0", infants: "0", source: "WALK_IN",
+          adults: "1", children: "0", infants: "0", source: "WALK_IN", countryCode: "+91",
           extraMattress: "0", extraPillow: "0", extraBedsheet: "0", blanket: "0",
         });
         setSelectedType(""); setSelectedRoomId("");
