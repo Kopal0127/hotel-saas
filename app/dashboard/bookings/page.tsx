@@ -24,6 +24,7 @@ export default function BookingsPage() {
   const [selectedType, setSelectedType] = useState("");
   const [selectedRoomId, setSelectedRoomId] = useState("");
   const [openActionId, setOpenActionId] = useState<string | null>(null);
+  const [showExtraItems, setShowExtraItems] = useState(false);
   const actionRef = useRef<HTMLDivElement>(null);
 
   const [form, setForm] = useState({
@@ -173,6 +174,7 @@ export default function BookingsPage() {
         });
         setSelectedType(""); setSelectedRoomId("");
         setShowForm(false); setShowFinalPayment(false); setShowMoreOptions(false);
+        setShowExtraItems(false);
         fetchData();
       } else {
         showToast(data.error || "Booking nahi ho saki!", "error");
@@ -248,6 +250,13 @@ export default function BookingsPage() {
     { value: "UPGRADED", label: "⬆️ Upgrade", color: "text-purple-600" },
   ];
 
+  const extraItems = [
+    { key: "extraMattress", label: "🛏️ Extra Mattress" },
+    { key: "extraPillow", label: "🪆 Extra Pillow" },
+    { key: "extraBedsheet", label: "🏳️ Extra Bedsheet" },
+    { key: "blanket", label: "🧣 Blanket" },
+  ];
+
   const calculateNights = () => {
     if (form.checkIn && form.checkOut) {
       const nights = Math.ceil((new Date(form.checkOut).getTime() - new Date(form.checkIn).getTime()) / (1000 * 60 * 60 * 24));
@@ -296,103 +305,81 @@ export default function BookingsPage() {
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-xl md:text-2xl font-bold text-gray-900">Booking Management</h2>
           <div className="flex gap-2">
-            <button onClick={handleExportCSV}
-              className="bg-green-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-green-700">
-              📥 CSV
-            </button>
-            <button onClick={() => setShowForm(!showForm)}
-              className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-blue-700">
-              + Booking
-            </button>
+            <button onClick={handleExportCSV} className="bg-green-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-green-700">📥 CSV</button>
+            <button onClick={() => setShowForm(!showForm)} className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-blue-700">+ Booking</button>
           </div>
         </div>
 
-        {/* Add Booking Form */}
         {showForm && (
           <div className="bg-white rounded-2xl p-4 md:p-6 shadow-sm border border-gray-100 mb-6">
             <h3 className="text-lg font-semibold text-gray-900 mb-4">Naya Booking Add Karo</h3>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
 
-              {/* Date Picker — full width */}
+              {/* Row 1 — Date picker, Room Type, Room Number */}
               <div className="md:col-span-3">
                 <label className="text-sm font-medium text-gray-700 mb-2 block">
                   Check-in → Check-out Date
                   {form.checkIn && form.checkOut && (
-                    <span className="ml-2 text-xs text-blue-500 font-normal">
-                      {calculateNights()} night{calculateNights() > 1 ? "s" : ""}
-                    </span>
+                    <span className="ml-2 text-xs text-blue-500 font-normal">{calculateNights()} night{calculateNights() > 1 ? "s" : ""}</span>
                   )}
                 </label>
-                <DatePicker
-                  selectsRange
-                  startDate={form.checkIn ? new Date(form.checkIn) : null}
-                  endDate={form.checkOut ? new Date(form.checkOut) : null}
-                  onChange={(dates: [Date | null, Date | null]) => {
-                    const [start, end] = dates;
-                    setForm({
-                      ...form,
-                      checkIn: start ? start.toISOString().split("T")[0] : "",
-                      checkOut: end ? end.toISOString().split("T")[0] : "",
-                    });
-                    setSelectedRoomId("");
-                    setSelectedType("");
-                  }}
-                  minDate={new Date()}
-                  placeholderText="Check-in → Check-out select karo"
-                  className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-blue-500 cursor-pointer"
-                  wrapperClassName="w-full"
-                  monthsShown={2}
-                  dateFormat="dd/MM/yyyy"
-                  isClearable
-                />
-                {form.checkIn && form.checkOut && (
-                  <p className="text-xs text-blue-600 mt-1">
-                    📅 {new Date(form.checkIn).toLocaleDateString("en-IN")} → {new Date(form.checkOut).toLocaleDateString("en-IN")}
-                  </p>
-                )}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div>
+                    <DatePicker
+                      selectsRange
+                      startDate={form.checkIn ? new Date(form.checkIn) : null}
+                      endDate={form.checkOut ? new Date(form.checkOut) : null}
+                      onChange={(dates: [Date | null, Date | null]) => {
+                        const [start, end] = dates;
+                        setForm({ ...form, checkIn: start ? start.toISOString().split("T")[0] : "", checkOut: end ? end.toISOString().split("T")[0] : "" });
+                        setSelectedRoomId(""); setSelectedType("");
+                      }}
+                      minDate={new Date()}
+                      placeholderText="Check-in → Check-out"
+                      className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-blue-500 cursor-pointer"
+                      wrapperClassName="w-full"
+                      monthsShown={2}
+                      dateFormat="dd/MM/yyyy"
+                      isClearable
+                    />
+                    {form.checkIn && form.checkOut && (
+                      <p className="text-xs text-blue-600 mt-1">📅 {new Date(form.checkIn).toLocaleDateString("en-IN")} → {new Date(form.checkOut).toLocaleDateString("en-IN")}</p>
+                    )}
+                  </div>
+                  <div>
+                    <select value={selectedType} onChange={(e) => setSelectedType(e.target.value)}
+                      disabled={!form.checkIn || !form.checkOut}
+                      className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-blue-500 disabled:bg-gray-100">
+                      <option value="">-- Room Type chuno --</option>
+                      {roomTypes.map(type => <option key={type} value={type}>{type}</option>)}
+                    </select>
+                  </div>
+                  <div>
+                    <select value={selectedRoomId} onChange={(e) => setSelectedRoomId(e.target.value)}
+                      disabled={!selectedType || filteredRoomsByType.length === 0}
+                      className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-blue-500 disabled:bg-gray-100">
+                      <option value="">-- Room Number chuno --</option>
+                      {filteredRoomsByType.map(room => (
+                        <option key={room.id} value={room.id}>Room #{room.number} — ₹{room.price}/night</option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
               </div>
 
-              {/* Row 2 — Room Type, Room Number (2 cols, 1 empty) */}
-              <div>
-                <label className="text-sm font-medium text-gray-700 mb-1 block">Room Type</label>
-                <select value={selectedType} onChange={(e) => setSelectedType(e.target.value)}
-                  disabled={!form.checkIn || !form.checkOut}
-                  className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-blue-500 disabled:bg-gray-100">
-                  <option value="">-- Room Type chuno --</option>
-                  {roomTypes.map(type => <option key={type} value={type}>{type}</option>)}
-                </select>
-              </div>
-
-              <div>
-                <label className="text-sm font-medium text-gray-700 mb-1 block">Room Number</label>
-                <select value={selectedRoomId} onChange={(e) => setSelectedRoomId(e.target.value)}
-                  disabled={!selectedType || filteredRoomsByType.length === 0}
-                  className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-blue-500 disabled:bg-gray-100">
-                  <option value="">-- Room Number chuno --</option>
-                  {filteredRoomsByType.map(room => (
-                    <option key={room.id} value={room.id}>Room #{room.number} — ₹{room.price}/night</option>
-                  ))}
-                </select>
-              </div>
-
-              {/* Empty col */}
-              <div></div>
-
-              {/* Row 3 — Guest Name, Email, Phone */}
+              {/* Row 2 — Guest Name, Email, Phone */}
               <div>
                 <label className="text-sm font-medium text-gray-700 mb-1 block">Guest Name</label>
                 <input type="text" placeholder="Guest ka naam" value={form.guestName}
                   onChange={(e) => setForm({ ...form, guestName: e.target.value })}
                   className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-blue-500" />
               </div>
-
               <div>
                 <label className="text-sm font-medium text-gray-700 mb-1 block">Guest Email</label>
                 <input type="email" placeholder="guest@email.com" value={form.guestEmail}
                   onChange={(e) => setForm({ ...form, guestEmail: e.target.value })}
                   className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-blue-500" />
               </div>
-
               <div>
                 <label className="text-sm font-medium text-gray-700 mb-1 block">Guest Phone</label>
                 <input type="tel" placeholder="+91 9999999999" value={form.guestPhone}
@@ -400,75 +387,47 @@ export default function BookingsPage() {
                   className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-blue-500" />
               </div>
 
-              {/* Row 4 — Adults, Children */}
+              {/* Row 3 — Adults, Children, Empty */}
               <div>
                 <label className="text-sm font-medium text-gray-700 mb-1 block">Adults</label>
                 <input type="number" min="1" value={form.adults}
                   onChange={(e) => setForm({ ...form, adults: e.target.value })}
                   className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-blue-500" />
               </div>
-
               <div>
                 <label className="text-sm font-medium text-gray-700 mb-1 block">Children</label>
                 <input type="number" min="0" value={form.children}
                   onChange={(e) => setForm({ ...form, children: e.target.value })}
                   className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-blue-500" />
               </div>
+              <div></div>
 
-              {/* Extra Items Dropdown */}
+              {/* Row 4 — Extra Items Dropdown */}
               <div className="md:col-span-3">
-                <label className="text-sm font-medium text-gray-700 mb-2 block">🛏️ Extra Items</label>
-                <details className="border border-gray-200 rounded-xl bg-gray-50">
-                  <summary className="px-4 py-3 text-sm text-gray-600 cursor-pointer font-medium select-none">
-                    Extra Items select karo (Mattress, Pillow, Bedsheet, Blanket) ▾
-                  </summary>
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3 p-4 border-t border-gray-200">
-                    {[
-                      { key: "extraMattress", label: "🛏️ Extra Mattress" },
-                      { key: "extraPillow", label: "🪕 Extra Pillow" },
-                      { key: "extraBedsheet", label: "🏳️ Extra Bedsheet" },
-                      { key: "blanket", label: "🧣 Blanket" },
-                    ].map((item) => (
+                <button type="button"
+                  onClick={() => setShowExtraItems(!showExtraItems)}
+                  className="w-full flex items-center justify-between border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-600 bg-gray-50 hover:bg-gray-100 transition-colors">
+                  <span>🛏️ Extra Items (Mattress, Pillow, Bedsheet, Blanket)</span>
+                  <span>{showExtraItems ? "▲" : "▾"}</span>
+                </button>
+                {showExtraItems && (
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mt-3 p-4 border border-gray-200 rounded-xl bg-gray-50">
+                    {extraItems.map((item) => (
                       <div key={item.key} className="bg-white border border-gray-200 rounded-xl p-3">
                         <p className="text-xs font-medium text-gray-700 mb-2">{item.label}</p>
                         <div className="flex items-center gap-2">
                           <button type="button"
                             onClick={() => setForm(prev => ({ ...prev, [item.key]: Math.max(0, (parseInt((prev as any)[item.key]) || 0) - 1).toString() }))}
-                            className="w-7 h-7 bg-red-100 text-red-600 rounded-full font-bold hover:bg-red-200 flex items-center justify-center">−</button>
-                          <span className="text-sm font-semibold text-gray-900 w-6 text-center">
-                            {(form as any)[item.key] || "0"}
-                          </span>
+                            className="w-7 h-7 bg-red-100 text-red-600 rounded-full font-bold hover:bg-red-200 flex items-center justify-center text-sm">−</button>
+                          <span className="text-sm font-semibold text-gray-900 w-6 text-center">{(form as any)[item.key] || "0"}</span>
                           <button type="button"
                             onClick={() => setForm(prev => ({ ...prev, [item.key]: ((parseInt((prev as any)[item.key]) || 0) + 1).toString() }))}
-                            className="w-7 h-7 bg-green-100 text-green-600 rounded-full font-bold hover:bg-green-200 flex items-center justify-center">+</button>
+                            className="w-7 h-7 bg-green-100 text-green-600 rounded-full font-bold hover:bg-green-200 flex items-center justify-center text-sm">+</button>
                         </div>
                       </div>
                     ))}
                   </div>
-                </details>
-              </div>
-                  {[
-                    { key: "extraMattress", label: "Extra Mattress" },
-                    { key: "extraPillow", label: "Extra Pillow" },
-                    { key: "extraBedsheet", label: "Extra Bedsheet" },
-                    { key: "blanket", label: "Blanket" },
-                  ].map((item) => (
-                    <div key={item.key} className="bg-gray-50 border border-gray-200 rounded-xl p-3">
-                      <p className="text-xs font-medium text-gray-700 mb-2">{item.label}</p>
-                      <div className="flex items-center gap-2">
-                        <button type="button"
-                          onClick={() => setForm(prev => ({ ...prev, [item.key]: Math.max(0, (parseInt((prev as any)[item.key]) || 0) - 1).toString() }))}
-                          className="w-7 h-7 bg-red-100 text-red-600 rounded-full font-bold hover:bg-red-200 flex items-center justify-center">−</button>
-                        <span className="text-sm font-semibold text-gray-900 w-6 text-center">
-                          {(form as any)[item.key] || "0"}
-                        </span>
-                        <button type="button"
-                          onClick={() => setForm(prev => ({ ...prev, [item.key]: ((parseInt((prev as any)[item.key]) || 0) + 1).toString() }))}
-                          className="w-7 h-7 bg-green-100 text-green-600 rounded-full font-bold hover:bg-green-200 flex items-center justify-center">+</button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
+                )}
               </div>
 
               {/* Row 5 — Amount, Payment Mode, Payment Amount */}
@@ -483,7 +442,6 @@ export default function BookingsPage() {
                   onChange={(e) => setForm({ ...form, amount: e.target.value })}
                   className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-blue-500 bg-blue-50" />
               </div>
-
               <div>
                 <label className="text-sm font-medium text-gray-700 mb-1 block">Payment Mode</label>
                 <select value={form.paymentMode} onChange={(e) => setForm({ ...form, paymentMode: e.target.value })}
@@ -491,7 +449,6 @@ export default function BookingsPage() {
                   {firstPaymentOptions.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
                 </select>
               </div>
-
               <div>
                 <label className="text-sm font-medium text-gray-700 mb-1 block">Payment Amount (₹)</label>
                 <input type="number" placeholder="e.g. 2500" value={form.paymentAmount}
@@ -504,7 +461,7 @@ export default function BookingsPage() {
 
               {/* More Options */}
               <div className="md:col-span-3">
-                <button onClick={() => setShowMoreOptions(!showMoreOptions)}
+                <button type="button" onClick={() => setShowMoreOptions(!showMoreOptions)}
                   className="text-sm text-blue-600 hover:text-blue-700 font-medium">
                   {showMoreOptions ? "▲ Less Options" : "▼ More Options"}
                 </button>
@@ -514,7 +471,7 @@ export default function BookingsPage() {
                 <>
                   {!showFinalPayment ? (
                     <div className="md:col-span-3">
-                      <button onClick={() => { setShowFinalPayment(true); setForm({ ...form, finalPaymentMode: "CHECKOUT_PAYMENT" }); }}
+                      <button type="button" onClick={() => { setShowFinalPayment(true); setForm({ ...form, finalPaymentMode: "CHECKOUT_PAYMENT" }); }}
                         className="w-full border-2 border-dashed border-blue-300 text-blue-600 rounded-lg px-4 py-3 text-sm hover:bg-blue-50">
                         + Add Final Payment Mode
                       </button>
@@ -524,7 +481,7 @@ export default function BookingsPage() {
                       <div>
                         <div className="flex items-center justify-between mb-1">
                           <label className="text-sm font-medium text-gray-700">Final Payment Mode</label>
-                          <button onClick={() => { setShowFinalPayment(false); setForm({ ...form, finalPaymentMode: "", finalPaymentAmount: "" }); }}
+                          <button type="button" onClick={() => { setShowFinalPayment(false); setForm({ ...form, finalPaymentMode: "", finalPaymentAmount: "" }); }}
                             className="text-xs text-red-400 hover:text-red-600">✕ Remove</button>
                         </div>
                         <select value={form.finalPaymentMode} onChange={(e) => setForm({ ...form, finalPaymentMode: e.target.value })}
@@ -537,10 +494,7 @@ export default function BookingsPage() {
                         <input type="number" value={form.finalPaymentAmount}
                           readOnly={form.finalPaymentMode === "CHECKOUT_PAYMENT"}
                           onChange={(e) => setForm({ ...form, finalPaymentAmount: e.target.value })}
-                          className={`w-full border rounded-lg px-4 py-3 text-sm focus:outline-none ${
-                            form.finalPaymentMode === "CHECKOUT_PAYMENT"
-                              ? "bg-green-50 border-green-300 text-green-700" : "border-blue-300 bg-blue-50"
-                          }`} />
+                          className={`w-full border rounded-lg px-4 py-3 text-sm focus:outline-none ${form.finalPaymentMode === "CHECKOUT_PAYMENT" ? "bg-green-50 border-green-300 text-green-700" : "border-blue-300 bg-blue-50"}`} />
                       </div>
                       <div></div>
                     </>
@@ -566,7 +520,7 @@ export default function BookingsPage() {
                 className="bg-blue-600 text-white px-6 py-2 rounded-lg text-sm hover:bg-blue-700 disabled:opacity-50">
                 {loading ? "Adding..." : "Booking Confirm Karo"}
               </button>
-              <button onClick={() => { setShowForm(false); setShowFinalPayment(false); setShowMoreOptions(false); setSelectedType(""); setSelectedRoomId(""); }}
+              <button onClick={() => { setShowForm(false); setShowFinalPayment(false); setShowMoreOptions(false); setSelectedType(""); setSelectedRoomId(""); setShowExtraItems(false); }}
                 className="bg-gray-100 text-gray-600 px-6 py-2 rounded-lg text-sm hover:bg-gray-200">
                 Cancel
               </button>
@@ -590,7 +544,6 @@ export default function BookingsPage() {
           </select>
         </div>
 
-        {/* Bookings Table */}
         {filteredBookings.length === 0 ? (
           <div className="bg-white rounded-2xl p-12 shadow-sm border border-gray-100 text-center text-gray-400">
             <div className="text-5xl mb-4">📭</div>
@@ -678,18 +631,15 @@ export default function BookingsPage() {
                           <div ref={openActionId === booking.id ? actionRef : null}>
                             <button
                               onClick={() => setOpenActionId(openActionId === booking.id ? null : booking.id)}
-                              className="bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors"
-                            >
+                              className="bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors">
                               Action ▾
                             </button>
                             {openActionId === booking.id && (
                               <div className="absolute right-0 top-10 z-50 bg-white border border-gray-200 rounded-xl shadow-lg w-40 overflow-hidden">
                                 {actionOptions.map((opt) => (
-                                  <button
-                                    key={opt.value}
+                                  <button key={opt.value}
                                     onClick={() => handleStatusChange(booking.id, opt.value)}
-                                    className={`w-full text-left px-4 py-2.5 text-sm hover:bg-gray-50 transition-colors ${opt.color} ${booking.status === opt.value ? "bg-gray-50 font-semibold" : ""}`}
-                                  >
+                                    className={`w-full text-left px-4 py-2.5 text-sm hover:bg-gray-50 transition-colors ${opt.color} ${booking.status === opt.value ? "bg-gray-50 font-semibold" : ""}`}>
                                     {opt.label}
                                   </button>
                                 ))}
