@@ -415,10 +415,38 @@ export default function BookingsPage() {
                   className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-blue-500" />
               </div>
 
-              {/* Extra Beds Section */}
+              {/* Extra Items Dropdown */}
               <div className="md:col-span-3">
                 <label className="text-sm font-medium text-gray-700 mb-2 block">🛏️ Extra Items</label>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                <details className="border border-gray-200 rounded-xl bg-gray-50">
+                  <summary className="px-4 py-3 text-sm text-gray-600 cursor-pointer font-medium select-none">
+                    Extra Items select karo (Mattress, Pillow, Bedsheet, Blanket) ▾
+                  </summary>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3 p-4 border-t border-gray-200">
+                    {[
+                      { key: "extraMattress", label: "🛏️ Extra Mattress" },
+                      { key: "extraPillow", label: "🪕 Extra Pillow" },
+                      { key: "extraBedsheet", label: "🏳️ Extra Bedsheet" },
+                      { key: "blanket", label: "🧣 Blanket" },
+                    ].map((item) => (
+                      <div key={item.key} className="bg-white border border-gray-200 rounded-xl p-3">
+                        <p className="text-xs font-medium text-gray-700 mb-2">{item.label}</p>
+                        <div className="flex items-center gap-2">
+                          <button type="button"
+                            onClick={() => setForm(prev => ({ ...prev, [item.key]: Math.max(0, (parseInt((prev as any)[item.key]) || 0) - 1).toString() }))}
+                            className="w-7 h-7 bg-red-100 text-red-600 rounded-full font-bold hover:bg-red-200 flex items-center justify-center">−</button>
+                          <span className="text-sm font-semibold text-gray-900 w-6 text-center">
+                            {(form as any)[item.key] || "0"}
+                          </span>
+                          <button type="button"
+                            onClick={() => setForm(prev => ({ ...prev, [item.key]: ((parseInt((prev as any)[item.key]) || 0) + 1).toString() }))}
+                            className="w-7 h-7 bg-green-100 text-green-600 rounded-full font-bold hover:bg-green-200 flex items-center justify-center">+</button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </details>
+              </div>
                   {[
                     { key: "extraMattress", label: "Extra Mattress" },
                     { key: "extraPillow", label: "Extra Pillow" },
