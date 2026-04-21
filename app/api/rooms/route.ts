@@ -21,10 +21,16 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   try {
-    const { type, price, hotelId, startNumber, totalRooms } = await req.json();
+    const {
+      type, price, hotelId, startNumber, totalRooms,
+      taxGroup, sacCode,
+      defaultAdultStay, defaultChildStay, defaultInfantStay,
+      maxAdults, maxChildren, maxInfants,
+      extraAdultRate, extraChildRate, extraInfantRate,
+    } = await req.json();
 
     if (!type || !price || !hotelId || !startNumber || !totalRooms) {
-      return NextResponse.json({ error: "Sab fields bharo!" }, { status: 400 });
+      return NextResponse.json({ error: "Sab required fields bharo!" }, { status: 400 });
     }
 
     const start = parseInt(startNumber);
@@ -34,7 +40,6 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Room number aur total rooms sahi daalo!" }, { status: 400 });
     }
 
-    // ✅ Multiple rooms ek saath create karo
     const roomsToCreate = [];
     for (let i = 0; i < total; i++) {
       roomsToCreate.push({
@@ -42,10 +47,20 @@ export async function POST(req: NextRequest) {
         type,
         price: parseFloat(price),
         hotelId,
+        taxGroup: taxGroup || null,
+        sacCode: sacCode || null,
+        defaultAdultStay: defaultAdultStay ? parseInt(defaultAdultStay) : 1,
+        defaultChildStay: defaultChildStay ? parseInt(defaultChildStay) : 0,
+        defaultInfantStay: defaultInfantStay ? parseInt(defaultInfantStay) : 0,
+        maxAdults: maxAdults ? parseInt(maxAdults) : 2,
+        maxChildren: maxChildren ? parseInt(maxChildren) : 0,
+        maxInfants: maxInfants ? parseInt(maxInfants) : 0,
+        extraAdultRate: extraAdultRate ? parseFloat(extraAdultRate) : 0,
+        extraChildRate: extraChildRate ? parseFloat(extraChildRate) : 0,
+        extraInfantRate: extraInfantRate ? parseFloat(extraInfantRate) : 0,
       });
     }
 
-    // Duplicate check karo
     const existingRooms = await prisma.room.findMany({
       where: {
         hotelId,
@@ -68,6 +83,7 @@ export async function POST(req: NextRequest) {
       { status: 201 }
     );
   } catch (error) {
+    console.error(error);
     return NextResponse.json({ error: "Kuch galat hua!" }, { status: 500 });
   }
 }

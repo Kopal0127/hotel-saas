@@ -33,16 +33,27 @@ model Hotel {
 }
 
 model Room {
-  id          String       @id @default(cuid())
-  number      String
-  type        String
-  price       Float
-  imageUrl    String?
-  hotelId     String
-  hotel       Hotel        @relation(fields: [hotelId], references: [id])
-  bookings    Booking[]
-  ratePlans   RatePlan[]
-  otaBookings OtaBooking[]
+  id                 String       @id @default(cuid())
+  number             String
+  type               String
+  price              Float
+  imageUrl           String?
+  hotelId            String
+  taxGroup           String?
+  sacCode            String?
+  defaultAdultStay   Int?         @default(1)
+  defaultChildStay   Int?         @default(0)
+  defaultInfantStay  Int?         @default(0)
+  maxAdults          Int?         @default(2)
+  maxChildren        Int?         @default(0)
+  maxInfants         Int?         @default(0)
+  extraAdultRate     Float?       @default(0)
+  extraChildRate     Float?       @default(0)
+  extraInfantRate    Float?       @default(0)
+  hotel              Hotel        @relation(fields: [hotelId], references: [id])
+  bookings           Booking[]
+  ratePlans          RatePlan[]
+  otaBookings        OtaBooking[]
 }
 
 model Booking {

@@ -13,13 +13,29 @@ export default function RoomsPage() {
   const [rooms, setRooms] = useState<any[]>([]);
   const [showForm, setShowForm] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [activeTab, setActiveTab] = useState<"details" | "other">("details");
+
   const [form, setForm] = useState({
-    type: "Standard",
-    price: "",
+    type: "",
     hotelId: "",
+    // Room Details
+    taxGroup: "",
+    sacCode: "",
+    defaultAdultStay: "1",
+    defaultChildStay: "0",
+    defaultInfantStay: "0",
+    price: "",
     startNumber: "",
     totalRooms: "",
+    extraAdultRate: "0",
+    extraChildRate: "0",
+    extraInfantRate: "0",
+    // Other Details
+    maxAdults: "2",
+    maxChildren: "0",
+    maxInfants: "0",
   });
+
   const [confirm, setConfirm] = useState({ isOpen: false, roomId: "" });
 
   useEffect(() => { fetchHotelAndRooms(); }, []);
@@ -41,6 +57,7 @@ export default function RoomsPage() {
   };
 
   const validate = () => {
+    if (!form.type.trim()) { showToast("Room Type daalo!", "error"); return false; }
     if (!form.startNumber) { showToast("Starting room number daalo!", "error"); return false; }
     if (!form.totalRooms || parseInt(form.totalRooms) <= 0) { showToast("Total rooms 0 se zyada honi chahiye!", "error"); return false; }
     if (!form.price || parseFloat(form.price) <= 0) { showToast("Price 0 se zyada honi chahiye!", "error"); return false; }
@@ -59,14 +76,22 @@ export default function RoomsPage() {
       const data = await res.json();
       if (res.ok) {
         showToast(data.message || "Rooms add ho gaye! ✅", "success");
-        setForm((f) => ({ ...f, startNumber: "", totalRooms: "", price: "" }));
+        setForm({
+          type: "", hotelId: form.hotelId,
+          taxGroup: "", sacCode: "",
+          defaultAdultStay: "1", defaultChildStay: "0", defaultInfantStay: "0",
+          price: "", startNumber: "", totalRooms: "",
+          extraAdultRate: "0", extraChildRate: "0", extraInfantRate: "0",
+          maxAdults: "2", maxChildren: "0", maxInfants: "0",
+        });
         setShowForm(false);
+        setActiveTab("details");
         fetchHotelAndRooms();
       } else {
         showToast(data.error || "Rooms add nahi ho sake!", "error");
       }
     } catch (error) {
-      showToast("Kuch galat hua, dobara try karo!", "error");
+      showToast("Kuch galat hua!", "error");
     }
     setLoading(false);
   };
@@ -88,14 +113,12 @@ export default function RoomsPage() {
     setConfirm({ isOpen: false, roomId: "" });
   };
 
-  // Rooms ko type ke hisaab se group karo
   const groupedRooms = rooms.reduce((acc: any, room) => {
     if (!acc[room.type]) acc[room.type] = [];
     acc[room.type].push(room);
     return acc;
   }, {});
 
-  // Preview: room numbers jo banenge
   const previewRooms = () => {
     if (!form.startNumber || !form.totalRooms) return "";
     const start = parseInt(form.startNumber);
@@ -107,6 +130,16 @@ export default function RoomsPage() {
     return `${start}, ${start + 1}, ${start + 2} ... ${start + total - 1}`;
   };
 
+  const taxGroups = [
+    { value: "", label: "Select Tax Group" },
+    { value: "ZERO", label: "Zero Tax Group" },
+    { value: "GST_5", label: "GST @ 5%" },
+    { value: "GST_12", label: "GST @ 12%" },
+    { value: "GST_18", label: "GST @ 18%" },
+    { value: "IGST_12", label: "IGST @ 12%" },
+    { value: "IGST_18", label: "IGST @ 18%" },
+  ];
+
   return (
     <div className="min-h-screen bg-gray-50">
       <nav className="bg-white border-b border-gray-100 px-4 md:px-8 py-4 flex items-center justify-between">
@@ -117,7 +150,7 @@ export default function RoomsPage() {
         </div>
       </nav>
 
-      <div className="max-w-5xl mx-auto px-4 md:px-8 py-6 md:py-10">
+      <div className="max-w-6xl mx-auto px-4 md:px-8 py-6 md:py-10">
         <div className="flex items-center justify-between mb-6 md:mb-8">
           <h2 className="text-xl md:text-2xl font-bold text-gray-900">Room Management</h2>
           <button onClick={() => setShowForm(!showForm)}
@@ -129,63 +162,176 @@ export default function RoomsPage() {
         {showForm && (
           <div className="bg-white rounded-2xl p-4 md:p-6 shadow-sm border border-gray-100 mb-6 md:mb-8">
             <h3 className="text-lg font-semibold text-gray-900 mb-4">Naya Room Add Karo</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              
-              <div>
-                <label className="text-sm font-medium text-gray-700 mb-1 block">Room Type</label>
-                <input
-                  type="text"
-                  placeholder="e.g. Standard, Deluxe, Suite"
-                  value={form.type}
-                  onChange={(e) => setForm({ ...form, type: e.target.value })}
-                  className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-blue-500"
-                />
-              </div>
 
-              <div>
-                <label className="text-sm font-medium text-gray-700 mb-1 block">Price per Night (₹)</label>
-                <input type="number" placeholder="2000" value={form.price}
-                  onChange={(e) => setForm({ ...form, price: e.target.value })}
-                  className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-blue-500" />
-              </div>
-
-              <div>
-                <label className="text-sm font-medium text-gray-700 mb-1 block">
-                  Starting Room Number
-                </label>
-                <input type="number" placeholder="101" value={form.startNumber}
-                  onChange={(e) => setForm({ ...form, startNumber: e.target.value })}
-                  className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-blue-500" />
-              </div>
-
-              <div>
-                <label className="text-sm font-medium text-gray-700 mb-1 block">
-                  No. of Rooms (Total)
-                </label>
-                <input type="number" placeholder="10" value={form.totalRooms}
-                  onChange={(e) => setForm({ ...form, totalRooms: e.target.value })}
-                  className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-blue-500" />
-              </div>
-
-              {/* Preview */}
-              {previewRooms() && (
-                <div className="md:col-span-2 bg-blue-50 rounded-xl p-4">
-                  <p className="text-sm text-blue-700">
-                    ✅ <b>{form.totalRooms} rooms</b> banenge: <b>{previewRooms()}</b>
-                  </p>
-                  <p className="text-xs text-blue-500 mt-1">
-                    Type: {form.type} | Price: ₹{form.price}/night
-                  </p>
-                </div>
-              )}
+            {/* Tabs */}
+            <div className="flex border-b border-gray-200 mb-6">
+              <button
+                onClick={() => setActiveTab("details")}
+                className={`px-6 py-3 text-sm font-medium transition-colors ${
+                  activeTab === "details"
+                    ? "text-blue-600 border-b-2 border-blue-600"
+                    : "text-gray-500 hover:text-gray-700"
+                }`}>
+                Room Details
+              </button>
+              <button
+                onClick={() => setActiveTab("other")}
+                className={`px-6 py-3 text-sm font-medium transition-colors ${
+                  activeTab === "other"
+                    ? "text-blue-600 border-b-2 border-blue-600"
+                    : "text-gray-500 hover:text-gray-700"
+                }`}>
+                Other Details
+              </button>
             </div>
 
-            <div className="flex gap-3 mt-4">
-              <button onClick={handleSubmit} disabled={loading}
-                className="bg-blue-600 text-white px-6 py-2 rounded-lg text-sm hover:bg-blue-700 disabled:opacity-50">
-                {loading ? "Adding..." : "Rooms Add Karo"}
-              </button>
-              <button onClick={() => setShowForm(false)}
+            {/* Room Details Tab */}
+            {activeTab === "details" && (
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+
+                {/* Row 1 — Room Type, Tax, SAC Code */}
+                <div>
+                  <label className="text-sm font-medium text-gray-700 mb-1 block">
+                    <span className="text-red-500">*</span> Room Type
+                  </label>
+                  <input type="text" placeholder="e.g. Standard, Deluxe, Suite"
+                    value={form.type}
+                    onChange={(e) => setForm({ ...form, type: e.target.value })}
+                    className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-blue-500" />
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-gray-700 mb-1 block">
+                    <span className="text-red-500">*</span> Tax Group
+                  </label>
+                  <select value={form.taxGroup}
+                    onChange={(e) => setForm({ ...form, taxGroup: e.target.value })}
+                    className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-blue-500">
+                    {taxGroups.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
+                  </select>
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-gray-700 mb-1 block">HSN/SAC Code</label>
+                  <input type="text" placeholder="HSN/SAC code" value={form.sacCode}
+                    onChange={(e) => setForm({ ...form, sacCode: e.target.value })}
+                    className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-blue-500" />
+                </div>
+
+                {/* Row 2 — Default Adult, Child, Infant Stay */}
+                <div>
+                  <label className="text-sm font-medium text-gray-700 mb-1 block">
+                    <span className="text-red-500">*</span> Default Adult Stay
+                  </label>
+                  <input type="number" placeholder="1" value={form.defaultAdultStay}
+                    onChange={(e) => setForm({ ...form, defaultAdultStay: e.target.value })}
+                    className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-blue-500" />
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-gray-700 mb-1 block">Default Children Stay</label>
+                  <input type="number" placeholder="0" value={form.defaultChildStay}
+                    onChange={(e) => setForm({ ...form, defaultChildStay: e.target.value })}
+                    className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-blue-500" />
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-gray-700 mb-1 block">Default Infant Stay</label>
+                  <input type="number" placeholder="0" value={form.defaultInfantStay}
+                    onChange={(e) => setForm({ ...form, defaultInfantStay: e.target.value })}
+                    className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-blue-500" />
+                </div>
+
+                {/* Row 3 — Price, Starting Number, Total Rooms */}
+                <div>
+                  <label className="text-sm font-medium text-gray-700 mb-1 block">
+                    <span className="text-red-500">*</span> Price per Night (₹)
+                  </label>
+                  <input type="number" placeholder="2000" value={form.price}
+                    onChange={(e) => setForm({ ...form, price: e.target.value })}
+                    className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-blue-500" />
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-gray-700 mb-1 block">
+                    <span className="text-red-500">*</span> Starting Room Number
+                  </label>
+                  <input type="number" placeholder="101" value={form.startNumber}
+                    onChange={(e) => setForm({ ...form, startNumber: e.target.value })}
+                    className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-blue-500" />
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-gray-700 mb-1 block">
+                    <span className="text-red-500">*</span> No. of Rooms (Total)
+                  </label>
+                  <input type="number" placeholder="10" value={form.totalRooms}
+                    onChange={(e) => setForm({ ...form, totalRooms: e.target.value })}
+                    className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-blue-500" />
+                </div>
+
+                {/* Row 4 — Extra Adult, Child, Infant Rate */}
+                <div>
+                  <label className="text-sm font-medium text-gray-700 mb-1 block">Extra Adult Rate (₹)</label>
+                  <input type="number" placeholder="500" value={form.extraAdultRate}
+                    onChange={(e) => setForm({ ...form, extraAdultRate: e.target.value })}
+                    className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-blue-500" />
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-gray-700 mb-1 block">Extra Child Rate (₹)</label>
+                  <input type="number" placeholder="100" value={form.extraChildRate}
+                    onChange={(e) => setForm({ ...form, extraChildRate: e.target.value })}
+                    className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-blue-500" />
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-gray-700 mb-1 block">Extra Infant Rate (₹)</label>
+                  <input type="number" placeholder="0" value={form.extraInfantRate}
+                    onChange={(e) => setForm({ ...form, extraInfantRate: e.target.value })}
+                    className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-blue-500" />
+                </div>
+
+                {/* Preview */}
+                {previewRooms() && (
+                  <div className="md:col-span-3 bg-blue-50 rounded-xl p-4">
+                    <p className="text-sm text-blue-700">
+                      ✅ <b>{form.totalRooms} rooms</b> banenge: <b>{previewRooms()}</b>
+                    </p>
+                    <p className="text-xs text-blue-500 mt-1">
+                      Type: {form.type || "—"} | Price: ₹{form.price || 0}/night
+                    </p>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Other Details Tab */}
+            {activeTab === "other" && (
+              <div className="text-center py-12 text-gray-400">
+                <div className="text-4xl mb-3">⚙️</div>
+                <p>Other Details section coming soon...</p>
+              </div>
+            )}
+
+            <div className="flex gap-3 mt-6">
+              {activeTab === "details" && (
+                <>
+                  <button onClick={() => setActiveTab("other")}
+                    className="bg-blue-600 text-white px-6 py-2 rounded-lg text-sm hover:bg-blue-700">
+                    Next →
+                  </button>
+                  <button onClick={handleSubmit} disabled={loading}
+                    className="bg-green-600 text-white px-6 py-2 rounded-lg text-sm hover:bg-green-700 disabled:opacity-50">
+                    {loading ? "Adding..." : "Save Rooms"}
+                  </button>
+                </>
+              )}
+              {activeTab === "other" && (
+                <>
+                  <button onClick={() => setActiveTab("details")}
+                    className="bg-gray-100 text-gray-600 px-6 py-2 rounded-lg text-sm hover:bg-gray-200">
+                    ← Back
+                  </button>
+                  <button onClick={handleSubmit} disabled={loading}
+                    className="bg-green-600 text-white px-6 py-2 rounded-lg text-sm hover:bg-green-700 disabled:opacity-50">
+                    {loading ? "Adding..." : "Save Rooms"}
+                  </button>
+                </>
+              )}
+              <button onClick={() => { setShowForm(false); setActiveTab("details"); }}
                 className="bg-gray-100 text-gray-600 px-6 py-2 rounded-lg text-sm hover:bg-gray-200">
                 Cancel
               </button>
@@ -203,7 +349,6 @@ export default function RoomsPage() {
           <div className="space-y-6">
             {Object.entries(groupedRooms).map(([type, typeRooms]: any) => (
               <div key={type} className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-                {/* Type Header */}
                 <div className="bg-gray-50 px-6 py-4 flex items-center justify-between border-b border-gray-100">
                   <div className="flex items-center gap-3">
                     <span className="text-2xl">🛏️</span>
@@ -216,8 +361,6 @@ export default function RoomsPage() {
                     {typeRooms.length} Rooms
                   </span>
                 </div>
-
-                {/* Room Numbers Grid */}
                 <div className="p-6">
                   <div className="flex flex-wrap gap-2">
                     {typeRooms.map((room: any) => (
