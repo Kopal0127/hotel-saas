@@ -60,18 +60,20 @@ export default function Dashboard() {
           new Date(b.checkOut).toDateString() === today
         ).length || 0;
 
-        const unavailableRoomIds = new Set(
-          bookingsData.bookings
-            ?.filter((b: any) => {
-              const checkIn = new Date(b.checkIn);
-              checkIn.setHours(0, 0, 0, 0);
-              return (
-                (b.status === "CONFIRMED" && checkIn >= todayDate) ||
-                b.status === "CHECKED_IN"
-              );
-            })
-            .map((b: any) => b.roomId) || []
-        );
+        // Unavailable room IDs — check all rooms in bookingRooms array too
+        const unavailableRoomIds = new Set<string>();
+        bookingsData.bookings?.forEach((b: any) => {
+          const checkIn = new Date(b.checkIn);
+          checkIn.setHours(0, 0, 0, 0);
+          const isActive = (b.status === "CONFIRMED" && checkIn >= todayDate) || b.status === "CHECKED_IN";
+          if (isActive) {
+            if (b.rooms && b.rooms.length > 0) {
+              b.rooms.forEach((r: any) => unavailableRoomIds.add(r.roomId));
+            } else {
+              unavailableRoomIds.add(b.roomId);
+            }
+          }
+        });
 
         const available = roomsData.rooms?.filter(
           (r: any) => !unavailableRoomIds.has(r.id)
@@ -155,6 +157,13 @@ export default function Dashboard() {
     OTHER: "📋 Other",
   };
 
+  const paymentModeLabel: Record<string, string> = {
+    CASH: "💵 Cash", CARD: "💳 Card", UPI: "📱 UPI",
+    BANK_TRANSFER: "🏦 Bank", ONLINE: "🌐 Online",
+    PARTIAL_CASH: "💵 Partial", PARTIAL_CARD: "💳 Partial",
+    PARTIAL_UPI: "📱 Partial", CHECKOUT_PAYMENT: "🏨 Checkout",
+  };
+
   const actionOptions = [
     { value: "CHECKED_IN", label: "✅ Check-in", color: "text-blue-600" },
     { value: "CHECKED_OUT", label: "🚪 Check-out", color: "text-orange-600" },
@@ -165,13 +174,12 @@ export default function Dashboard() {
   // Booking Table Component (reusable)
   const BookingTable = () => (
     <div className="overflow-x-auto">
-      <table className="w-full min-w-[1100px]">
+      <table className="w-full min-w-[1200px]">
         <thead className="bg-gray-50">
           <tr>
             <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase">Booking ID</th>
             <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase">Guest Name</th>
-            <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase">Guests</th>
-            <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase">Room</th>
+            <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase">Rooms & Guests</th>
             <th className={`text-left px-4 py-3 text-xs font-semibold uppercase ${activeFilter === "checkin" ? "text-green-600" : "text-gray-500"}`}>Check-in</th>
             <th className={`text-left px-4 py-3 text-xs font-semibold uppercase ${activeFilter === "checkout" ? "text-red-500" : "text-gray-500"}`}>Check-out</th>
             <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase">Amount</th>
@@ -189,37 +197,44 @@ export default function Dashboard() {
             const totalAmount = parseFloat(booking.amount) || 0;
             const isDue = paymentPaid < totalAmount;
 
+            const roomsList = booking.rooms && booking.rooms.length > 0
+              ? booking.rooms
+              : [{ roomNumber: booking.roomNumber, roomType: booking.roomType, adults: booking.adults, children: booking.children, infants: booking.infants }];
+
             return (
               <tr key={booking.id} className="hover:bg-gray-50 transition-colors">
-                {/* Booking ID */}
-                <td className="px-4 py-3">
+                <td className="px-4 py-3 align-top">
                   <span className="text-xs font-mono bg-gray-100 text-gray-600 px-2 py-1 rounded">
                     #{booking.id?.slice(0, 8).toUpperCase()}
                   </span>
                 </td>
 
-                {/* Guest Name */}
-                <td className="px-4 py-3">
+                <td className="px-4 py-3 align-top">
                   <p className="text-sm font-medium text-gray-900">{booking.guestName}</p>
                   <p className="text-xs text-gray-400">{booking.guestEmail}</p>
+                  {booking.guestPhone && <p className="text-xs text-gray-400">📞 {booking.guestPhone}</p>}
                 </td>
 
-                {/* Guests */}
-                <td className="px-4 py-3">
-                  <p className="text-xs text-gray-700">👤 {booking.adults || 1} Adult{(booking.adults || 1) > 1 ? "s" : ""}</p>
-                  {(booking.children || 0) > 0 && (
-                    <p className="text-xs text-gray-500">🧒 {booking.children} Child</p>
-                  )}
+                {/* Rooms & Guests */}
+                <td className="px-4 py-3 align-top">
+                  <div className="space-y-1">
+                    {roomsList.map((r: any, i: number) => (
+                      <div key={i} className="text-xs">
+                        <span className="inline-flex items-center gap-1">
+                          <span className="font-medium text-gray-900">#{r.roomNumber}</span>
+                          <span className="text-gray-400">({r.roomType})</span>
+                        </span>
+                        <span className="text-gray-600 ml-2">
+                          {r.adults || 1} Adult{(r.adults || 1) > 1 ? "s" : ""}
+                          {(r.children || 0) > 0 ? ` / ${r.children} Child${r.children > 1 ? "ren" : ""}` : ""}
+                          {(r.infants || 0) > 0 ? ` / ${r.infants} Infant${r.infants > 1 ? "s" : ""}` : ""}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
                 </td>
 
-                {/* Room */}
-                <td className="px-4 py-3">
-                  <p className="text-sm font-medium text-gray-900">#{booking.roomNumber}</p>
-                  <p className="text-xs text-gray-400">{booking.roomType}</p>
-                </td>
-
-                {/* Check-in */}
-                <td className={`px-4 py-3 ${activeFilter === "checkin" ? "bg-green-50" : ""}`}>
+                <td className={`px-4 py-3 align-top ${activeFilter === "checkin" ? "bg-green-50" : ""}`}>
                   <p className={`text-sm font-medium ${activeFilter === "checkin" ? "text-green-700" : "text-gray-700"}`}>
                     {new Date(booking.checkIn).toLocaleDateString("en-IN")}
                   </p>
@@ -228,8 +243,7 @@ export default function Dashboard() {
                   )}
                 </td>
 
-                {/* Check-out */}
-                <td className={`px-4 py-3 ${activeFilter === "checkout" ? "bg-red-50" : ""}`}>
+                <td className={`px-4 py-3 align-top ${activeFilter === "checkout" ? "bg-red-50" : ""}`}>
                   <p className={`text-sm font-medium ${activeFilter === "checkout" ? "text-red-600" : "text-gray-700"}`}>
                     {new Date(booking.checkOut).toLocaleDateString("en-IN")}
                   </p>
@@ -238,34 +252,30 @@ export default function Dashboard() {
                   )}
                 </td>
 
-                {/* Amount */}
-                <td className="px-4 py-3">
+                <td className="px-4 py-3 align-top">
                   <p className="text-sm font-semibold text-gray-900">₹{booking.amount}</p>
                 </td>
 
-                {/* Payment */}
-                <td className="px-4 py-3">
+                <td className="px-4 py-3 align-top">
                   {isDue ? (
                     <span className="text-xs bg-red-100 text-red-700 px-2 py-1 rounded-full font-medium">Due</span>
                   ) : (
                     <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full font-medium">Paid</span>
                   )}
+                  <p className="text-xs text-gray-400 mt-0.5">{paymentModeLabel[booking.paymentMode] || "💵 Cash"}</p>
                 </td>
 
-                {/* Source */}
-                <td className="px-4 py-3">
+                <td className="px-4 py-3 align-top">
                   <span className="text-xs text-gray-600">{sourceLabel[booking.source] || "🚶 Walk-in"}</span>
                 </td>
 
-                {/* Status */}
-                <td className="px-4 py-3">
+                <td className="px-4 py-3 align-top">
                   <span className={`text-xs px-2 py-1 rounded-full font-medium ${statusColors[booking.status] || "bg-gray-100 text-gray-600"}`}>
                     {booking.status}
                   </span>
                 </td>
 
-                {/* Action Dropdown */}
-                <td className="px-4 py-3 relative">
+                <td className="px-4 py-3 relative align-top">
                   <div ref={openActionId === booking.id ? actionRef : null}>
                     <button
                       onClick={() => setOpenActionId(openActionId === booking.id ? null : booking.id)}
@@ -298,7 +308,6 @@ export default function Dashboard() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Navbar */}
       <nav className="bg-white border-b border-gray-100 px-4 md:px-8 py-4 flex items-center justify-between">
         <h1 className="text-xl font-bold text-blue-600">HotelPro</h1>
         <div className="flex items-center gap-2 md:gap-4">
@@ -312,11 +321,7 @@ export default function Dashboard() {
       </nav>
 
       <div className="px-4 md:px-6 py-6">
-
-        {/* TOP ROW */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-
-          {/* LEFT — Bookings Dashboard */}
           <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100">
             <h2 className="text-base font-bold text-gray-900 mb-4">Bookings Dashboard</h2>
 
@@ -370,7 +375,6 @@ export default function Dashboard() {
             </div>
           </div>
 
-          {/* RIGHT — Quick Actions */}
           <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100">
             <h2 className="text-base font-bold text-gray-900 mb-4">Quick Actions</h2>
             <div className="grid grid-cols-3 gap-3">
@@ -413,7 +417,6 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* BOTTOM */}
         {activeFilter === "rooms" ? (
           <div className="bg-white rounded-2xl p-4 md:p-6 shadow-sm border border-gray-100">
             <div className="flex items-center justify-between mb-6">
