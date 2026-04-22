@@ -1,6 +1,6 @@
 "use client";
 import { useState, useEffect, useCallback } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 
 type ServiceType = "FOOD" | "DRINKS" | "OTHER";
 
@@ -38,6 +38,8 @@ interface OccupiedRoom {
 
 export default function RoomServicePage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const roomIdFromUrl = searchParams.get("roomId");
   const [activeTab, setActiveTab] = useState<ServiceType>("FOOD");
   const [categories, setCategories] = useState<Category[]>([]);
   const [selectedCategoryId, setSelectedCategoryId] = useState<string>("");
@@ -86,7 +88,10 @@ export default function RoomServicePage() {
         }));
 
       setOccupiedRooms(checkedIn);
-      if (checkedIn.length > 0 && !selectedRoom) {
+      // Agar URL mein roomId hai toh woh select karo, nahi toh pehla
+      if (roomIdFromUrl && checkedIn.find((r: any) => r.id === roomIdFromUrl)) {
+        setSelectedRoom(roomIdFromUrl);
+      } else if (checkedIn.length > 0 && !selectedRoom) {
         setSelectedRoom(checkedIn[0].id);
       }
     } catch (e) {
@@ -373,45 +378,33 @@ export default function RoomServicePage() {
                 <h3 className="text-sm font-bold text-gray-900">Order Summary</h3>
               </div>
 
-              {/* Room Selector */}
+              {/* Selected Room Display */}
               <div className="p-3 border-b border-gray-100 bg-gray-50">
-                <p className="text-xs font-semibold text-gray-500 uppercase mb-2">Select Room</p>
-                {/* Search */}
-                <input
-                  type="text"
-                  value={roomSearch}
-                  onChange={(e) => setRoomSearch(e.target.value)}
-                  placeholder="🔍 Search room / guest..."
-                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-xs focus:outline-none focus:border-blue-400 mb-2 bg-white"
-                />
-                {/* Dropdown */}
+                <p className="text-xs font-semibold text-gray-500 uppercase mb-2">Serving Room</p>
                 {occupiedRooms.length === 0 ? (
                   <div className="text-xs text-red-500 bg-red-50 px-3 py-2 rounded-lg">
                     ⚠️ Koi checked-in room nahi hai
                   </div>
+                ) : selectedRoomData ? (
+                  <div className="bg-blue-50 border border-blue-200 rounded-lg px-3 py-3">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-sm font-bold text-blue-700">🏨 Room #{selectedRoomData.roomNumber}</p>
+                        <p className="text-xs text-blue-600">{selectedRoomData.guestName}</p>
+                        <p className="text-xs text-gray-400 mt-0.5">
+                          {new Date(selectedRoomData.checkIn).toLocaleDateString("en-IN")} → {new Date(selectedRoomData.checkOut).toLocaleDateString("en-IN")}
+                        </p>
+                      </div>
+                      <button
+                        onClick={() => router.push("/dashboard/room-service/checked-in")}
+                        className="text-xs bg-white border border-blue-300 text-blue-600 px-2 py-1 rounded-lg hover:bg-blue-100 transition-colors">
+                        Change
+                      </button>
+                    </div>
+                  </div>
                 ) : (
-                  <select
-                    value={selectedRoom}
-                    onChange={(e) => setSelectedRoom(e.target.value)}
-                    className="w-full border border-gray-200 rounded-lg px-3 py-2 text-xs focus:outline-none focus:border-blue-400 bg-white"
-                  >
-                    <option value="">-- Room select karo --</option>
-                    {filteredRooms.map((r) => (
-                      <option key={r.id} value={r.id}>
-                        Room #{r.roomNumber} — {r.guestName}
-                      </option>
-                    ))}
-                  </select>
-                )}
-
-                {/* Selected room info */}
-                {selectedRoomData && (
-                  <div className="mt-2 bg-blue-50 border border-blue-100 rounded-lg px-3 py-2">
-                    <p className="text-xs font-semibold text-blue-700">🏨 Room #{selectedRoomData.roomNumber}</p>
-                    <p className="text-xs text-blue-600">{selectedRoomData.guestName}</p>
-                    <p className="text-xs text-gray-400 mt-0.5">
-                      {new Date(selectedRoomData.checkIn).toLocaleDateString("en-IN")} → {new Date(selectedRoomData.checkOut).toLocaleDateString("en-IN")}
-                    </p>
+                  <div className="text-xs text-orange-500 bg-orange-50 px-3 py-2 rounded-lg">
+                    ⚠️ Room select nahi hua. <button onClick={() => router.push("/dashboard/room-service/checked-in")} className="underline font-medium">Choose Room</button>
                   </div>
                 )}
               </div>
