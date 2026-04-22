@@ -312,18 +312,19 @@ export default function RoomsPage() {
                   </span>
                 </div>
                 <div className="p-6">
-                  <div className="flex flex-wrap gap-2">
+                  <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-3">
                     {typeRooms.map((room: any) => (
-                      <div key={room.id} className="group relative">
-                        <div className="bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm font-medium text-gray-700 hover:bg-red-50 hover:border-red-200 cursor-pointer transition-colors"
-                          onClick={() => handleDeleteClick(room.id)}>
-                          #{room.number}
-                          <span className="hidden group-hover:inline ml-1 text-red-500 text-xs">🗑️</span>
-                        </div>
+                      <div key={room.id} className="group relative bg-green-50 border border-green-200 rounded-xl p-3 text-center hover:bg-red-50 hover:border-red-200 cursor-pointer transition-colors"
+                        onClick={() => handleDeleteClick(room.id)}>
+                        <div className="text-lg mb-1">🛏️</div>
+                        <div className="text-sm font-bold text-gray-800 group-hover:text-red-600">#{room.number}</div>
+                        <div className="text-xs text-gray-500 mt-0.5 group-hover:text-red-500">{room.type}</div>
+                        <div className="text-xs text-green-600 font-medium mt-1 group-hover:text-red-500">₹{room.price}/night</div>
+                        <span className="hidden group-hover:block text-xs text-red-500 mt-1">🗑️ Delete</span>
                       </div>
                     ))}
                   </div>
-                  <p className="text-xs text-gray-400 mt-3">💡 Room number pe click karo delete karne ke liye</p>
+                  <p className="text-xs text-gray-400 mt-3">💡 Room card pe click karo delete karne ke liye</p>
                 </div>
               </div>
             ))}
