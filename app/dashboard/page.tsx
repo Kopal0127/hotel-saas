@@ -413,6 +413,11 @@ export default function Dashboard() {
                 <span className="text-2xl">📢</span>
                 <span className="text-sm font-medium text-red-700">Digital Ads</span>
               </button>
+              <button onClick={() => router.push("/dashboard/staff")}
+                className="flex flex-col items-center gap-2 p-4 rounded-xl bg-pink-50 hover:bg-pink-100 transition-colors border border-pink-100">
+                <span className="text-2xl">👥</span>
+                <span className="text-sm font-medium text-pink-700">Staff</span>
+              </button>
             </div>
           </div>
         </div>
