@@ -21,21 +21,24 @@ export default function BookingsPage() {
   const [showMoreOptions, setShowMoreOptions] = useState(false);
   const [page, setPage] = useState(1);
   const itemsPerPage = 10;
-  const [selectedType, setSelectedType] = useState("");
-  const [selectedRoomId, setSelectedRoomId] = useState("");
   const [openActionId, setOpenActionId] = useState<string | null>(null);
-  const [showExtraItems, setShowExtraItems] = useState(false);
+  const [openExtraIdx, setOpenExtraIdx] = useState<number | null>(null);
   const actionRef = useRef<HTMLDivElement>(null);
 
+  // Multi-room state — array of rooms
+  const [bookingRooms, setBookingRooms] = useState<any[]>([
+    { selectedType: "", roomId: "", adults: "1", children: "0", infants: "0",
+      extraMattress: "0", extraPillow: "0", extraBedsheet: "0", blanket: "0" }
+  ]);
+
+  // Guest info, dates, payment — shared across all rooms
   const [form, setForm] = useState({
-    roomId: "", guestName: "", guestEmail: "", guestPhone: "",
+    guestName: "", guestEmail: "", guestPhone: "", countryCode: "+91",
     checkIn: "", checkOut: "", amount: "",
     notes: "", specialRequests: "",
     paymentMode: "CASH", paymentAmount: "",
     finalPaymentMode: "", finalPaymentAmount: "",
-    adults: "1", children: "0", infants: "0",
-    source: "WALK_IN", countryCode: "+91",
-    extraMattress: "0", extraPillow: "0", extraBedsheet: "0", blanket: "0",
+    source: "WALK_IN",
   });
 
   useEffect(() => { fetchData(); }, []);
@@ -50,15 +53,19 @@ export default function BookingsPage() {
     return () => document.removeEventListener("mousedown", handleClick);
   }, []);
 
+  // Auto amount calculate (total sum of all rooms × nights)
   useEffect(() => {
-    if (form.roomId && form.checkIn && form.checkOut) {
-      const selectedRoom = rooms.find(r => r.id === form.roomId);
-      if (selectedRoom) {
-        const nights = Math.ceil((new Date(form.checkOut).getTime() - new Date(form.checkIn).getTime()) / (1000 * 60 * 60 * 24));
-        if (nights > 0) setForm(prev => ({ ...prev, amount: (selectedRoom.price * nights).toString() }));
+    if (form.checkIn && form.checkOut) {
+      const nights = Math.ceil((new Date(form.checkOut).getTime() - new Date(form.checkIn).getTime()) / (1000 * 60 * 60 * 24));
+      if (nights > 0) {
+        const total = bookingRooms.reduce((sum, br) => {
+          const r = rooms.find(rm => rm.id === br.roomId);
+          return sum + (r ? r.price * nights : 0);
+        }, 0);
+        if (total > 0) setForm(prev => ({ ...prev, amount: total.toString() }));
       }
     }
-  }, [form.roomId, form.checkIn, form.checkOut, rooms]);
+  }, [bookingRooms, form.checkIn, form.checkOut, rooms]);
 
   useEffect(() => {
     if (form.finalPaymentMode === "CHECKOUT_PAYMENT" && form.amount && form.paymentAmount) {
@@ -66,15 +73,6 @@ export default function BookingsPage() {
       if (remaining >= 0) setForm(prev => ({ ...prev, finalPaymentAmount: remaining.toString() }));
     }
   }, [form.finalPaymentMode, form.amount, form.paymentAmount]);
-
-  useEffect(() => {
-    setSelectedRoomId("");
-    setForm(prev => ({ ...prev, roomId: "" }));
-  }, [selectedType]);
-
-  useEffect(() => {
-    setForm(prev => ({ ...prev, roomId: selectedRoomId }));
-  }, [selectedRoomId]);
 
   const fetchData = async () => {
     try {
@@ -115,29 +113,69 @@ export default function BookingsPage() {
 
   const roomTypes = [...new Set(rooms.map(r => r.type))];
 
-  const getBookedRoomIds = () => {
+  // Check which rooms are booked for selected dates + already selected in form
+  const getUnavailableRoomIds = () => {
     if (!form.checkIn || !form.checkOut) return [];
     const checkIn = new Date(form.checkIn);
     const checkOut = new Date(form.checkOut);
-    return bookings
+    const bookedIds = bookings
       .filter(b =>
-        (b.status === "CONFIRMED" || b.status === "PENDING") &&
+        (b.status === "CONFIRMED" || b.status === "PENDING" || b.status === "CHECKED_IN") &&
         new Date(b.checkIn) < checkOut &&
         new Date(b.checkOut) > checkIn
       )
       .map(b => b.roomId);
+    const alreadySelected = bookingRooms.map(br => br.roomId).filter(Boolean);
+    return [...bookedIds, ...alreadySelected];
   };
 
-  const bookedIds = getBookedRoomIds();
-  const filteredRoomsByType = selectedType && form.checkIn && form.checkOut
-    ? rooms.filter(r => r.type === selectedType && !bookedIds.includes(r.id))
-    : selectedType ? rooms.filter(r => r.type === selectedType) : [];
+  const getAvailableRoomsForType = (type: string, currentIdx: number) => {
+    if (!type || !form.checkIn || !form.checkOut) return [];
+    const unavailable = getUnavailableRoomIds();
+    const currentRoomId = bookingRooms[currentIdx]?.roomId;
+    return rooms.filter(r =>
+      r.type === type &&
+      (!unavailable.includes(r.id) || r.id === currentRoomId)
+    );
+  };
+
+  // Update single room in array
+  const updateRoom = (idx: number, field: string, value: string) => {
+    setBookingRooms(prev => {
+      const updated = [...prev];
+      updated[idx] = { ...updated[idx], [field]: value };
+      if (field === "selectedType") {
+        updated[idx].roomId = "";
+      }
+      return updated;
+    });
+  };
+
+  const addRoom = () => {
+    setBookingRooms(prev => [...prev, {
+      selectedType: "", roomId: "", adults: "1", children: "0", infants: "0",
+      extraMattress: "0", extraPillow: "0", extraBedsheet: "0", blanket: "0"
+    }]);
+  };
+
+  const removeRoom = (idx: number) => {
+    if (bookingRooms.length === 1) {
+      showToast("Kam se kam 1 room chahiye!", "warning");
+      return;
+    }
+    setBookingRooms(prev => prev.filter((_, i) => i !== idx));
+  };
 
   const validate = () => {
     if (!form.checkIn) { showToast("Check-in date daalo!", "error"); return false; }
     if (!form.checkOut) { showToast("Check-out date daalo!", "error"); return false; }
     if (new Date(form.checkOut) <= new Date(form.checkIn)) { showToast("Check-out, check-in ke baad honi chahiye!", "error"); return false; }
-    if (!form.roomId) { showToast("Room select karo!", "error"); return false; }
+    for (let i = 0; i < bookingRooms.length; i++) {
+      if (!bookingRooms[i].roomId) {
+        showToast(`Room ${i + 1} select karo!`, "error");
+        return false;
+      }
+    }
     if (!form.guestName.trim()) { showToast("Guest naam daalo!", "error"); return false; }
     if (!form.guestEmail.trim()) { showToast("Guest email daalo!", "error"); return false; }
     if (form.guestPhone && form.guestPhone.length !== 10) { showToast("Phone number 10 digits ka hona chahiye!", "error"); return false; }
@@ -155,9 +193,16 @@ export default function BookingsPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           ...form,
-          adults: parseInt(form.adults) || 1,
-          children: parseInt(form.children) || 0,
-          infants: parseInt(form.infants) || 0,
+          rooms: bookingRooms.map(br => ({
+            roomId: br.roomId,
+            adults: parseInt(br.adults) || 1,
+            children: parseInt(br.children) || 0,
+            infants: parseInt(br.infants) || 0,
+            extraMattress: parseInt(br.extraMattress) || 0,
+            extraPillow: parseInt(br.extraPillow) || 0,
+            extraBedsheet: parseInt(br.extraBedsheet) || 0,
+            blanket: parseInt(br.blanket) || 0,
+          })),
           source: "WALK_IN",
           guestPhone: form.guestPhone ? `${form.countryCode || "+91"} ${form.guestPhone}` : null,
         }),
@@ -166,17 +211,18 @@ export default function BookingsPage() {
       if (res.ok) {
         showToast("Booking ho gayi! ✅", "success");
         setForm({
-          roomId: "", guestName: "", guestEmail: "", guestPhone: "",
+          guestName: "", guestEmail: "", guestPhone: "", countryCode: "+91",
           checkIn: "", checkOut: "", amount: "",
           notes: "", specialRequests: "",
           paymentMode: "CASH", paymentAmount: "",
           finalPaymentMode: "", finalPaymentAmount: "",
-          adults: "1", children: "0", infants: "0", source: "WALK_IN", countryCode: "+91",
-          extraMattress: "0", extraPillow: "0", extraBedsheet: "0", blanket: "0",
+          source: "WALK_IN",
         });
-        setSelectedType(""); setSelectedRoomId("");
-        setShowForm(false); setShowFinalPayment(false);
-        setShowMoreOptions(false); setShowExtraItems(false);
+        setBookingRooms([{
+          selectedType: "", roomId: "", adults: "1", children: "0", infants: "0",
+          extraMattress: "0", extraPillow: "0", extraBedsheet: "0", blanket: "0"
+        }]);
+        setShowForm(false); setShowFinalPayment(false); setShowMoreOptions(false);
         fetchData();
       } else {
         showToast(data.error || "Booking nahi ho saki!", "error");
@@ -190,12 +236,11 @@ export default function BookingsPage() {
   const handleExportCSV = () => {
     if (bookings.length === 0) { showToast("Koi booking nahi!", "warning"); return; }
     const csv = [
-      ["Booking ID", "Guest Name", "Email", "Phone", "Adults", "Children", "Infants", "Room", "Type", "Check In", "Check Out", "Amount", "Payment", "Source", "Status"],
+      ["Booking ID", "Guest Name", "Email", "Phone", "Rooms", "Check In", "Check Out", "Amount", "Payment", "Source", "Status"],
       ...bookings.map(b => [
         b.id?.slice(0, 8).toUpperCase(),
         b.guestName, b.guestEmail, b.guestPhone || "",
-        b.adults || 1, b.children || 0, b.infants || 0,
-        `#${b.roomNumber}`, b.roomType,
+        (b.rooms && b.rooms.length > 0 ? b.rooms.map((r: any) => `#${r.roomNumber}`).join(" | ") : `#${b.roomNumber}`),
         new Date(b.checkIn).toLocaleDateString(),
         new Date(b.checkOut).toLocaleDateString(),
         b.amount, b.paymentMode, b.source || "WALK_IN", b.status
@@ -267,14 +312,15 @@ export default function BookingsPage() {
     return 0;
   };
 
-  const selectedRoomPrice = rooms.find(r => r.id === form.roomId)?.price;
   const remainingAmount = form.amount && form.paymentAmount
     ? parseFloat(form.amount) - parseFloat(form.paymentAmount) : 0;
 
-  const extraSummary = extraItems
-    .filter(item => parseInt((form as any)[item.key]) > 0)
-    .map(item => `${(form as any)[item.key]} ${item.label}`)
-    .join(", ");
+  const getExtraSummary = (br: any) => {
+    return extraItems
+      .filter(item => parseInt(br[item.key]) > 0)
+      .map(item => `${br[item.key]} ${item.label.replace(/^.\s/, "")}`)
+      .join(", ");
+  };
 
   const firstPaymentOptions = [
     { value: "CASH", label: "💵 Cash" },
@@ -320,61 +366,128 @@ export default function BookingsPage() {
         {showForm && (
           <div className="bg-white rounded-2xl p-4 md:p-6 shadow-sm border border-gray-100 mb-6">
             <h3 className="text-lg font-semibold text-gray-900 mb-4">Naya Booking Add Karo</h3>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
 
-              {/* Row 1 — Date, Room Type, Room No */}
-              <div className="md:col-span-3">
-                <label className="text-sm font-medium text-gray-700 mb-2 block">
-                  Check-in → Check-out / Room Type / Room Number
-                  {form.checkIn && form.checkOut && (
-                    <span className="ml-2 text-xs text-blue-500 font-normal">{calculateNights()} night{calculateNights() > 1 ? "s" : ""}</span>
+            {/* Date Range */}
+            <div className="mb-4">
+              <label className="text-sm font-medium text-gray-700 mb-2 block">
+                Check-in → Check-out Date
+                {form.checkIn && form.checkOut && (
+                  <span className="ml-2 text-xs text-blue-500 font-normal">{calculateNights()} night{calculateNights() > 1 ? "s" : ""}</span>
+                )}
+              </label>
+              <DatePicker
+                selectsRange
+                startDate={form.checkIn ? new Date(form.checkIn) : null}
+                endDate={form.checkOut ? new Date(form.checkOut) : null}
+                onChange={(dates: [Date | null, Date | null]) => {
+                  const [start, end] = dates;
+                  setForm({ ...form, checkIn: start ? start.toISOString().split("T")[0] : "", checkOut: end ? end.toISOString().split("T")[0] : "" });
+                }}
+                minDate={new Date()}
+                placeholderText="Check-in → Check-out"
+                className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-blue-500 cursor-pointer"
+                wrapperClassName="w-full"
+                monthsShown={2}
+                dateFormat="dd/MM/yyyy"
+                isClearable
+              />
+              {form.checkIn && form.checkOut && (
+                <p className="text-xs text-blue-600 mt-1">📅 {new Date(form.checkIn).toLocaleDateString("en-IN")} → {new Date(form.checkOut).toLocaleDateString("en-IN")}</p>
+              )}
+            </div>
+
+            {/* Rooms Sections */}
+            {bookingRooms.map((br, idx) => (
+              <div key={idx} className="bg-blue-50 rounded-xl p-4 mb-4 border border-blue-100">
+                <div className="flex items-center justify-between mb-3">
+                  <h4 className="text-sm font-semibold text-blue-700">🛏️ Room {idx + 1}</h4>
+                  {bookingRooms.length > 1 && (
+                    <button type="button" onClick={() => removeRoom(idx)}
+                      className="text-xs text-red-500 hover:text-red-700 font-medium">✕ Remove</button>
                   )}
-                </label>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                </div>
+
+                {/* Room Type + Room Number */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
                   <div>
-                    <DatePicker
-                      selectsRange
-                      startDate={form.checkIn ? new Date(form.checkIn) : null}
-                      endDate={form.checkOut ? new Date(form.checkOut) : null}
-                      onChange={(dates: [Date | null, Date | null]) => {
-                        const [start, end] = dates;
-                        setForm({ ...form, checkIn: start ? start.toISOString().split("T")[0] : "", checkOut: end ? end.toISOString().split("T")[0] : "" });
-                        setSelectedRoomId(""); setSelectedType("");
-                      }}
-                      minDate={new Date()}
-                      placeholderText="Check-in → Check-out"
-                      className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-blue-500 cursor-pointer"
-                      wrapperClassName="w-full"
-                      monthsShown={2}
-                      dateFormat="dd/MM/yyyy"
-                      isClearable
-                    />
-                    {form.checkIn && form.checkOut && (
-                      <p className="text-xs text-blue-600 mt-1">📅 {new Date(form.checkIn).toLocaleDateString("en-IN")} → {new Date(form.checkOut).toLocaleDateString("en-IN")}</p>
-                    )}
-                  </div>
-                  <div>
-                    <select value={selectedType} onChange={(e) => setSelectedType(e.target.value)}
+                    <label className="text-xs font-medium text-gray-700 mb-1 block">Room Type</label>
+                    <select value={br.selectedType}
+                      onChange={(e) => updateRoom(idx, "selectedType", e.target.value)}
                       disabled={!form.checkIn || !form.checkOut}
-                      className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-blue-500 disabled:bg-gray-100">
+                      className="w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:border-blue-500 disabled:bg-gray-100 bg-white">
                       <option value="">-- Room Type chuno --</option>
                       {roomTypes.map(type => <option key={type} value={type}>{type}</option>)}
                     </select>
                   </div>
                   <div>
-                    <select value={selectedRoomId} onChange={(e) => setSelectedRoomId(e.target.value)}
-                      disabled={!selectedType || filteredRoomsByType.length === 0}
-                      className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-blue-500 disabled:bg-gray-100">
+                    <label className="text-xs font-medium text-gray-700 mb-1 block">Room Number</label>
+                    <select value={br.roomId}
+                      onChange={(e) => updateRoom(idx, "roomId", e.target.value)}
+                      disabled={!br.selectedType || getAvailableRoomsForType(br.selectedType, idx).length === 0}
+                      className="w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:border-blue-500 disabled:bg-gray-100 bg-white">
                       <option value="">-- Room Number chuno --</option>
-                      {filteredRoomsByType.map(room => (
+                      {getAvailableRoomsForType(br.selectedType, idx).map(room => (
                         <option key={room.id} value={room.id}>Room #{room.number} — ₹{room.price}/night</option>
                       ))}
                     </select>
                   </div>
                 </div>
-              </div>
 
-              {/* Row 2 — Guest Name, Email, Phone */}
+                {/* Adults, Children, Infants, Extra Beds */}
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                  <div>
+                    <label className="text-xs font-medium text-gray-700 mb-1 block">Adults</label>
+                    <input type="number" min="1" value={br.adults}
+                      onChange={(e) => updateRoom(idx, "adults", e.target.value)}
+                      className="w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:border-blue-500 bg-white" />
+                  </div>
+                  <div>
+                    <label className="text-xs font-medium text-gray-700 mb-1 block">Children</label>
+                    <input type="number" min="0" value={br.children}
+                      onChange={(e) => updateRoom(idx, "children", e.target.value)}
+                      className="w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:border-blue-500 bg-white" />
+                  </div>
+                  <div>
+                    <label className="text-xs font-medium text-gray-700 mb-1 block">Infants</label>
+                    <input type="number" min="0" value={br.infants}
+                      onChange={(e) => updateRoom(idx, "infants", e.target.value)}
+                      className="w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:border-blue-500 bg-white" />
+                  </div>
+                  <div className="relative">
+                    <label className="text-xs font-medium text-gray-700 mb-1 block">Extra Beds</label>
+                    <button type="button"
+                      onClick={() => setOpenExtraIdx(openExtraIdx === idx ? null : idx)}
+                      className="w-full flex items-center justify-between border border-gray-200 rounded-lg px-3 py-2.5 text-sm text-gray-600 bg-white hover:bg-gray-50 transition-colors">
+                      <span className="truncate">{getExtraSummary(br) || "Select ▾"}</span>
+                      <span className="ml-2">{openExtraIdx === idx ? "▲" : "▾"}</span>
+                    </button>
+                    {openExtraIdx === idx && (
+                      <div className="absolute top-full left-0 right-0 z-50 mt-1 bg-white border border-gray-200 rounded-xl shadow-lg p-3">
+                        {extraItems.map((item) => (
+                          <div key={item.key} className="flex items-center justify-between py-2 border-b border-gray-50 last:border-0">
+                            <span className="text-sm text-gray-700">{item.label}</span>
+                            <div className="flex items-center gap-2">
+                              <button type="button"
+                                onClick={() => updateRoom(idx, item.key, Math.max(0, (parseInt(br[item.key]) || 0) - 1).toString())}
+                                className="w-7 h-7 bg-red-100 text-red-600 rounded-full font-bold hover:bg-red-200 flex items-center justify-center text-sm">−</button>
+                              <span className="text-sm font-semibold text-gray-900 w-6 text-center">{br[item.key] || "0"}</span>
+                              <button type="button"
+                                onClick={() => updateRoom(idx, item.key, ((parseInt(br[item.key]) || 0) + 1).toString())}
+                                className="w-7 h-7 bg-green-100 text-green-600 rounded-full font-bold hover:bg-green-200 flex items-center justify-center text-sm">+</button>
+                            </div>
+                          </div>
+                        ))}
+                        <button type="button" onClick={() => setOpenExtraIdx(null)}
+                          className="w-full mt-2 text-xs text-center text-blue-600 hover:underline">Done ✓</button>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            ))}
+
+            {/* Guest Info */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
               <div>
                 <label className="text-sm font-medium text-gray-700 mb-1 block">Guest Name</label>
                 <input type="text" placeholder="Guest ka naam" value={form.guestName}
@@ -412,67 +525,18 @@ export default function BookingsPage() {
                     className="flex-1 w-full border border-gray-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-blue-500" />
                 </div>
                 {form.guestPhone && form.guestPhone.length !== 10 && (
-                  <p className="text-xs text-red-500 mt-1">⚠️ Phone number 10 digits ka hona chahiye</p>
+                  <p className="text-xs text-red-500 mt-1">⚠️ 10 digits required</p>
                 )}
               </div>
+            </div>
 
-              {/* Row 3 — Adults, Children, Infants, Extra Beds (4 columns) */}
-              <div className="md:col-span-3 grid grid-cols-2 md:grid-cols-4 gap-4">
-                <div>
-                  <label className="text-sm font-medium text-gray-700 mb-1 block">Adults</label>
-                  <input type="number" min="1" value={form.adults}
-                    onChange={(e) => setForm({ ...form, adults: e.target.value })}
-                    className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-blue-500" />
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-gray-700 mb-1 block">Children</label>
-                  <input type="number" min="0" value={form.children}
-                    onChange={(e) => setForm({ ...form, children: e.target.value })}
-                    className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-blue-500" />
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-gray-700 mb-1 block">Infants</label>
-                  <input type="number" min="0" value={form.infants}
-                    onChange={(e) => setForm({ ...form, infants: e.target.value })}
-                    className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-blue-500" />
-                </div>
-                <div className="relative">
-                  <label className="text-sm font-medium text-gray-700 mb-1 block">Extra Beds</label>
-                  <button type="button"
-                    onClick={() => setShowExtraItems(!showExtraItems)}
-                    className="w-full flex items-center justify-between border border-gray-200 rounded-lg px-4 py-3 text-sm text-gray-600 bg-white hover:bg-gray-50 transition-colors">
-                    <span className="truncate">{extraSummary || "Select ▾"}</span>
-                    <span className="ml-2">{showExtraItems ? "▲" : "▾"}</span>
-                  </button>
-                  {showExtraItems && (
-                    <div className="absolute top-full left-0 right-0 z-50 mt-1 bg-white border border-gray-200 rounded-xl shadow-lg p-3">
-                      {extraItems.map((item) => (
-                        <div key={item.key} className="flex items-center justify-between py-2 border-b border-gray-50 last:border-0">
-                          <span className="text-sm text-gray-700">{item.label}</span>
-                          <div className="flex items-center gap-2">
-                            <button type="button"
-                              onClick={() => setForm(prev => ({ ...prev, [item.key]: Math.max(0, (parseInt((prev as any)[item.key]) || 0) - 1).toString() }))}
-                              className="w-7 h-7 bg-red-100 text-red-600 rounded-full font-bold hover:bg-red-200 flex items-center justify-center text-sm">−</button>
-                            <span className="text-sm font-semibold text-gray-900 w-6 text-center">{(form as any)[item.key] || "0"}</span>
-                            <button type="button"
-                              onClick={() => setForm(prev => ({ ...prev, [item.key]: ((parseInt((prev as any)[item.key]) || 0) + 1).toString() }))}
-                              className="w-7 h-7 bg-green-100 text-green-600 rounded-full font-bold hover:bg-green-200 flex items-center justify-center text-sm">+</button>
-                          </div>
-                        </div>
-                      ))}
-                      <button type="button" onClick={() => setShowExtraItems(false)}
-                        className="w-full mt-2 text-xs text-center text-blue-600 hover:underline">Done ✓</button>
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              {/* Row 4 — Amount, Payment Mode, Payment Amount */}
+            {/* Amount, Payment, Add Room button — 4 columns */}
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
               <div>
                 <label className="text-sm font-medium text-gray-700 mb-1 block">
                   Total Amount (₹)
-                  {calculateNights() > 0 && form.roomId && (
-                    <span className="ml-2 text-xs text-blue-500">{calculateNights()} nights × ₹{selectedRoomPrice}</span>
+                  {calculateNights() > 0 && (
+                    <span className="ml-2 text-xs text-blue-500">{calculateNights()} night{calculateNights() > 1 ? "s" : ""}</span>
                   )}
                 </label>
                 <input type="number" value={form.amount}
@@ -495,68 +559,78 @@ export default function BookingsPage() {
                   <p className="text-xs text-orange-500 mt-1">⚠️ Remaining: ₹{remainingAmount}</p>
                 )}
               </div>
-
-              <div className="md:col-span-3">
-                <button type="button" onClick={() => setShowMoreOptions(!showMoreOptions)}
-                  className="text-sm text-blue-600 hover:text-blue-700 font-medium">
-                  {showMoreOptions ? "▲ Less Options" : "▼ More Options"}
+              <div className="flex items-end">
+                <button type="button" onClick={addRoom}
+                  className="w-full border-2 border-dashed border-blue-400 text-blue-600 rounded-lg px-4 py-3 text-sm hover:bg-blue-50 font-medium">
+                  + Add Room
                 </button>
               </div>
-
-              {showMoreOptions && (
-                <>
-                  {!showFinalPayment ? (
-                    <div className="md:col-span-3">
-                      <button type="button" onClick={() => { setShowFinalPayment(true); setForm({ ...form, finalPaymentMode: "CHECKOUT_PAYMENT" }); }}
-                        className="w-full border-2 border-dashed border-blue-300 text-blue-600 rounded-lg px-4 py-3 text-sm hover:bg-blue-50">
-                        + Add Final Payment Mode
-                      </button>
-                    </div>
-                  ) : (
-                    <>
-                      <div>
-                        <div className="flex items-center justify-between mb-1">
-                          <label className="text-sm font-medium text-gray-700">Final Payment Mode</label>
-                          <button type="button" onClick={() => { setShowFinalPayment(false); setForm({ ...form, finalPaymentMode: "", finalPaymentAmount: "" }); }}
-                            className="text-xs text-red-400 hover:text-red-600">✕ Remove</button>
-                        </div>
-                        <select value={form.finalPaymentMode} onChange={(e) => setForm({ ...form, finalPaymentMode: e.target.value })}
-                          className="w-full border border-blue-300 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-blue-500 bg-blue-50">
-                          {finalPaymentOptions.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
-                        </select>
-                      </div>
-                      <div>
-                        <label className="text-sm font-medium text-gray-700 mb-1 block">Final Payment Amount (₹)</label>
-                        <input type="number" value={form.finalPaymentAmount}
-                          readOnly={form.finalPaymentMode === "CHECKOUT_PAYMENT"}
-                          onChange={(e) => setForm({ ...form, finalPaymentAmount: e.target.value })}
-                          className={`w-full border rounded-lg px-4 py-3 text-sm focus:outline-none ${form.finalPaymentMode === "CHECKOUT_PAYMENT" ? "bg-green-50 border-green-300 text-green-700" : "border-blue-300 bg-blue-50"}`} />
-                      </div>
-                      <div></div>
-                    </>
-                  )}
-                  <div className="md:col-span-3">
-                    <label className="text-sm font-medium text-gray-700 mb-1 block">Special Requests</label>
-                    <input type="text" placeholder="Optional" value={form.specialRequests}
-                      onChange={(e) => setForm({ ...form, specialRequests: e.target.value })}
-                      className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-blue-500" />
-                  </div>
-                  <div className="md:col-span-3">
-                    <label className="text-sm font-medium text-gray-700 mb-1 block">Notes</label>
-                    <textarea placeholder="Internal notes" value={form.notes}
-                      onChange={(e) => setForm({ ...form, notes: e.target.value })} rows={2}
-                      className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-blue-500" />
-                  </div>
-                </>
-              )}
             </div>
+
+            {/* More Options */}
+            <div className="mb-4">
+              <button type="button" onClick={() => setShowMoreOptions(!showMoreOptions)}
+                className="text-sm text-blue-600 hover:text-blue-700 font-medium">
+                {showMoreOptions ? "▲ Less Options" : "▼ More Options"}
+              </button>
+            </div>
+
+            {showMoreOptions && (
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                {!showFinalPayment ? (
+                  <div className="md:col-span-3">
+                    <button type="button" onClick={() => { setShowFinalPayment(true); setForm({ ...form, finalPaymentMode: "CHECKOUT_PAYMENT" }); }}
+                      className="w-full border-2 border-dashed border-blue-300 text-blue-600 rounded-lg px-4 py-3 text-sm hover:bg-blue-50">
+                      + Add Final Payment Mode
+                    </button>
+                  </div>
+                ) : (
+                  <>
+                    <div>
+                      <div className="flex items-center justify-between mb-1">
+                        <label className="text-sm font-medium text-gray-700">Final Payment Mode</label>
+                        <button type="button" onClick={() => { setShowFinalPayment(false); setForm({ ...form, finalPaymentMode: "", finalPaymentAmount: "" }); }}
+                          className="text-xs text-red-400 hover:text-red-600">✕ Remove</button>
+                      </div>
+                      <select value={form.finalPaymentMode} onChange={(e) => setForm({ ...form, finalPaymentMode: e.target.value })}
+                        className="w-full border border-blue-300 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-blue-500 bg-blue-50">
+                        {finalPaymentOptions.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+                      </select>
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium text-gray-700 mb-1 block">Final Payment Amount (₹)</label>
+                      <input type="number" value={form.finalPaymentAmount}
+                        readOnly={form.finalPaymentMode === "CHECKOUT_PAYMENT"}
+                        onChange={(e) => setForm({ ...form, finalPaymentAmount: e.target.value })}
+                        className={`w-full border rounded-lg px-4 py-3 text-sm focus:outline-none ${form.finalPaymentMode === "CHECKOUT_PAYMENT" ? "bg-green-50 border-green-300 text-green-700" : "border-blue-300 bg-blue-50"}`} />
+                    </div>
+                    <div></div>
+                  </>
+                )}
+                <div className="md:col-span-3">
+                  <label className="text-sm font-medium text-gray-700 mb-1 block">Special Requests</label>
+                  <input type="text" placeholder="Optional" value={form.specialRequests}
+                    onChange={(e) => setForm({ ...form, specialRequests: e.target.value })}
+                    className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-blue-500" />
+                </div>
+                <div className="md:col-span-3">
+                  <label className="text-sm font-medium text-gray-700 mb-1 block">Notes</label>
+                  <textarea placeholder="Internal notes" value={form.notes}
+                    onChange={(e) => setForm({ ...form, notes: e.target.value })} rows={2}
+                    className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-blue-500" />
+                </div>
+              </div>
+            )}
 
             <div className="flex gap-3 mt-4">
               <button onClick={handleSubmit} disabled={loading}
                 className="bg-blue-600 text-white px-6 py-2 rounded-lg text-sm hover:bg-blue-700 disabled:opacity-50">
                 {loading ? "Adding..." : "Booking Confirm Karo"}
               </button>
-              <button onClick={() => { setShowForm(false); setShowFinalPayment(false); setShowMoreOptions(false); setSelectedType(""); setSelectedRoomId(""); setShowExtraItems(false); }}
+              <button onClick={() => {
+                setShowForm(false); setShowFinalPayment(false); setShowMoreOptions(false);
+                setBookingRooms([{ selectedType: "", roomId: "", adults: "1", children: "0", infants: "0", extraMattress: "0", extraPillow: "0", extraBedsheet: "0", blanket: "0" }]);
+              }}
                 className="bg-gray-100 text-gray-600 px-6 py-2 rounded-lg text-sm hover:bg-gray-200">
                 Cancel
               </button>
@@ -564,6 +638,7 @@ export default function BookingsPage() {
           </div>
         )}
 
+        {/* Search & Filter */}
         <div className="flex flex-col sm:flex-row gap-3 mb-6">
           <input type="text" placeholder="🔍 Guest naam ya email..."
             value={searchTerm} onChange={(e) => { setSearchTerm(e.target.value); setPage(1); }}
@@ -579,6 +654,7 @@ export default function BookingsPage() {
           </select>
         </div>
 
+        {/* Bookings Table */}
         {filteredBookings.length === 0 ? (
           <div className="bg-white rounded-2xl p-12 shadow-sm border border-gray-100 text-center text-gray-400">
             <div className="text-5xl mb-4">📭</div>
@@ -592,8 +668,7 @@ export default function BookingsPage() {
                   <tr>
                     <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase">Booking ID</th>
                     <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase">Guest Name</th>
-                    <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase">Guests</th>
-                    <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase">Room</th>
+                    <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase">Rooms & Guests</th>
                     <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase">Check-in</th>
                     <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase">Check-out</th>
                     <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase">Amount</th>
@@ -610,45 +685,52 @@ export default function BookingsPage() {
                     const today = new Date().toDateString();
                     const isCheckInToday = new Date(booking.checkIn).toDateString() === today;
                     const isCheckOutToday = new Date(booking.checkOut).toDateString() === today;
-                    const adults = booking.adults || 1;
-                    const children = booking.children || 0;
-                    const infants = booking.infants || 0;
+
+                    const roomsList = booking.rooms && booking.rooms.length > 0
+                      ? booking.rooms
+                      : [{ roomNumber: booking.roomNumber, roomType: booking.roomType, adults: booking.adults, children: booking.children, infants: booking.infants }];
 
                     return (
                       <tr key={booking.id} className="hover:bg-gray-50 transition-colors">
-                        <td className="px-4 py-3">
+                        <td className="px-4 py-3 align-top">
                           <span className="text-xs font-mono bg-gray-100 text-gray-600 px-2 py-1 rounded">
                             #{booking.id?.slice(0, 8).toUpperCase()}
                           </span>
                         </td>
-                        <td className="px-4 py-3">
+                        <td className="px-4 py-3 align-top">
                           <p className="text-sm font-medium text-gray-900">{booking.guestName}</p>
                           <p className="text-xs text-gray-400">{booking.guestEmail}</p>
                           {booking.guestPhone && <p className="text-xs text-gray-400">📞 {booking.guestPhone}</p>}
                         </td>
-                        <td className="px-4 py-3">
-                          <p className="text-xs text-gray-700">
-                            {adults} Adult{adults > 1 ? "s" : ""}
-                            {children > 0 ? ` / ${children} Child${children > 1 ? "ren" : ""}` : ""}
-                            {infants > 0 ? ` / ${infants} Infant${infants > 1 ? "s" : ""}` : ""}
-                          </p>
+                        <td className="px-4 py-3 align-top">
+                          <div className="space-y-1">
+                            {roomsList.map((r: any, i: number) => (
+                              <div key={i} className="text-xs">
+                                <span className="inline-flex items-center gap-1">
+                                  <span className="font-medium text-gray-900">#{r.roomNumber}</span>
+                                  <span className="text-gray-400">({r.roomType})</span>
+                                </span>
+                                <span className="text-gray-600 ml-2">
+                                  {r.adults || 1} Adult{(r.adults || 1) > 1 ? "s" : ""}
+                                  {(r.children || 0) > 0 ? ` / ${r.children} Child${r.children > 1 ? "ren" : ""}` : ""}
+                                  {(r.infants || 0) > 0 ? ` / ${r.infants} Infant${r.infants > 1 ? "s" : ""}` : ""}
+                                </span>
+                              </div>
+                            ))}
+                          </div>
                         </td>
-                        <td className="px-4 py-3">
-                          <p className="text-sm font-medium text-gray-900">#{booking.roomNumber}</p>
-                          <p className="text-xs text-gray-400">{booking.roomType}</p>
-                        </td>
-                        <td className="px-4 py-3">
+                        <td className="px-4 py-3 align-top">
                           <p className="text-sm text-gray-700">{new Date(booking.checkIn).toLocaleDateString("en-IN")}</p>
                           {isCheckInToday && <span className="text-xs bg-green-100 text-green-700 px-1.5 py-0.5 rounded-full">Today</span>}
                         </td>
-                        <td className="px-4 py-3">
+                        <td className="px-4 py-3 align-top">
                           <p className="text-sm text-gray-700">{new Date(booking.checkOut).toLocaleDateString("en-IN")}</p>
                           {isCheckOutToday && <span className="text-xs bg-orange-100 text-orange-700 px-1.5 py-0.5 rounded-full">Today</span>}
                         </td>
-                        <td className="px-4 py-3">
+                        <td className="px-4 py-3 align-top">
                           <p className="text-sm font-semibold text-gray-900">₹{booking.amount}</p>
                         </td>
-                        <td className="px-4 py-3">
+                        <td className="px-4 py-3 align-top">
                           {isDue ? (
                             <span className="text-xs bg-red-100 text-red-700 px-2 py-1 rounded-full font-medium">Due</span>
                           ) : (
@@ -656,15 +738,15 @@ export default function BookingsPage() {
                           )}
                           <p className="text-xs text-gray-400 mt-0.5">{paymentModeLabel[booking.paymentMode] || "💵 Cash"}</p>
                         </td>
-                        <td className="px-4 py-3">
+                        <td className="px-4 py-3 align-top">
                           <span className="text-xs text-gray-600">{sourceLabel[booking.source] || "🚶 Walk-in"}</span>
                         </td>
-                        <td className="px-4 py-3">
+                        <td className="px-4 py-3 align-top">
                           <span className={`text-xs px-2 py-1 rounded-full font-medium ${statusColors[booking.status] || "bg-gray-100 text-gray-600"}`}>
                             {booking.status}
                           </span>
                         </td>
-                        <td className="px-4 py-3 relative">
+                        <td className="px-4 py-3 relative align-top">
                           <div ref={openActionId === booking.id ? actionRef : null}>
                             <button
                               onClick={() => setOpenActionId(openActionId === booking.id ? null : booking.id)}

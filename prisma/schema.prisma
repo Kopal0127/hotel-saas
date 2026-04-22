@@ -54,6 +54,7 @@ model Room {
   bookings           Booking[]
   ratePlans          RatePlan[]
   otaBookings        OtaBooking[]
+  bookingRooms       BookingRoom[]
 }
 
 model Booking {
@@ -78,6 +79,24 @@ model Booking {
   finalPaymentMode   String?
   finalPaymentAmount Float?
   createdAt          DateTime      @default(now())
+  bookingRooms       BookingRoom[]
+}
+
+model BookingRoom {
+  id              String   @id @default(cuid())
+  bookingId       String
+  roomId          String
+  adults          Int      @default(1)
+  children        Int      @default(0)
+  infants         Int      @default(0)
+  roomPrice       Float    @default(0)
+  extraMattress   Int      @default(0)
+  extraPillow     Int      @default(0)
+  extraBedsheet   Int      @default(0)
+  blanket         Int      @default(0)
+  booking         Booking  @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  room            Room     @relation(fields: [roomId], references: [id])
+  createdAt       DateTime @default(now())
 }
 
 model OtaChannel {
@@ -177,6 +196,7 @@ enum SyncStatus {
   FAILED
   PENDING
 }
+
 model Payment {
   id              String        @id @default(cuid())
   bookingId       String?
@@ -197,6 +217,7 @@ enum PaymentStatus {
   FAILED
   REFUNDED
 }
+
 model Staff {
   id         String       @id @default(cuid())
   employeeId String?
@@ -222,6 +243,7 @@ model Attendance {
   status      String    @default("PRESENT")
   createdAt   DateTime  @default(now())
 }
+
 model OtpVerification {
   id        String   @id @default(cuid())
   email     String
@@ -231,6 +253,7 @@ model OtpVerification {
   used      Boolean  @default(false)
   createdAt DateTime @default(now())
 }
+
 model ServiceCategory {
   id          String        @id @default(cuid())
   hotelId     String

@@ -12,7 +12,10 @@ export async function GET(req: NextRequest) {
 
     const bookings = await prisma.booking.findMany({
       where: { room: { hotelId: hotelId || undefined } },
-      include: { room: true },
+      include: {
+        room: true,
+        bookingRooms: { include: { room: true } }
+      },
       orderBy: { createdAt: "desc" }
     });
 
@@ -21,123 +24,124 @@ export async function GET(req: NextRequest) {
       roomId: b.roomId,
       roomNumber: b.room.number,
       roomType: b.room.type,
-      price: b.room.price
+      price: b.room.price,
+      rooms: b.bookingRooms.map(br => ({
+        id: br.id,
+        roomId: br.roomId,
+        roomNumber: br.room.number,
+        roomType: br.room.type,
+        adults: br.adults,
+        children: br.children,
+        infants: br.infants,
+        roomPrice: br.roomPrice,
+        extraMattress: br.extraMattress,
+        extraPillow: br.extraPillow,
+        extraBedsheet: br.extraBedsheet,
+        blanket: br.blanket,
+      }))
     }));
 
     return NextResponse.json({ bookings: formattedBookings });
   } catch (error) {
+    console.error(error);
     return NextResponse.json({ error: "Kuch galat hua!" }, { status: 500 });
   }
 }
 
 export async function POST(req: NextRequest) {
   try {
+    const body = await req.json();
     const {
-      roomId, guestName, guestEmail, guestPhone, checkIn, checkOut, amount,
+      rooms, // Array of {roomId, adults, children, infants, extraMattress, extraPillow, extraBedsheet, blanket}
+      roomId, // Primary room (first room)
+      guestName, guestEmail, guestPhone, checkIn, checkOut, amount,
       notes, specialRequests, paymentMode, paymentAmount,
-      finalPaymentMode, finalPaymentAmount, adults, children, infants, source
-    } = await req.json();
+      finalPaymentMode, finalPaymentAmount, source
+    } = body;
 
-    if (!roomId || !guestName || !guestEmail || !checkIn || !checkOut || !amount) {
+    // Agar rooms array aaya hai toh multi-room booking, nahi toh single room (backward compatible)
+    let roomsList: any[] = [];
+
+    if (rooms && Array.isArray(rooms) && rooms.length > 0) {
+      roomsList = rooms;
+    } else {
+      // Backward compatible — single room
+      roomsList = [{
+        roomId: body.roomId,
+        adults: body.adults,
+        children: body.children,
+        infants: body.infants,
+        extraMattress: body.extraMattress || 0,
+        extraPillow: body.extraPillow || 0,
+        extraBedsheet: body.extraBedsheet || 0,
+        blanket: body.blanket || 0,
+      }];
+    }
+
+    const primaryRoomId = roomsList[0].roomId;
+
+    if (!primaryRoomId || !guestName || !guestEmail || !checkIn || !checkOut || !amount) {
       return NextResponse.json({ error: "Sab fields bharo!" }, { status: 400 });
     }
-    
-    // ✅ Check 0: Room max capacity check
-    const roomData = await prisma.room.findUnique({
-      where: { id: roomId },
-    });
 
-    if (!roomData) {
-      return NextResponse.json({ error: "Room nahi mila!" }, { status: 400 });
-    }
-
-    const adultsCount = parseInt(adults) || 1;
-    const childrenCount = parseInt(children) || 0;
-    const maxAdults = roomData.maxAdults || 2;
-    const maxChildren = roomData.maxChildren || 0;
-
-    if (adultsCount > maxAdults) {
-      return NextResponse.json({
-        error: `Is room mein maximum ${maxAdults} adult allowed hain, aapne ${adultsCount} daale hain!`
-      }, { status: 400 });
-    }
-
-    if (childrenCount > maxChildren) {
-      return NextResponse.json({
-        error: `Is room mein maximum ${maxChildren} children allowed hain, aapne ${childrenCount} daale hain!`
-      }, { status: 400 });
-    }
-    const infantsCount = parseInt(infants) || 0;
-    const maxInfants = roomData.maxInfants || 0;
-
-    if (infantsCount > maxInfants) {
-      return NextResponse.json({
-        error: `Is room mein maximum ${maxInfants} infants allowed hain, aapne ${infantsCount} daale hain!`
-      }, { status: 400 });
-    }
-
-    // ✅ Check 1: Room blocked hai ya nahi Rates & Availability mein
     const checkInDate = new Date(checkIn);
     const checkOutDate = new Date(checkOut);
 
-    // Check karo koi bhi date blocked toh nahi
-    const blockedRates = await prisma.ratePlan.findMany({
-      where: {
-        roomId,
-        isBlocked: true,
-        date: {
-          gte: checkInDate,
-          lt: checkOutDate,
+    // ✅ Validate har room
+    for (const r of roomsList) {
+      const roomData = await prisma.room.findUnique({ where: { id: r.roomId } });
+
+      if (!roomData) {
+        return NextResponse.json({ error: "Room nahi mila!" }, { status: 400 });
+      }
+
+      const adultsCount = parseInt(r.adults) || 1;
+      const childrenCount = parseInt(r.children) || 0;
+      const infantsCount = parseInt(r.infants) || 0;
+      const maxAdults = roomData.maxAdults || 2;
+      const maxChildren = roomData.maxChildren || 0;
+      const maxInfants = roomData.maxInfants || 0;
+
+      // ✅ Extra Mattress Logic
+      const extraMattress = parseInt(r.extraMattress) || 0;
+      const extraAdults = Math.max(0, adultsCount - maxAdults);
+      const extraChildren = Math.max(0, childrenCount - maxChildren);
+      const extraInfants = Math.max(0, infantsCount - maxInfants);
+      const totalExtraPeople = extraAdults + extraChildren + extraInfants;
+
+      if (totalExtraPeople > extraMattress) {
+        return NextResponse.json({
+          error: `Room #${roomData.number} mein max ${maxAdults} Adult/${maxChildren} Child/${maxInfants} Infant hai. Aapne ${totalExtraPeople} extra persons daale hain lekin sirf ${extraMattress} mattress add kiya! Extra Beds mein ${totalExtraPeople} mattress add karo.`
+        }, { status: 400 });
+      }
+
+      // Room already booked check
+      const existingBooking = await prisma.booking.findFirst({
+        where: {
+          OR: [
+            { roomId: r.roomId },
+            { bookingRooms: { some: { roomId: r.roomId } } }
+          ],
+          status: { in: ["CONFIRMED", "PENDING", "CHECKED_IN"] },
+          AND: [
+            { checkIn: { lt: checkOutDate } },
+            { checkOut: { gt: checkInDate } },
+          ]
         }
-      }
-    });
+      });
 
-    if (blockedRates.length > 0) {
-      return NextResponse.json({
-        error: `Yeh room ${new Date(blockedRates[0].date).toLocaleDateString("en-IN")} ko blocked hai! Pehle Rates & Availability mein unblock karo.`
-      }, { status: 400 });
+      if (existingBooking) {
+        return NextResponse.json({
+          error: `Room #${roomData.number} already ${new Date(existingBooking.checkIn).toLocaleDateString("en-IN")} se ${new Date(existingBooking.checkOut).toLocaleDateString("en-IN")} tak booked hai!`
+        }, { status: 400 });
+      }
     }
 
-    // ✅ Check 2: Available rooms 0 toh nahi
-    const unavailableRates = await prisma.ratePlan.findMany({
-      where: {
-        roomId,
-        available: 0,
-        isBlocked: false,
-        date: {
-          gte: checkInDate,
-          lt: checkOutDate,
-        }
-      }
-    });
-
-    if (unavailableRates.length > 0) {
-      return NextResponse.json({
-        error: `Yeh room ${new Date(unavailableRates[0].date).toLocaleDateString("en-IN")} ko available nahi hai! Rates & Availability check karo.`
-      }, { status: 400 });
-    }
-
-    // ✅ Check 3: Koi existing booking toh nahi same dates pe
-    const existingBooking = await prisma.booking.findFirst({
-      where: {
-        roomId,
-        status: { in: ["CONFIRMED", "PENDING"] },
-        AND: [
-          { checkIn: { lt: checkOutDate } },
-          { checkOut: { gt: checkInDate } },
-        ]
-      }
-    });
-
-    if (existingBooking) {
-      return NextResponse.json({
-        error: `Yeh room already ${new Date(existingBooking.checkIn).toLocaleDateString("en-IN")} se ${new Date(existingBooking.checkOut).toLocaleDateString("en-IN")} tak booked hai!`
-      }, { status: 400 });
-    }
-
+    // ✅ Booking create
+    const firstRoom = roomsList[0];
     const booking = await prisma.booking.create({
       data: {
-        roomId,
+        roomId: primaryRoomId,
         guestName,
         guestEmail,
         checkIn: checkInDate,
@@ -150,16 +154,35 @@ export async function POST(req: NextRequest) {
         paymentAmount: paymentAmount ? parseFloat(paymentAmount) : null,
         finalPaymentMode: finalPaymentMode || null,
         finalPaymentAmount: finalPaymentAmount ? parseFloat(finalPaymentAmount) : null,
-        adults: adults ? parseInt(adults) : 1,
-        children: children ? parseInt(children) : 0,
-        infants: infants ? parseInt(infants) : 0,
+        adults: parseInt(firstRoom.adults) || 1,
+        children: parseInt(firstRoom.children) || 0,
+        infants: parseInt(firstRoom.infants) || 0,
         source: source || "WALK_IN",
         guestPhone: guestPhone || null,
       },
       include: { room: { include: { hotel: true } } }
     });
 
-    // ✅ Booking ke baad available rooms update karo
+    // ✅ BookingRooms create karo sab rooms ke liye
+    await Promise.all(roomsList.map(async (r: any) => {
+      const roomData = await prisma.room.findUnique({ where: { id: r.roomId } });
+      await prisma.bookingRoom.create({
+        data: {
+          bookingId: booking.id,
+          roomId: r.roomId,
+          adults: parseInt(r.adults) || 1,
+          children: parseInt(r.children) || 0,
+          infants: parseInt(r.infants) || 0,
+          roomPrice: roomData?.price || 0,
+          extraMattress: parseInt(r.extraMattress) || 0,
+          extraPillow: parseInt(r.extraPillow) || 0,
+          extraBedsheet: parseInt(r.extraBedsheet) || 0,
+          blanket: parseInt(r.blanket) || 0,
+        }
+      });
+    }));
+
+    // Available rooms update
     const datesToUpdate: Date[] = [];
     const cur = new Date(checkInDate);
     while (cur < checkOutDate) {
@@ -167,80 +190,65 @@ export async function POST(req: NextRequest) {
       cur.setDate(cur.getDate() + 1);
     }
 
-    // Har date pe available -1 karo
-    await Promise.all(datesToUpdate.map(async (date) => {
-      const existing = await prisma.ratePlan.findFirst({
-        where: {
-          roomId,
-          date: {
-            gte: new Date(date.getFullYear(), date.getMonth(), date.getDate()),
-            lt: new Date(date.getFullYear(), date.getMonth(), date.getDate() + 1),
+    for (const r of roomsList) {
+      await Promise.all(datesToUpdate.map(async (date) => {
+        const existing = await prisma.ratePlan.findFirst({
+          where: {
+            roomId: r.roomId,
+            date: {
+              gte: new Date(date.getFullYear(), date.getMonth(), date.getDate()),
+              lt: new Date(date.getFullYear(), date.getMonth(), date.getDate() + 1),
+            }
           }
-        }
-      });
-      if (existing && existing.available > 0) {
-        await prisma.ratePlan.update({
-          where: { id: existing.id },
-          data: { available: existing.available - 1 }
         });
-      }
-    }));
+        if (existing && existing.available > 0) {
+          await prisma.ratePlan.update({
+            where: { id: existing.id },
+            data: { available: existing.available - 1 }
+          });
+        }
+      }));
+    }
 
-    // Owner ko email
+    // Owner email
     resend.emails.send({
       from: "bookings@nightstays.in",
       to: "dargudetushar@gmail.com",
-      subject: `Naya Booking — ${guestName} Room #${booking.room.number}`,
+      subject: `Naya Booking — ${guestName} (${roomsList.length} room${roomsList.length > 1 ? "s" : ""})`,
       html: `
         <h2>Naya Booking Aaya!</h2>
         <p><b>Guest:</b> ${guestName}</p>
         <p><b>Email:</b> ${guestEmail}</p>
+        <p><b>Phone:</b> ${guestPhone || "N/A"}</p>
         <p><b>Hotel:</b> ${booking.room.hotel.name}</p>
-        <p><b>Room:</b> #${booking.room.number}</p>
+        <p><b>Rooms:</b> ${roomsList.length}</p>
         <p><b>Check In:</b> ${new Date(checkIn).toLocaleDateString("en-IN")}</p>
         <p><b>Check Out:</b> ${new Date(checkOut).toLocaleDateString("en-IN")}</p>
-        <p><b>Amount:</b> ₹${amount}</p>
+        <p><b>Total Amount:</b> ₹${amount}</p>
         <p><b>Payment Mode:</b> ${paymentMode || "CASH"}</p>
-        ${finalPaymentMode ? `<p><b>Final Payment:</b> ${finalPaymentMode} — ₹${finalPaymentAmount}</p>` : ""}
-        ${specialRequests ? `<p><b>Special Requests:</b> ${specialRequests}</p>` : ""}
-        ${notes ? `<p><b>Notes:</b> ${notes}</p>` : ""}
       `,
     }).catch(e => console.error("Email error:", e));
 
-    // Guest ko email
+    // Guest email
     if (guestEmail) {
       resend.emails.send({
         from: "bookings@nightstays.in",
         to: guestEmail,
         subject: `Booking Confirmed — ${booking.room.hotel.name}`,
         html: `
-          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 8px;">
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
             <h1 style="color: #2563eb; text-align: center;">🏨 Booking Confirmed!</h1>
-            <p style="font-size: 16px;">Dear <b>${guestName}</b>,</p>
+            <p>Dear <b>${guestName}</b>,</p>
             <p>Your booking at <b>${booking.room.hotel.name}</b> has been confirmed!</p>
             <div style="background: #f0f7ff; padding: 16px; border-radius: 8px; margin: 20px 0;">
-              <h3 style="margin-top: 0; color: #1e40af;">📋 Booking Details</h3>
-              <p><b>Room:</b> #${booking.room.number} — ${booking.room.type}</p>
+              <h3>📋 Booking Details</h3>
+              <p><b>Rooms Booked:</b> ${roomsList.length}</p>
               <p><b>Check-in:</b> ${new Date(checkIn).toLocaleDateString("en-IN")}</p>
               <p><b>Check-out:</b> ${new Date(checkOut).toLocaleDateString("en-IN")}</p>
               <p><b>Total Amount:</b> ₹${amount}</p>
               <p><b>Payment Mode:</b> ${paymentMode || "CASH"}</p>
-              ${specialRequests ? `<p><b>Special Requests:</b> ${specialRequests}</p>` : ""}
-              ${finalPaymentMode === "CHECKOUT_PAYMENT" && finalPaymentAmount ? `
-                <div style="background: #fff7ed; padding: 12px; border-radius: 8px; margin-top: 12px; border-left: 4px solid #f97316;">
-                  <p style="margin: 0; color: #c2410c;"><b>⚠️ Final Payment:</b> ₹${finalPaymentAmount} checkout pe dena hoga</p>
-                </div>
-              ` : ""}
             </div>
-            <div style="background: #f0fff4; padding: 16px; border-radius: 8px; margin: 20px 0;">
-              <h3 style="margin-top: 0; color: #166534;">🏨 Hotel Details</h3>
-              <p><b>${booking.room.hotel.name}</b></p>
-              ${booking.room.hotel.address ? `<p>📍 ${booking.room.hotel.address}</p>` : ""}
-              ${booking.room.hotel.phone ? `<p>📞 ${booking.room.hotel.phone}</p>` : ""}
-            </div>
-            <p style="color: #6b7280; font-size: 14px; text-align: center;">
-              Thank you for choosing ${booking.room.hotel.name}. We look forward to welcoming you!
-            </p>
+            <p style="color: #6b7280; text-align: center;">Thank you for choosing ${booking.room.hotel.name}!</p>
           </div>
         `,
       }).catch(e => console.error("Guest email error:", e));
@@ -259,10 +267,9 @@ export async function DELETE(req: NextRequest) {
     const id = searchParams.get("id");
     if (!id) return NextResponse.json({ error: "ID chahiye!" }, { status: 400 });
 
-    // ✅ Delete hone pe available +1 karo
     const booking = await prisma.booking.findUnique({
       where: { id },
-      include: { room: true }
+      include: { bookingRooms: true }
     });
 
     if (booking) {
@@ -273,31 +280,40 @@ export async function DELETE(req: NextRequest) {
         cur.setDate(cur.getDate() + 1);
       }
 
-      await Promise.all(datesToUpdate.map(async (date) => {
-        const existing = await prisma.ratePlan.findFirst({
-          where: {
-            roomId: booking.roomId,
-            date: {
-              gte: new Date(date.getFullYear(), date.getMonth(), date.getDate()),
-              lt: new Date(date.getFullYear(), date.getMonth(), date.getDate() + 1),
+      // Sab rooms ke liye availability +1
+      const roomIds = booking.bookingRooms.length > 0
+        ? booking.bookingRooms.map(br => br.roomId)
+        : [booking.roomId];
+
+      for (const rId of roomIds) {
+        await Promise.all(datesToUpdate.map(async (date) => {
+          const existing = await prisma.ratePlan.findFirst({
+            where: {
+              roomId: rId,
+              date: {
+                gte: new Date(date.getFullYear(), date.getMonth(), date.getDate()),
+                lt: new Date(date.getFullYear(), date.getMonth(), date.getDate() + 1),
+              }
             }
-          }
-        });
-        if (existing) {
-          await prisma.ratePlan.update({
-            where: { id: existing.id },
-            data: { available: existing.available + 1 }
           });
-        }
-      }));
+          if (existing) {
+            await prisma.ratePlan.update({
+              where: { id: existing.id },
+              data: { available: existing.available + 1 }
+            });
+          }
+        }));
+      }
     }
 
     await prisma.booking.delete({ where: { id } });
     return NextResponse.json({ message: "Booking delete ho gayi!" });
   } catch (error) {
+    console.error(error);
     return NextResponse.json({ error: "Kuch galat hua!" }, { status: 500 });
   }
 }
+
 export async function PUT(req: NextRequest) {
   try {
     const body = await req.json();
