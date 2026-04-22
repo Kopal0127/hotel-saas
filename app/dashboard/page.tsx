@@ -353,7 +353,7 @@ export default function Dashboard() {
                 <div className="text-xl font-bold text-indigo-600">{availableRooms.length}</div>
                 <div className="text-gray-500 text-xs">Available Rooms</div>
               </div>
-              <div onClick={() => router.push("/dashboard/room-service")}
+              <div onClick={() => router.push("/dashboard/room-service/checked-in")}
                 className="bg-gray-50 rounded-xl p-4 border border-gray-100 cursor-pointer hover:bg-yellow-50 hover:border-yellow-200 transition-all">
                 <div className="text-2xl mb-1">🍽️</div>
                 <div className="text-sm font-bold text-yellow-600">Active</div>
