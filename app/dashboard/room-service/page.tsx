@@ -153,6 +153,51 @@ function RoomServiceContent() {
   const discountAmount = Math.round(subtotal * discount / 100);
   const total = subtotal - discountAmount;
 
+  // Save Order to Database
+  const saveOrder = async (isEBill: boolean = false, isKOT: boolean = false) => {
+    try {
+      const res = await fetch("/api/service-orders", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          bookingId: selectedRoom,
+          hotelId,
+          roomNumber: selectedRoomData?.roomNumber,
+          guestName: selectedRoomData?.guestName,
+          serviceType: activeTab,
+          paymentMethod,
+          discount,
+          notes,
+          items: orderItems.map(o => ({
+            itemId: o.item.id,
+            itemName: o.item.name,
+            itemCategory: o.item.itemCategory,
+            price: o.item.price,
+            quantity: o.qty,
+          })),
+        }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        if (isKOT) {
+          alert(`✅ KOT sent to Kitchen!\nRoom: #${selectedRoomData?.roomNumber}\n${orderItems.map(o => `${o.item.name} x${o.qty}`).join('\n')}\nTotal: ₹${total}`);
+        } else if (isEBill) {
+          alert(`✅ eBill generated!\nRoom: #${selectedRoomData?.roomNumber}\nTotal: ₹${total}\nPayment: ${paymentMethod}`);
+        } else {
+          alert(`✅ Order saved!\nRoom: #${selectedRoomData?.roomNumber}\nTotal: ₹${total}\nPayment: ${paymentMethod}`);
+        }
+        setOrderItems([]);
+        setDiscount(0);
+        setNotes("");
+      } else {
+        alert("Order save nahi ho saka: " + (data.error || ""));
+      }
+    } catch (e) {
+      alert("Kuch galat hua!");
+      console.error(e);
+    }
+  };
+
   // Filtered rooms by search
   const filteredRooms = occupiedRooms.filter(r =>
     r.roomNumber.toLowerCase().includes(roomSearch.toLowerCase()) ||
@@ -486,33 +531,30 @@ function RoomServiceContent() {
                 {/* Buttons */}
                 <div className="space-y-2">
                   <button
-                    onClick={() => {
+                    onClick={async () => {
                       if (!selectedRoom) return alert("Pehle room select karo!");
                       if (orderItems.length === 0) return alert("Koi item add nahi kiya!");
-                      alert(`Order saved!\nRoom: #${selectedRoomData?.roomNumber}\nGuest: ${selectedRoomData?.guestName}\nTotal: ₹${total}\nPayment: ${paymentMethod}`);
-                      setOrderItems([]);
-                      setDiscount(0);
-                      setNotes("");
+                      await saveOrder(false);
                     }}
                     className="w-full bg-white border border-gray-300 text-gray-700 py-2 rounded-xl text-sm font-medium hover:bg-gray-50 transition-colors"
                   >
                     Save
                   </button>
                   <button
-                    onClick={() => {
+                    onClick={async () => {
                       if (!selectedRoom) return alert("Pehle room select karo!");
                       if (orderItems.length === 0) return alert("Koi item add nahi kiya!");
-                      alert(`eBill generated!\nRoom: #${selectedRoomData?.roomNumber}\nTotal: ₹${total}`);
+                      await saveOrder(true);
                     }}
                     className="w-full bg-blue-600 text-white py-2 rounded-xl text-sm font-medium hover:bg-blue-700 transition-colors"
                   >
                     Save & eBill
                   </button>
                   <button
-                    onClick={() => {
+                    onClick={async () => {
                       if (!selectedRoom) return alert("Pehle room select karo!");
                       if (orderItems.length === 0) return alert("Koi item add nahi kiya!");
-                      alert(`KOT sent!\nRoom: #${selectedRoomData?.roomNumber}\n${orderItems.map(o => `${o.item.name} x${o.qty}`).join('\n')}`);
+                      await saveOrder(false, true);
                     }}
                     className="w-full bg-blue-700 text-white py-2 rounded-xl text-sm font-medium hover:bg-blue-800 transition-colors"
                   >

@@ -265,6 +265,40 @@ model ServiceCategory {
   items       ServiceItem[]
 }
 
+model ServiceOrder {
+  id            String             @id @default(cuid())
+  bookingId     String?
+  hotelId       String
+  roomNumber    String
+  guestName     String
+  totalAmount   Float              @default(0)
+  discount      Float              @default(0)
+  finalAmount   Float              @default(0)
+  notes         String?
+  paymentMethod String             @default("Due")
+  paymentStatus String             @default("UNPAID")
+  kitchenStatus String             @default("PENDING")
+  serviceType   String             @default("FOOD")
+  items         ServiceOrderItem[]
+  createdAt     DateTime           @default(now())
+  updatedAt     DateTime           @updatedAt
+  deliveredAt   DateTime?
+  paidAt        DateTime?
+}
+
+model ServiceOrderItem {
+  id            String        @id @default(cuid())
+  orderId       String
+  order         ServiceOrder  @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  itemId        String
+  itemName      String
+  itemCategory  String
+  price         Float
+  quantity      Int           @default(1)
+  subtotal      Float
+  createdAt     DateTime      @default(now())
+}
+
 model ServiceItem {
   id           String          @id @default(cuid())
   categoryId   String
