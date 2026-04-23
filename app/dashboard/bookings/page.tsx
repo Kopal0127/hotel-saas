@@ -13,6 +13,7 @@ export default function BookingsPage() {
   const { toast, showToast, hideToast } = useToast();
   const [bookings, setBookings] = useState<any[]>([]);
   const [rooms, setRooms] = useState<any[]>([]);
+  const [serviceOrders, setServiceOrders] = useState<any[]>([]);
   const [showForm, setShowForm] = useState(false);
   const [loading, setLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
@@ -25,13 +26,11 @@ export default function BookingsPage() {
   const [openExtraIdx, setOpenExtraIdx] = useState<number | null>(null);
   const actionRef = useRef<HTMLDivElement>(null);
 
-  // Multi-room state — array of rooms
   const [bookingRooms, setBookingRooms] = useState<any[]>([
     { selectedType: "", roomId: "", adults: "1", children: "0", infants: "0",
       extraMattress: "0", extraPillow: "0", extraBedsheet: "0", blanket: "0" }
   ]);
 
-  // Guest info, dates, payment — shared across all rooms
   const [form, setForm] = useState({
     guestName: "", guestEmail: "", guestPhone: "", countryCode: "+91",
     checkIn: "", checkOut: "", amount: "",
@@ -53,7 +52,6 @@ export default function BookingsPage() {
     return () => document.removeEventListener("mousedown", handleClick);
   }, []);
 
-  // Auto amount calculate (total sum of all rooms × nights)
   useEffect(() => {
     if (form.checkIn && form.checkOut) {
       const nights = Math.ceil((new Date(form.checkOut).getTime() - new Date(form.checkIn).getTime()) / (1000 * 60 * 60 * 24));
@@ -86,13 +84,63 @@ export default function BookingsPage() {
         const bookingsRes = await fetch(`/api/bookings?hotelId=${hId}`);
         const bookingsData = await bookingsRes.json();
         setBookings(bookingsData.bookings || []);
+        const ordersRes = await fetch(`/api/service-orders?hotelId=${hId}`);
+        const ordersData = await ordersRes.json();
+        setServiceOrders(ordersData.orders || []);
       }
     } catch (error) {
       showToast("Data load nahi ho saka!", "error");
     }
   };
 
+  // Get pending bill for a booking
+  const getPendingBill = (bookingId: string) => {
+    return serviceOrders
+      .filter(o => o.bookingId === bookingId && o.paymentStatus === "UNPAID")
+      .reduce((sum, o) => sum + (o.finalAmount || 0), 0);
+  };
+
+  // Get total orders count
+  const getOrdersCount = (bookingId: string) => {
+    return serviceOrders.filter(o => o.bookingId === bookingId).length;
+  };
+
+  // Mark bill as paid
+  const handleMarkPaid = async (bookingId: string) => {
+    const pendingOrders = serviceOrders.filter(o => o.bookingId === bookingId && o.paymentStatus === "UNPAID");
+    if (pendingOrders.length === 0) {
+      showToast("Koi pending bill nahi hai!", "warning");
+      return;
+    }
+    if (!confirm(`${pendingOrders.length} order(s) ka bill mark paid karna hai?`)) return;
+    try {
+      await Promise.all(
+        pendingOrders.map(o =>
+          fetch("/api/service-orders", {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ id: o.id, paymentStatus: "PAID" }),
+          })
+        )
+      );
+      showToast(`✅ ${pendingOrders.length} bill(s) paid! Total: ₹${pendingOrders.reduce((s, o) => s + o.finalAmount, 0)}`, "success");
+      fetchData();
+    } catch {
+      showToast("Bill clear nahi ho saka!", "error");
+    }
+    setOpenActionId(null);
+  };
+
   const handleStatusChange = async (bookingId: string, newStatus: string) => {
+    // Block checkout if pending bill
+    if (newStatus === "CHECKED_OUT") {
+      const pending = getPendingBill(bookingId);
+      if (pending > 0) {
+        showToast(`❌ Pehle bill clear karo! Pending: ₹${pending}`, "error");
+        setOpenActionId(null);
+        return;
+      }
+    }
     try {
       const res = await fetch("/api/bookings", {
         method: "PUT",
@@ -113,7 +161,6 @@ export default function BookingsPage() {
 
   const roomTypes = [...new Set(rooms.map(r => r.type))];
 
-  // Check which rooms are booked for selected dates + already selected in form
   const getUnavailableRoomIds = () => {
     if (!form.checkIn || !form.checkOut) return [];
     const checkIn = new Date(form.checkIn);
@@ -139,7 +186,6 @@ export default function BookingsPage() {
     );
   };
 
-  // Update single room in array
   const updateRoom = (idx: number, field: string, value: string) => {
     setBookingRooms(prev => {
       const updated = [...prev];
@@ -236,14 +282,14 @@ export default function BookingsPage() {
   const handleExportCSV = () => {
     if (bookings.length === 0) { showToast("Koi booking nahi!", "warning"); return; }
     const csv = [
-      ["Booking ID", "Guest Name", "Email", "Phone", "Rooms", "Check In", "Check Out", "Amount", "Payment", "Source", "Status"],
+      ["Booking ID", "Guest Name", "Email", "Phone", "Rooms", "Check In", "Check Out", "Amount", "Room Service Pending", "Payment", "Source", "Status"],
       ...bookings.map(b => [
         b.id?.slice(0, 8).toUpperCase(),
         b.guestName, b.guestEmail, b.guestPhone || "",
         (b.rooms && b.rooms.length > 0 ? b.rooms.map((r: any) => `#${r.roomNumber}`).join(" | ") : `#${b.roomNumber}`),
         new Date(b.checkIn).toLocaleDateString(),
         new Date(b.checkOut).toLocaleDateString(),
-        b.amount, b.paymentMode, b.source || "WALK_IN", b.status
+        b.amount, getPendingBill(b.id), b.paymentMode, b.source || "WALK_IN", b.status
       ]),
     ].map(row => row.join(",")).join("\n");
     const blob = new Blob([csv], { type: "text/csv" });
@@ -289,13 +335,6 @@ export default function BookingsPage() {
     PENDING: "bg-yellow-100 text-yellow-700",
     UPGRADED: "bg-purple-100 text-purple-700",
   };
-
-  const actionOptions = [
-    { value: "CHECKED_IN", label: "✅ Check-in", color: "text-blue-600" },
-    { value: "CHECKED_OUT", label: "🚪 Check-out", color: "text-orange-600" },
-    { value: "CANCELLED", label: "❌ Cancel", color: "text-red-600" },
-    { value: "UPGRADED", label: "⬆️ Upgrade", color: "text-purple-600" },
-  ];
 
   const extraItems = [
     { key: "extraMattress", label: "🛏️ Mattress" },
@@ -367,7 +406,6 @@ export default function BookingsPage() {
           <div className="bg-white rounded-2xl p-4 md:p-6 shadow-sm border border-gray-100 mb-6">
             <h3 className="text-lg font-semibold text-gray-900 mb-4">Naya Booking Add Karo</h3>
 
-            {/* Date Range */}
             <div className="mb-4">
               <label className="text-sm font-medium text-gray-700 mb-2 block">
                 Check-in → Check-out Date
@@ -396,7 +434,6 @@ export default function BookingsPage() {
               )}
             </div>
 
-            {/* Rooms Sections */}
             {bookingRooms.map((br, idx) => (
               <div key={idx} className="bg-blue-50 rounded-xl p-4 mb-4 border border-blue-100">
                 <div className="flex items-center justify-between mb-3">
@@ -407,7 +444,6 @@ export default function BookingsPage() {
                   )}
                 </div>
 
-                {/* Room Type + Room Number */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
                   <div>
                     <label className="text-xs font-medium text-gray-700 mb-1 block">Room Type</label>
@@ -433,7 +469,6 @@ export default function BookingsPage() {
                   </div>
                 </div>
 
-                {/* Adults, Children, Infants, Extra Beds */}
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                   <div>
                     <label className="text-xs font-medium text-gray-700 mb-1 block">Adults</label>
@@ -486,7 +521,6 @@ export default function BookingsPage() {
               </div>
             ))}
 
-            {/* Guest Info */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
               <div>
                 <label className="text-sm font-medium text-gray-700 mb-1 block">Guest Name</label>
@@ -530,7 +564,6 @@ export default function BookingsPage() {
               </div>
             </div>
 
-            {/* Amount, Payment, Add Room button — 4 columns */}
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
               <div>
                 <label className="text-sm font-medium text-gray-700 mb-1 block">
@@ -567,7 +600,6 @@ export default function BookingsPage() {
               </div>
             </div>
 
-            {/* More Options */}
             <div className="mb-4">
               <button type="button" onClick={() => setShowMoreOptions(!showMoreOptions)}
                 className="text-sm text-blue-600 hover:text-blue-700 font-medium">
@@ -638,7 +670,6 @@ export default function BookingsPage() {
           </div>
         )}
 
-        {/* Search & Filter */}
         <div className="flex flex-col sm:flex-row gap-3 mb-6">
           <input type="text" placeholder="🔍 Guest naam ya email..."
             value={searchTerm} onChange={(e) => { setSearchTerm(e.target.value); setPage(1); }}
@@ -654,7 +685,6 @@ export default function BookingsPage() {
           </select>
         </div>
 
-        {/* Bookings Table */}
         {filteredBookings.length === 0 ? (
           <div className="bg-white rounded-2xl p-12 shadow-sm border border-gray-100 text-center text-gray-400">
             <div className="text-5xl mb-4">📭</div>
@@ -663,7 +693,7 @@ export default function BookingsPage() {
         ) : (
           <>
             <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-x-auto mb-4">
-              <table className="w-full min-w-[1200px]">
+              <table className="w-full min-w-[1400px]">
                 <thead className="bg-gray-50 border-b border-gray-100">
                   <tr>
                     <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase">Booking ID</th>
@@ -672,6 +702,7 @@ export default function BookingsPage() {
                     <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase">Check-in</th>
                     <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase">Check-out</th>
                     <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase">Amount</th>
+                    <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase">Room Service</th>
                     <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase">Payment</th>
                     <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase">Source</th>
                     <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase">Status</th>
@@ -689,6 +720,22 @@ export default function BookingsPage() {
                     const roomsList = booking.rooms && booking.rooms.length > 0
                       ? booking.rooms
                       : [{ roomNumber: booking.roomNumber, roomType: booking.roomType, adults: booking.adults, children: booking.children, infants: booking.infants }];
+
+                    const pendingBill = getPendingBill(booking.id);
+                    const totalOrders = getOrdersCount(booking.id);
+                    const isCheckedIn = booking.status === "CHECKED_IN";
+
+                    // Action options based on state
+                    const actionOpts: any[] = [];
+                    if (pendingBill > 0) {
+                      actionOpts.push({ value: "BILL", label: `💰 Pay Bill (₹${pendingBill})`, color: "text-green-600" });
+                      actionOpts.push({ value: "CHECKED_OUT", label: "🚪 Check-out", color: "text-gray-400", disabled: true });
+                    } else {
+                      actionOpts.push({ value: "CHECKED_IN", label: "✅ Check-in", color: "text-blue-600" });
+                      actionOpts.push({ value: "CHECKED_OUT", label: "🚪 Check-out", color: "text-orange-600" });
+                      actionOpts.push({ value: "CANCELLED", label: "❌ Cancel", color: "text-red-600" });
+                      actionOpts.push({ value: "UPGRADED", label: "⬆️ Upgrade", color: "text-purple-600" });
+                    }
 
                     return (
                       <tr key={booking.id} className="hover:bg-gray-50 transition-colors">
@@ -730,6 +777,23 @@ export default function BookingsPage() {
                         <td className="px-4 py-3 align-top">
                           <p className="text-sm font-semibold text-gray-900">₹{booking.amount}</p>
                         </td>
+                        {/* Room Service Column */}
+                        <td className="px-4 py-3 align-top">
+                          {totalOrders === 0 ? (
+                            <span className="text-xs text-gray-400">—</span>
+                          ) : pendingBill > 0 ? (
+                            <div>
+                              <p className="text-sm font-bold text-red-600">₹{pendingBill}</p>
+                              <p className="text-xs text-red-500">Pending</p>
+                              <p className="text-xs text-gray-400">{totalOrders} order{totalOrders > 1 ? "s" : ""}</p>
+                            </div>
+                          ) : (
+                            <div>
+                              <p className="text-sm font-medium text-green-600">✓ Paid</p>
+                              <p className="text-xs text-gray-400">{totalOrders} order{totalOrders > 1 ? "s" : ""}</p>
+                            </div>
+                          )}
+                        </td>
                         <td className="px-4 py-3 align-top">
                           {isDue ? (
                             <span className="text-xs bg-red-100 text-red-700 px-2 py-1 rounded-full font-medium">Due</span>
@@ -750,15 +814,23 @@ export default function BookingsPage() {
                           <div ref={openActionId === booking.id ? actionRef : null}>
                             <button
                               onClick={() => setOpenActionId(openActionId === booking.id ? null : booking.id)}
-                              className="bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors">
-                              Action ▾
+                              className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${pendingBill > 0 ? "bg-red-100 hover:bg-red-200 text-red-700" : "bg-gray-100 hover:bg-gray-200 text-gray-700"}`}>
+                              {pendingBill > 0 ? `⚠️ Action (Bill ₹${pendingBill})` : "Action ▾"}
                             </button>
                             {openActionId === booking.id && (
-                              <div className="absolute right-0 top-10 z-50 bg-white border border-gray-200 rounded-xl shadow-lg w-40 overflow-hidden">
-                                {actionOptions.map((opt) => (
+                              <div className="absolute right-0 top-10 z-50 bg-white border border-gray-200 rounded-xl shadow-lg w-52 overflow-hidden">
+                                {actionOpts.map((opt) => (
                                   <button key={opt.value}
-                                    onClick={() => handleStatusChange(booking.id, opt.value)}
-                                    className={`w-full text-left px-4 py-2.5 text-sm hover:bg-gray-50 transition-colors ${opt.color} ${booking.status === opt.value ? "bg-gray-50 font-semibold" : ""}`}>
+                                    onClick={() => {
+                                      if (opt.disabled) {
+                                        showToast(`❌ Pehle bill clear karo! Pending: ₹${pendingBill}`, "error");
+                                        return;
+                                      }
+                                      if (opt.value === "BILL") handleMarkPaid(booking.id);
+                                      else handleStatusChange(booking.id, opt.value);
+                                    }}
+                                    disabled={opt.disabled}
+                                    className={`w-full text-left px-4 py-2.5 text-sm hover:bg-gray-50 transition-colors ${opt.color} ${booking.status === opt.value ? "bg-gray-50 font-semibold" : ""} ${opt.disabled ? "cursor-not-allowed opacity-50" : ""}`}>
                                     {opt.label}
                                   </button>
                                 ))}
