@@ -83,9 +83,7 @@ export default function BookingsPage() {
         const bookingsRes = await fetch(`/api/bookings?hotelId=${hId}`);
         const bookingsData = await bookingsRes.json();
         setBookings(bookingsData.bookings || []);
-        const ordersRes = await fetch(`/api/service-orders?hotelId=${hId}`);
-        const ordersData = await ordersRes.json();
-        setServiceOrders(ordersData.orders || []);
+       
       }
     } catch (error) {
       showToast("Data load nahi ho saka!", "error");
