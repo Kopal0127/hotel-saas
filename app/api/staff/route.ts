@@ -34,7 +34,7 @@ export async function GET(req: NextRequest) {
     where: { hotelId },
     select: {
       id: true, employeeId: true, name: true, email: true,
-      phone: true, role: true, createdAt: true,
+      phone: true, role: true, roles: true, createdAt: true,
     },
     orderBy: { createdAt: "desc" }
   });
@@ -47,7 +47,7 @@ export async function POST(req: NextRequest) {
   const user = getUserFromToken(req);
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const { name, email, password, phone, hotelId } = await req.json();
+  const { name, email, password, phone, hotelId, roles } = await req.json();
 
   if (!name || !email || !password || !hotelId) {
     return NextResponse.json({ error: "Sab fields bharo!" }, { status: 400 });
@@ -60,7 +60,11 @@ export async function POST(req: NextRequest) {
   const employeeId = await generateEmployeeId(hotelId);
 
   const staff = await prisma.staff.create({
-    data: { name, email, password: hashedPassword, phone, hotelId, role: "STAFF", employeeId }
+    data: {
+      name, email, password: hashedPassword, phone, hotelId,
+      role: "STAFF", employeeId,
+      roles: Array.isArray(roles) ? roles : []
+    }
   });
 
   return NextResponse.json({

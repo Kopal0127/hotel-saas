@@ -219,17 +219,18 @@ enum PaymentStatus {
 }
 
 model Staff {
-  id         String       @id @default(cuid())
-  employeeId String?
-  name       String
-  email      String       @unique
-  password   String
-  phone      String?
-  role       String       @default("STAFF")
-  hotelId    String
-  hotel      Hotel        @relation(fields: [hotelId], references: [id])
-  attendance Attendance[]
-  createdAt  DateTime     @default(now())
+  id             String       @id @default(cuid())
+  employeeId     String?
+  name           String
+  email          String       @unique
+  password       String
+  phone          String?
+  role           String       @default("STAFF")
+  roles          String[]     @default([])
+  hotelId        String
+  hotel          Hotel        @relation(fields: [hotelId], references: [id])
+  attendance     Attendance[]
+  createdAt      DateTime     @default(now())
 }
 
 model Attendance {

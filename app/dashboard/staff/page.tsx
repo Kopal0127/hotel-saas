@@ -7,7 +7,7 @@ import { useAuth } from "@/components/useAuth";
 
 interface Staff {
   id: string; employeeId?: string; name: string; email: string;
-  phone?: string; role: string; createdAt: string;
+  phone?: string; role: string; roles?: string[]; createdAt: string;
 }
 interface Attendance {
   id: string; staffId: string; date: string;
@@ -17,6 +17,15 @@ interface Attendance {
 }
 
 const MONTHS = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+
+const ROLE_OPTIONS = [
+  { value: "ROOM_SERVICE", label: "🛎️ Room Service", color: "bg-orange-100 text-orange-700 border-orange-200" },
+  { value: "FRONT_DESK", label: "🏨 Front Desk", color: "bg-blue-100 text-blue-700 border-blue-200" },
+  { value: "KITCHEN", label: "👨‍🍳 Kitchen", color: "bg-red-100 text-red-700 border-red-200" },
+  { value: "WAITER", label: "🍽️ Waiter", color: "bg-yellow-100 text-yellow-700 border-yellow-200" },
+  { value: "PROPERTY_MANAGER", label: "👔 Property Manager", color: "bg-purple-100 text-purple-700 border-purple-200" },
+  { value: "HOUSEKEEPING", label: "🧹 Housekeeping", color: "bg-teal-100 text-teal-700 border-teal-200" },
+];
 
 export default function StaffPage() {
   useAuth();
@@ -35,7 +44,7 @@ export default function StaffPage() {
   const [reportStaff, setReportStaff] = useState("");
   const [reportFrom, setReportFrom] = useState("");
   const [reportTo, setReportTo] = useState("");
-  const [form, setForm] = useState({ name: "", email: "", password: "", phone: "" });
+  const [form, setForm] = useState({ name: "", email: "", password: "", phone: "", roles: [] as string[] });
   const [editAttendance, setEditAttendance] = useState<{
     staffId: string; date: string; status: string; checkIn: string; checkOut: string;
   } | null>(null);
@@ -53,17 +62,10 @@ export default function StaffPage() {
     if (hotelId) { fetchStaff(); fetchAttendance(); }
   }, [hotelId, month, year, selectedStaff]);
 
-  // ✅ Fingerprint support check
-  const isFingerprintSupported = () => {
-    return window.PublicKeyCredential !== undefined;
-  };
+  const isFingerprintSupported = () => window.PublicKeyCredential !== undefined;
 
-  // ✅ Fingerprint Register
   const handleRegisterFingerprint = async (staff: Staff) => {
-    if (!isFingerprintSupported()) {
-      showToast("Tumhara browser/device fingerprint support nahi karta!", "error");
-      return;
-    }
+    if (!isFingerprintSupported()) { showToast("Tumhara browser/device fingerprint support nahi karta!", "error"); return; }
     try {
       showToast(`${staff.name} ka fingerprint register ho raha hai...`, "info");
       const challenge = new Uint8Array(32);
@@ -72,22 +74,13 @@ export default function StaffPage() {
         publicKey: {
           challenge,
           rp: { name: "HotelPro", id: window.location.hostname },
-          user: {
-            id: new TextEncoder().encode(staff.id),
-            name: staff.email,
-            displayName: staff.name,
-          },
+          user: { id: new TextEncoder().encode(staff.id), name: staff.email, displayName: staff.name },
           pubKeyCredParams: [{ alg: -7, type: "public-key" }],
-          authenticatorSelection: {
-            authenticatorAttachment: "platform",
-            userVerification: "required",
-          },
+          authenticatorSelection: { authenticatorAttachment: "platform", userVerification: "required" },
           timeout: 60000,
         },
       }) as PublicKeyCredential;
-
       if (credential) {
-        // Credential ID save karo localStorage mein
         const credId = btoa(String.fromCharCode(...new Uint8Array(credential.rawId)));
         const saved = JSON.parse(localStorage.getItem("fingerprint_credentials") || "{}");
         saved[staff.id] = credId;
@@ -96,25 +89,15 @@ export default function StaffPage() {
         showToast(`✅ ${staff.name} ka fingerprint register ho gaya!`, "success");
       }
     } catch (error: any) {
-      if (error.name === "NotAllowedError") {
-        showToast("Fingerprint cancel kar diya!", "warning");
-      } else {
-        showToast("Fingerprint register nahi ho saka: " + error.message, "error");
-      }
+      if (error.name === "NotAllowedError") showToast("Fingerprint cancel kar diya!", "warning");
+      else showToast("Fingerprint register nahi ho saka: " + error.message, "error");
     }
   };
 
-  // ✅ Fingerprint Attendance Mark
   const handleFingerprintAttendance = async (staff: Staff, dateStr: string) => {
-    if (!isFingerprintSupported()) {
-      showToast("Tumhara browser/device fingerprint support nahi karta!", "error");
-      return;
-    }
+    if (!isFingerprintSupported()) { showToast("Browser fingerprint support nahi karta!", "error"); return; }
     const saved = JSON.parse(localStorage.getItem("fingerprint_credentials") || "{}");
-    if (!saved[staff.id]) {
-      showToast(`${staff.name} ka fingerprint pehle register karo!`, "warning");
-      return;
-    }
+    if (!saved[staff.id]) { showToast(`${staff.name} ka fingerprint pehle register karo!`, "warning"); return; }
     try {
       showToast("Fingerprint scan karo...", "info");
       const challenge = new Uint8Array(32);
@@ -130,34 +113,20 @@ export default function StaffPage() {
         },
       });
       if (assertion) {
-        // Attendance API call
         const token = localStorage.getItem("token");
         const now = new Date();
         const timeStr = now.toTimeString().slice(0, 5);
         const res = await fetch("/api/attendance", {
           method: "PUT",
           headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-          body: JSON.stringify({
-            staffId: staff.id,
-            date: dateStr,
-            status: "PRESENT",
-            checkIn: timeStr,
-            checkOut: "",
-          }),
+          body: JSON.stringify({ staffId: staff.id, date: dateStr, status: "PRESENT", checkIn: timeStr, checkOut: "" }),
         });
-        if (res.ok) {
-          showToast(`✅ ${staff.name} ki attendance mark ho gayi! Time: ${timeStr}`, "success");
-          fetchAttendance();
-        } else {
-          showToast("Attendance save nahi ho saki!", "error");
-        }
+        if (res.ok) { showToast(`✅ ${staff.name} ki attendance mark ho gayi! Time: ${timeStr}`, "success"); fetchAttendance(); }
+        else showToast("Attendance save nahi ho saki!", "error");
       }
     } catch (error: any) {
-      if (error.name === "NotAllowedError") {
-        showToast("Fingerprint cancel kar diya!", "warning");
-      } else {
-        showToast("Fingerprint verify nahi ho saka: " + error.message, "error");
-      }
+      if (error.name === "NotAllowedError") showToast("Fingerprint cancel kar diya!", "warning");
+      else showToast("Fingerprint verify nahi ho saka: " + error.message, "error");
     }
   };
 
@@ -166,12 +135,9 @@ export default function StaffPage() {
     const res = await fetch(`/api/staff?hotelId=${hotelId}`, { headers: { Authorization: `Bearer ${token}` } });
     const data = await res.json();
     setStaffList(data.staff || []);
-    // Check registered fingerprints
     const saved = JSON.parse(localStorage.getItem("fingerprint_credentials") || "{}");
     const status: Record<string, string> = {};
-    (data.staff || []).forEach((s: Staff) => {
-      if (saved[s.id]) status[s.id] = "registered";
-    });
+    (data.staff || []).forEach((s: Staff) => { if (saved[s.id]) status[s.id] = "registered"; });
     setFingerprintStatus(status);
   }
 
@@ -184,10 +150,16 @@ export default function StaffPage() {
     setAttendance(data.attendance || []);
   }
 
+  const toggleRole = (role: string) => {
+    setForm(prev => ({
+      ...prev,
+      roles: prev.roles.includes(role) ? prev.roles.filter(r => r !== role) : [...prev.roles, role]
+    }));
+  };
+
   async function handleAddStaff() {
-    if (!form.name || !form.email || !form.password) {
-      showToast("Naam, email aur password zaroori hai!", "error"); return;
-    }
+    if (!form.name || !form.email || !form.password) { showToast("Naam, email aur password zaroori hai!", "error"); return; }
+    if (form.roles.length === 0) { showToast("Kam se kam ek Role select karo!", "error"); return; }
     setLoading(true);
     const token = localStorage.getItem("token");
     const res = await fetch("/api/staff", {
@@ -198,12 +170,10 @@ export default function StaffPage() {
     const data = await res.json();
     if (res.ok) {
       showToast(`Staff add ho gaya! Employee ID: ${data.staff.employeeId} ✅`, "success");
-      setForm({ name: "", email: "", password: "", phone: "" });
+      setForm({ name: "", email: "", password: "", phone: "", roles: [] });
       setShowForm(false);
       fetchStaff();
-    } else {
-      showToast(data.error || "Error!", "error");
-    }
+    } else showToast(data.error || "Error!", "error");
     setLoading(false);
   }
 
@@ -224,19 +194,12 @@ export default function StaffPage() {
       body: JSON.stringify(editAttendance)
     });
     const data = await res.json();
-    if (res.ok) {
-      showToast("Attendance update ho gayi! ✅", "success");
-      setEditAttendance(null);
-      fetchAttendance();
-    } else {
-      showToast(data.error || "Error!", "error");
-    }
+    if (res.ok) { showToast("Attendance update ho gayi! ✅", "success"); setEditAttendance(null); fetchAttendance(); }
+    else showToast(data.error || "Error!", "error");
   }
 
   async function downloadReport() {
-    if (!reportFrom || !reportTo) {
-      showToast("From aur To date select karo!", "warning"); return;
-    }
+    if (!reportFrom || !reportTo) { showToast("From aur To date select karo!", "warning"); return; }
     const token = localStorage.getItem("token");
     let url = `/api/attendance?hotelId=${hotelId}`;
     if (reportStaff) url += `&staffId=${reportStaff}`;
@@ -248,9 +211,7 @@ export default function StaffPage() {
       const d = new Date(a.date);
       return d >= from && d <= to && (!reportStaff || a.staffId === reportStaff);
     });
-    if (filtered.length === 0) {
-      showToast("Is range mein koi attendance nahi mili!", "warning"); return;
-    }
+    if (filtered.length === 0) { showToast("Is range mein koi attendance nahi mili!", "warning"); return; }
     const staffMap: Record<string, Staff> = {};
     staffList.forEach(s => { staffMap[s.id] = s; });
     const csv = [
@@ -277,19 +238,16 @@ export default function StaffPage() {
   }
 
   function getDaysInMonth() { return new Date(year, month, 0).getDate(); }
-
   function getAttendanceForDay(staffId: string, day: number) {
     const dateStr = `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
     return attendance.find(a => a.staffId === staffId && a.date.startsWith(dateStr));
   }
-
   function getStatusColor(status: string) {
     if (status === "PRESENT") return "bg-green-100 text-green-700";
     if (status === "HALF_DAY") return "bg-yellow-100 text-yellow-700";
     if (status === "ABSENT") return "bg-red-100 text-red-700";
     return "bg-gray-100 text-gray-500";
   }
-
   function getMonthStats(staffId: string) {
     const sa = attendance.filter(a => a.staffId === staffId);
     return {
@@ -299,6 +257,10 @@ export default function StaffPage() {
       totalHours: Math.round(sa.reduce((s, a) => s + (a.totalHours || 0), 0) * 10) / 10
     };
   }
+
+  const getRoleLabel = (roleValue: string) => {
+    return ROLE_OPTIONS.find(r => r.value === roleValue)?.label || roleValue;
+  };
 
   const daysInMonth = getDaysInMonth();
   return (
@@ -324,7 +286,6 @@ export default function StaffPage() {
           )}
         </div>
 
-        {/* Tabs */}
         <div className="flex gap-2 mb-6">
           {[
             { key: "staff", label: "👥 Staff List" },
@@ -338,7 +299,6 @@ export default function StaffPage() {
           ))}
         </div>
 
-        {/* Add Staff Form */}
         {activeTab === "staff" && showForm && (
           <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 mb-6">
             <h3 className="text-lg font-semibold text-gray-900 mb-4">Naya Staff Add Karo</h3>
@@ -368,12 +328,42 @@ export default function StaffPage() {
                   className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-blue-500" />
               </div>
             </div>
-            <div className="flex gap-3 mt-4">
+
+            {/* Role & Responsibilities */}
+            <div className="mt-5">
+              <label className="text-sm font-medium text-gray-700 mb-2 block">
+                <span className="text-red-500">*</span> Role & Responsibilities
+                <span className="text-xs text-gray-500 font-normal ml-2">(Ek ya multiple select karo)</span>
+              </label>
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                {ROLE_OPTIONS.map(role => {
+                  const isSelected = form.roles.includes(role.value);
+                  return (
+                    <label key={role.value}
+                      className={`flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-all ${
+                        isSelected ? `${role.color} border-2 shadow-sm` : "bg-white border-gray-200 hover:bg-gray-50"
+                      }`}>
+                      <input type="checkbox" checked={isSelected}
+                        onChange={() => toggleRole(role.value)}
+                        className="w-4 h-4 rounded accent-blue-600" />
+                      <span className="text-sm font-medium">{role.label}</span>
+                    </label>
+                  );
+                })}
+              </div>
+              {form.roles.length > 0 && (
+                <p className="text-xs text-blue-600 mt-2">
+                  ✓ Selected: {form.roles.map(r => getRoleLabel(r)).join(", ")}
+                </p>
+              )}
+            </div>
+
+            <div className="flex gap-3 mt-6">
               <button onClick={handleAddStaff} disabled={loading}
                 className="bg-blue-600 text-white px-6 py-2 rounded-lg text-sm hover:bg-blue-700 disabled:opacity-50">
                 {loading ? "Adding..." : "Staff Add Karo"}
               </button>
-              <button onClick={() => setShowForm(false)}
+              <button onClick={() => { setShowForm(false); setForm({ name: "", email: "", password: "", phone: "", roles: [] }); }}
                 className="bg-gray-100 text-gray-600 px-6 py-2 rounded-lg text-sm hover:bg-gray-200">
                 Cancel
               </button>
@@ -381,7 +371,6 @@ export default function StaffPage() {
           </div>
         )}
 
-        {/* Staff List */}
         {activeTab === "staff" && (
           <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-x-auto">
             {staffList.length === 0 ? (
@@ -390,13 +379,13 @@ export default function StaffPage() {
                 <p>Koi staff nahi hai — Add Staff se add karo</p>
               </div>
             ) : (
-              <table className="w-full min-w-[800px]">
+              <table className="w-full min-w-[900px]">
                 <thead className="bg-gray-50 border-b border-gray-100">
                   <tr>
                     <th className="text-left px-6 py-4 text-sm font-medium text-gray-600">Employee ID</th>
                     <th className="text-left px-6 py-4 text-sm font-medium text-gray-600">Staff</th>
                     <th className="text-left px-6 py-4 text-sm font-medium text-gray-600">Phone</th>
-                    <th className="text-left px-6 py-4 text-sm font-medium text-gray-600">Role</th>
+                    <th className="text-left px-6 py-4 text-sm font-medium text-gray-600">Roles</th>
                     <th className="text-left px-6 py-4 text-sm font-medium text-gray-600">Joined</th>
                     <th className="text-left px-6 py-4 text-sm font-medium text-gray-600">Fingerprint</th>
                     <th className="text-left px-6 py-4 text-sm font-medium text-gray-600">Action</th>
@@ -416,7 +405,20 @@ export default function StaffPage() {
                       </td>
                       <td className="px-6 py-4 text-sm text-gray-600">{s.phone || "—"}</td>
                       <td className="px-6 py-4">
-                        <span className="bg-green-100 text-green-700 text-xs px-2 py-1 rounded-full">{s.role}</span>
+                        {s.roles && s.roles.length > 0 ? (
+                          <div className="flex flex-wrap gap-1 max-w-xs">
+                            {s.roles.map((r, i) => {
+                              const roleInfo = ROLE_OPTIONS.find(ro => ro.value === r);
+                              return (
+                                <span key={i} className={`text-xs px-2 py-1 rounded-full ${roleInfo?.color || "bg-gray-100 text-gray-700"}`}>
+                                  {roleInfo?.label || r}
+                                </span>
+                              );
+                            })}
+                          </div>
+                        ) : (
+                          <span className="bg-gray-100 text-gray-500 text-xs px-2 py-1 rounded-full">No role</span>
+                        )}
                       </td>
                       <td className="px-6 py-4 text-sm text-gray-600">
                         {new Date(s.createdAt).toLocaleDateString("en-IN")}
@@ -445,7 +447,6 @@ export default function StaffPage() {
           </div>
         )}
 
-        {/* Attendance Tab */}
         {activeTab === "attendance" && (
           <div className="space-y-4">
             <div className="bg-white rounded-xl shadow-sm p-4 flex flex-wrap gap-4 items-center">
@@ -580,7 +581,6 @@ export default function StaffPage() {
           </div>
         )}
 
-        {/* Download Report Tab */}
         {activeTab === "report" && (
           <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
             <h3 className="text-lg font-semibold text-gray-900 mb-6">📥 Attendance Report Download Karo</h3>
@@ -619,7 +619,6 @@ export default function StaffPage() {
           </div>
         )}
 
-        {/* Edit Attendance Modal */}
         {editAttendance && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
             <div className="bg-white rounded-2xl p-6 w-full max-w-md shadow-xl">
