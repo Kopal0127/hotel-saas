@@ -12,10 +12,7 @@ export default function BookingsPage() {
   const router = useRouter();
   const { toast, showToast, hideToast } = useToast();
   const [bookings, setBookings] = useState<any[]>([]);
-  const [rooms, setRooms] = useState<any[]>([]);
-  const ordersRes = await fetch(`/api/service-orders?hotelId=${hId}`);
-        const ordersData = await ordersRes.json();
-        setServiceOrders(ordersData.orders || []);
+ const [rooms, setRooms] = useState<any[]>([]);
   const [showForm, setShowForm] = useState(false);
   const [loading, setLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
