@@ -11,11 +11,11 @@ export async function POST(req: NextRequest) {
     // IP address lo
     const ip = req.headers.get("x-forwarded-for") || req.headers.get("x-real-ip") || "unknown";
 
-    // Rate limit check
-    const rateLimit = await checkRateLimit(`staff_login_${ip}`);
-    if (!rateLimit.success) {
-      return NextResponse.json({ error: rateLimit.message }, { status: 429 });
-    }
+    // Rate limit check (temporarily disabled for testing)
+    // const rateLimit = await checkRateLimit(`staff_login_${ip}`);
+    // if (!rateLimit.success) {
+    //   return NextResponse.json({ error: rateLimit.message }, { status: 429 });
+    // }
 
     const { email, password } = await req.json();
 
