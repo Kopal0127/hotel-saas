@@ -23,8 +23,8 @@ export default function StaffLoginPage() {
       });
       const data = await res.json();
       if (res.ok) {
-        localStorage.setItem("staff_token", data.token);
-        localStorage.setItem("staff_info", JSON.stringify(data.staff));
+        localStorage.setItem("staffToken", data.token);
+        localStorage.setItem("staff", JSON.stringify(data.staff));
         router.push("/staff-dashboard");
       } else {
         setError(data.error || "Login nahi ho saka!");

@@ -61,6 +61,7 @@ export async function POST(req: NextRequest) {
         email: staff.email,
         employeeId: staff.employeeId,
         role: staff.role,
+        roles: staff.roles, // ✅ YEH ADD KIYA
         hotelName: staff.hotel.name,
         hotelId: staff.hotelId,
       },
