@@ -15,6 +15,15 @@ interface HousekeepingRequest {
   completedAt: string | null;
 }
 
+const CLEANING_TASKS = [
+  "🛏️ Bed Cleaning",
+  "🚿 Washroom Cleaning",
+  "🧹 Sweeping",
+  "🪣 Mopping",
+  "🧹 Dusting",
+  "🛏️ Bed Making",
+];
+
 interface Room {
   id: string;
   number: string;
@@ -29,6 +38,24 @@ export default function HousekeepingPage() {
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<"PENDING" | "IN_PROGRESS" | "DONE">("PENDING");
   const [showForm, setShowForm] = useState(false);
+  const [checkedTasks, setCheckedTasks] = useState<Record<string, string[]>>({});
+
+  const toggleTask = (reqId: string, task: string) => {
+    setCheckedTasks(prev => {
+      const current = prev[reqId] || [];
+      return {
+        ...prev,
+        [reqId]: current.includes(task)
+          ? current.filter(t => t !== task)
+          : [...current, task],
+      };
+    });
+  };
+
+  const allTasksDone = (reqId: string) => {
+    const done = checkedTasks[reqId] || [];
+    return CLEANING_TASKS.every(t => done.includes(t));
+  };
   const [form, setForm] = useState({
     roomId: "",
     roomNumber: "",
@@ -371,9 +398,34 @@ export default function HousekeepingPage() {
                 </button>
               )}
               {activeTab === "IN_PROGRESS" && (
+                <div className="text-left mb-3">
+                  <p className="text-xs font-semibold text-gray-600 mb-2">✅ Cleaning Tasks:</p>
+                  <div className="space-y-1">
+                    {CLEANING_TASKS.map((task) => (
+                      <label key={task} className="flex items-center gap-2 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={(checkedTasks[req.id] || []).includes(task)}
+                          onChange={() => toggleTask(req.id, task)}
+                          className="w-4 h-4 accent-green-500"
+                        />
+                        <span className={`text-xs ${(checkedTasks[req.id] || []).includes(task) ? "line-through text-gray-400" : "text-gray-700"}`}>
+                          {task}
+                        </span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+              )}
+              {activeTab === "IN_PROGRESS" && (
                 <button
                   onClick={() => handleStatusUpdate(req.id, "DONE")}
-                  className="w-full px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 text-sm font-medium transition mb-2"
+                  disabled={!allTasksDone(req.id)}
+                  className={`w-full px-4 py-2 rounded-lg text-sm font-medium transition mb-2 ${
+                    allTasksDone(req.id)
+                      ? "bg-green-500 text-white hover:bg-green-600"
+                      : "bg-gray-200 text-gray-400 cursor-not-allowed"
+                  }`}
                 >
                   ✅ Mark Done
                 </button>
