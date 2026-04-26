@@ -197,58 +197,39 @@ export default function KitchenDashboard() {
             {orders.map((order) => (
               <div
                 key={order.id}
-               className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 hover:shadow-md transition"
+               className="bg-white rounded-lg shadow-sm border border-gray-200 p-3 hover:shadow-md transition"
               >
-                <div className="flex justify-between items-start mb-4">
-                  <div>
-                    <h3 className="text-lg font-bold text-gray-800">
-                      🛏️ Room {order.roomNumber}
-                    </h3>
-                    <p className="text-sm text-gray-600">Guest: {order.guestName}</p>
-                    <p className="text-xs text-gray-400 mt-1">
-                      Order Time: {new Date(order.createdAt).toLocaleString()}
-                    </p>
+                <div className="flex justify-between items-center mb-2">
+                  <div className="flex items-center gap-3">
+                    <h3 className="text-sm font-bold text-gray-800">🛏️ Room {order.roomNumber}</h3>
+                    <span className="text-xs text-gray-500">{order.guestName}</span>
+                    <span className="text-xs text-gray-400">{new Date(order.createdAt).toLocaleTimeString()}</span>
                   </div>
-                  <div className="text-right">
-                    <p className="text-2xl font-bold text-orange-600">
-                      ₹{order.totalAmount}
-                    </p>
-                    <span
-                      className={`inline-block px-3 py-1 rounded-full text-xs font-medium mt-2 ${
-                        order.paymentStatus === "PAID"
-                          ? "bg-green-100 text-green-700"
-                          : "bg-red-100 text-red-700"
-                      }`}
-                    >
+                  <div className="flex items-center gap-2">
+                    <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${
+                      order.paymentStatus === "PAID" ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"
+                    }`}>
                       {order.paymentStatus === "PAID" ? "💰 Paid" : "💵 Due"}
                     </span>
+                    <span className="text-sm font-bold text-orange-600">₹{order.totalAmount}</span>
                   </div>
                 </div>
 
                 {/* Items */}
-                <div className="bg-gray-50 rounded-lg p-4 mb-4">
-                  <h4 className="font-semibold text-gray-700 mb-2">📋 Order Items:</h4>
-                  <div className="space-y-2">
-                    {order.items.map((item) => (
-                      <div
-                        key={item.id}
-                        className="flex justify-between items-center text-sm"
-                      >
-                        <span className="text-gray-700">
-                          {item.quantity}x {item.itemName}
-                        </span>
-                        <span className="text-gray-500">₹{item.price * item.quantity}</span>
-                      </div>
-                    ))}
-                  </div>
+                <div className="bg-gray-50 rounded px-3 py-2 mb-2 flex flex-wrap gap-3">
+                  {order.items.map((item) => (
+                    <span key={item.id} className="text-xs text-gray-700">
+                      {item.quantity}x {item.itemName} <span className="text-gray-400">₹{item.price * item.quantity}</span>
+                    </span>
+                  ))}
                 </div>
 
-                {/* Action Buttons */}
-                <div className="flex gap-3">
+                {/* Action Button */}
+                <div>
                   {activeTab === "PENDING" && (
                     <button
                       onClick={() => updateStatus(order.id, "PREPARING")}
-                      className="flex-1 px-4 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 font-medium transition"
+                      className="w-full px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 text-sm font-medium transition"
                     >
                       👨‍🍳 Start Preparing
                     </button>
@@ -256,17 +237,14 @@ export default function KitchenDashboard() {
                   {activeTab === "PREPARING" && (
                     <button
                       onClick={() => updateStatus(order.id, "DELIVERED")}
-                      className="flex-1 px-4 py-3 bg-green-500 text-white rounded-lg hover:bg-green-600 font-medium transition"
+                      className="w-full px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 text-sm font-medium transition"
                     >
                       ✅ Mark Delivered
                     </button>
                   )}
                   {activeTab === "DELIVERED" && (
-                    <div className="flex-1 px-4 py-3 bg-green-100 text-green-700 rounded-lg text-center font-medium">
-                      ✅ Delivered at{" "}
-                      {order.createdAt
-                        ? new Date(order.createdAt).toLocaleTimeString()
-                        : "N/A"}
+                    <div className="w-full px-4 py-2 bg-green-100 text-green-700 rounded-lg text-center text-sm font-medium">
+                      ✅ Delivered at {new Date(order.createdAt).toLocaleTimeString()}
                     </div>
                   )}
                 </div>
