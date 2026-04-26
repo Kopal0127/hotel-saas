@@ -107,7 +107,6 @@ export default function KitchenDashboard() {
       });
 
       if (res.ok) {
-        alert(`✅ Status updated to ${newStatus}`);
         fetchOrders();
       } else {
         alert("❌ Update failed");
@@ -197,7 +196,7 @@ export default function KitchenDashboard() {
             {orders.map((order) => (
               <div
                 key={order.id}
-                className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 hover:shadow-md transition"
+               className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 hover:shadow-md transition"
               >
                 <div className="flex justify-between items-start mb-4">
                   <div>
