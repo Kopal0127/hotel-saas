@@ -23,8 +23,8 @@ export default function StaffDashboardPage() {
   });
 
   useEffect(() => {
-    const token = localStorage.getItem("staff_token");
-    const staffInfo = localStorage.getItem("staff_info");
+   const token = localStorage.getItem("staffToken");
+    const staffInfo = localStorage.getItem("staff");
     if (!token || !staffInfo) {
       router.push("/staff-login");
       return;
@@ -60,7 +60,7 @@ export default function StaffDashboardPage() {
 
   const fetchData = async (token: string) => {
     try {
-      const staffInfo = JSON.parse(localStorage.getItem("staff_info") || "{}");
+      const staffInfo = JSON.parse(localStorage.getItem("staff") || "{}");
       const hotelId = staffInfo.hotelId;
 
       const [bookingsRes, roomsRes] = await Promise.all([
@@ -80,8 +80,8 @@ export default function StaffDashboardPage() {
   };
 
   const handleLogout = () => {
-    localStorage.removeItem("staff_token");
-    localStorage.removeItem("staff_info");
+    localStorage.removeItem("staffToken");
+    localStorage.removeItem("staff");
     router.push("/staff-login");
   };
 
