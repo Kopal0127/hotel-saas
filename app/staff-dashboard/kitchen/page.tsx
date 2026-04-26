@@ -192,36 +192,35 @@ export default function KitchenDashboard() {
               {activeTab === "DELIVERED" && "📦 No delivered orders yet."}
             </p>
           </div>
-        ) : (
-          <div className="grid gap-4">
+       ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {orders.map((order) => (
               <div
                 key={order.id}
-               className="bg-white rounded-lg shadow-sm border border-gray-200 p-3 hover:shadow-md transition"
+              className="bg-green-50 border border-green-200 rounded-xl p-4 hover:shadow-md transition text-center"
               >
-                <div className="flex justify-between items-center mb-2">
-                  <div className="flex items-center gap-3">
-                    <h3 className="text-sm font-bold text-gray-800">🛏️ Room {order.roomNumber}</h3>
-                    <span className="text-xs text-gray-500">{order.guestName}</span>
-                    <span className="text-xs text-gray-400">{new Date(order.createdAt).toLocaleTimeString()}</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${
-                      order.paymentStatus === "PAID" ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"
-                    }`}>
-                      {order.paymentStatus === "PAID" ? "💰 Paid" : "💵 Due"}
-                    </span>
-                    <span className="text-sm font-bold text-orange-600">₹{order.totalAmount}</span>
-                  </div>
-                </div>
+               <div className="text-3xl mb-2">🛏️</div>
+                <h3 className="text-lg font-bold text-gray-800">#{order.roomNumber}</h3>
+                <p className="text-sm text-gray-500 mb-1">{order.guestName}</p>
+                <p className="text-xs text-gray-400 mb-2">{new Date(order.createdAt).toLocaleTimeString()}</p>
 
                 {/* Items */}
-                <div className="bg-gray-50 rounded px-3 py-2 mb-2 flex flex-wrap gap-3">
+                <div className="bg-white rounded-lg px-3 py-2 mb-2 text-left">
                   {order.items.map((item) => (
-                    <span key={item.id} className="text-xs text-gray-700">
-                      {item.quantity}x {item.itemName} <span className="text-gray-400">₹{item.price * item.quantity}</span>
-                    </span>
+                    <div key={item.id} className="flex justify-between text-xs text-gray-700 py-0.5">
+                      <span>{item.quantity}x {item.itemName}</span>
+                      <span className="text-gray-400">₹{item.price * item.quantity}</span>
+                    </div>
                   ))}
+                </div>
+
+                <div className="flex justify-between items-center mb-2 px-1">
+                  <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${
+                    order.paymentStatus === "PAID" ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"
+                  }`}>
+                    {order.paymentStatus === "PAID" ? "💰 Paid" : "💵 Due"}
+                  </span>
+                  <span className="text-sm font-bold text-green-600">₹{order.totalAmount}</span>
                 </div>
 
                 {/* Action Button */}
