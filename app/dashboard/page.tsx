@@ -393,10 +393,16 @@ const handleHousekeepingRequest = async (bookingId: string) => {
                           { value: "BILL", label: `💰 Pay Bill (₹${pendingBill})`, color: "text-green-600" },
                           { value: "CHECKED_OUT", label: "🚪 Check-out", color: "text-gray-400", disabled: true },
                         ]
-                      : activeFilter === "checkout"
+                     : activeFilter === "checkout"
                       ? [
                           { value: "CHECKED_OUT", label: "🚪 Check-out", color: "text-orange-600" },
                           { value: "HOUSEKEEPING", label: "🧹 Housekeeping Request", color: "text-teal-600" },
+                          { value: "UPGRADED", label: "⬆️ Upgrade", color: "text-purple-600" },
+                        ]
+                      : activeFilter === "checkin" || activeFilter === "recent" || activeFilter === "all"
+                      ? [
+                          { value: "CHECKED_IN", label: "✅ Check-in", color: "text-blue-600" },
+                          { value: "CANCELLED", label: "❌ Cancel", color: "text-red-600" },
                           { value: "UPGRADED", label: "⬆️ Upgrade", color: "text-purple-600" },
                         ]
                       : actionOptions;
