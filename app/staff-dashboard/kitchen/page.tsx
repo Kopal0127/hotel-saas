@@ -89,9 +89,9 @@ export default function KitchenDashboard() {
   }, [activeTab]);
 
   // Update order status
-  const updateStatus = async (orderId: string, newStatus: string) => {
+ const updateStatus = async (orderId: string, newStatus: string) => {
     try {
-      const token = localStorage.getItem("staffToken");
+      const token = localStorage.getItem("staffToken") || localStorage.getItem("token");
       
       const res = await fetch("/api/service-orders", {
         method: "PUT",
@@ -109,7 +109,9 @@ export default function KitchenDashboard() {
       if (res.ok) {
         fetchOrders();
       } else {
-        alert("❌ Update failed");
+        const errData = await res.json();
+        console.error("Update error:", errData);
+        alert("❌ Update failed: " + (errData.error || "Unknown error"));
       }
     } catch (error) {
       console.error("Error updating status:", error);
