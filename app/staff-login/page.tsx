@@ -25,7 +25,18 @@ export default function StaffLoginPage() {
       if (res.ok) {
         localStorage.setItem("staffToken", data.token);
         localStorage.setItem("staff", JSON.stringify(data.staff));
-        router.push("/staff-dashboard");
+        
+        // Role ke hisab se redirect
+        const roles = data.staff.roles || [];
+        if (roles.includes("KITCHEN")) {
+          router.push("/staff-dashboard/kitchen");
+        } else if (roles.includes("HOUSEKEEPING")) {
+          router.push("/staff-dashboard/housekeeping");
+        } else if (roles.includes("ROOM_SERVICE")) {
+          router.push("/staff-dashboard/room-service");
+        } else {
+          router.push("/staff-dashboard");
+        }
       } else {
         setError(data.error || "Login nahi ho saka!");
       }
