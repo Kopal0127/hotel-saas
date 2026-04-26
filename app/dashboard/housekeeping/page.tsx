@@ -38,11 +38,12 @@ export default function HousekeepingPage() {
   });
 
   // Fetch rooms
-  const fetchRooms = async () => {
+ const fetchRooms = async () => {
     try {
       const token = localStorage.getItem("token");
-      const user = JSON.parse(localStorage.getItem("user") || "{}");
-      const hotelId = user.hotelId || user.hotels?.[0]?.id;
+      const hotelsRes = await fetch("/api/hotels");
+      const hotelsData = await hotelsRes.json();
+      const hotelId = hotelsData.hotels?.[0]?.id;
 
       const res = await fetch(`/api/rooms?hotelId=${hotelId}`, {
         headers: { Authorization: `Bearer ${token}` },
@@ -61,8 +62,9 @@ export default function HousekeepingPage() {
   const fetchRequests = async () => {
     try {
       const token = localStorage.getItem("token");
-      const user = JSON.parse(localStorage.getItem("user") || "{}");
-      const hotelId = user.hotelId || user.hotels?.[0]?.id;
+      const hotelsRes = await fetch("/api/hotels");
+      const hotelsData = await hotelsRes.json();
+      const hotelId = hotelsData.hotels?.[0]?.id;
 
       const res = await fetch(
         `/api/housekeeping?hotelId=${hotelId}&status=${activeTab}`,
@@ -97,8 +99,9 @@ export default function HousekeepingPage() {
 
     try {
       const token = localStorage.getItem("token");
-      const user = JSON.parse(localStorage.getItem("user") || "{}");
-      const hotelId = user.hotelId || user.hotels?.[0]?.id;
+      const hotelsRes = await fetch("/api/hotels");
+      const hotelsData = await hotelsRes.json();
+      const hotelId = hotelsData.hotels?.[0]?.id;
 
       const res = await fetch("/api/housekeeping", {
         method: "POST",
@@ -106,13 +109,15 @@ export default function HousekeepingPage() {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({
+       body: JSON.stringify({
           hotelId,
           roomId: form.roomId,
           roomNumber: form.roomNumber,
+          roomType: rooms.find(r => r.id === form.roomId)?.type || "Standard",
           requestType: form.requestType,
           priority: form.priority,
           notes: form.notes,
+          source: "MANUAL",
         }),
       });
 
