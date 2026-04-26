@@ -207,23 +207,25 @@ export default function HousekeepingPage() {
   return (
     <div className="min-h-screen bg-gray-50 p-6">
       {/* Header */}
-      <div className="flex justify-between items-center mb-6">
+     <div className="flex justify-between items-center mb-6">
         <div>
-          <button
-            onClick={() => router.push("/dashboard")}
-            className="text-sm text-gray-500 hover:text-gray-700 mb-2 flex items-center gap-1"
-          >
-            ← Back to Dashboard
-          </button>
           <h1 className="text-2xl font-bold text-gray-800">🧹 Housekeeping</h1>
           <p className="text-sm text-gray-500">Room cleaning requests manage karo</p>
         </div>
-        <button
-          onClick={() => setShowForm(!showForm)}
-          className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 font-medium"
-        >
-          + New Request
-        </button>
+        <div className="flex gap-3">
+          <button
+            onClick={() => router.push("/dashboard")}
+            className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 font-medium"
+          >
+            🏠 Dashboard
+          </button>
+          <button
+            onClick={() => setShowForm(!showForm)}
+            className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 font-medium"
+          >
+            + New Request
+          </button>
+        </div>
       </div>
 
       {/* New Request Form */}
