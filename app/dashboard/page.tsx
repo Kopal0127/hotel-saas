@@ -451,7 +451,8 @@ export default function Dashboard() {
                 <div className="text-sm font-bold text-yellow-600">Active</div>
                 <div className="text-gray-500 text-xs">Room Service</div>
               </div>
-              <div className="bg-gray-50 rounded-xl p-4 border border-gray-100">
+             <div onClick={() => router.push("/dashboard/housekeeping")}
+                className="bg-gray-50 rounded-xl p-4 border border-gray-100 cursor-pointer hover:bg-teal-50 hover:border-teal-200 transition-all">
                 <div className="text-2xl mb-1">🧹</div>
                 <div className="text-sm font-bold text-teal-600">On Duty</div>
                 <div className="text-gray-500 text-xs">Housekeeping</div>
