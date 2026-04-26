@@ -151,12 +151,18 @@ export default function RoomsPage() {
       </nav>
 
       <div className="max-w-6xl mx-auto px-4 md:px-8 py-6 md:py-10">
-        <div className="flex items-center justify-between mb-6 md:mb-8">
+       <div className="flex items-center justify-between mb-6 md:mb-8">
           <h2 className="text-xl md:text-2xl font-bold text-gray-900">Room Management</h2>
-          <button onClick={() => setShowForm(!showForm)}
-            className="bg-blue-600 text-white px-3 md:px-5 py-2 rounded-lg text-sm hover:bg-blue-700">
-            + Room Add Karo
-          </button>
+          <div className="flex gap-3">
+            <button onClick={() => router.push("/dashboard/inventory")}
+              className="bg-purple-600 text-white px-3 md:px-5 py-2 rounded-lg text-sm hover:bg-purple-700">
+              📦 Stock Inventory
+            </button>
+            <button onClick={() => setShowForm(!showForm)}
+              className="bg-blue-600 text-white px-3 md:px-5 py-2 rounded-lg text-sm hover:bg-blue-700">
+              + Room Add Karo
+            </button>
+          </div>
         </div>
 
         {showForm && (
