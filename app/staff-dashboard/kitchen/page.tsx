@@ -99,10 +99,9 @@ export default function KitchenDashboard() {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({
-          orderId,
+       body: JSON.stringify({
+          id: orderId,
           kitchenStatus: newStatus,
-          deliveredAt: newStatus === "DELIVERED" ? new Date().toISOString() : undefined,
         }),
       });
 
