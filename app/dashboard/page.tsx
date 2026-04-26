@@ -53,6 +53,20 @@ export default function Dashboard() {
         const todayDate = new Date();
         todayDate.setHours(0, 0, 0, 0);
 
+        const todayStart = new Date();
+        todayStart.setHours(0, 0, 0, 0);
+
+        // Sirf aaj + future bookings (CHECKED_OUT ko 24 ghante baad hide karo)
+        const activeBookings = bookingsData.bookings?.filter((b: any) => {
+          if (b.status === "CHECKED_OUT") {
+            const checkedOutTime = new Date(b.updatedAt || b.checkOut);
+            const hoursDiff = (new Date().getTime() - checkedOutTime.getTime()) / (1000 * 60 * 60);
+            return hoursDiff < 24;
+          }
+          if (b.status === "CANCELLED") return false;
+          return new Date(b.checkOut) >= todayStart;
+        }) || [];
+
         const checkInsToday = bookingsData.bookings?.filter((b: any) =>
           new Date(b.checkIn).toDateString() === today
         ).length || 0;
@@ -81,14 +95,21 @@ export default function Dashboard() {
         ) || [];
 
         setAvailableRooms(available);
+       // Recent = last 7 days bookings
+        const oneWeekAgo = new Date();
+        oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+        const recentOnly = activeBookings.filter((b: any) =>
+          new Date(b.createdAt) >= oneWeekAgo
+        );
+
+        setAllBookings(activeBookings);
+        setRecentBookings(recentOnly);
         setStats({
           totalRooms: available.length,
-          totalBookings: bookingsData.bookings?.length || 0,
+          totalBookings: activeBookings.length,
           checkInsToday,
           checkOutsToday,
         });
-        setAllBookings(bookingsData.bookings || []);
-        setRecentBookings(bookingsData.bookings?.slice(0, 8) || []);
 
         const ordersRes = await fetch(`/api/service-orders?hotelId=${hotelId}`);
         const ordersData = await ordersRes.json();
