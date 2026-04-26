@@ -510,11 +510,6 @@ const handleHousekeepingRequest = async (bookingId: string) => {
             </div>
 
             <div className="grid grid-cols-3 gap-3 mt-3">
-              <div className="bg-gray-50 rounded-xl p-4 border border-gray-100">
-                <div className="text-2xl mb-1">📦</div>
-                <div className="text-sm font-bold text-purple-600">In Stock</div>
-                <div className="text-gray-500 text-xs">Inventory</div>
-              </div>
             </div>
           </div>
 
