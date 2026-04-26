@@ -133,6 +133,24 @@ export default function HousekeepingPage() {
       alert("❌ Kuch galat hua!");
     }
   };
+  // Status update
+  const handleStatusUpdate = async (id: string, newStatus: string) => {
+    try {
+      const token = localStorage.getItem("token");
+      const res = await fetch("/api/housekeeping", {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ id, status: newStatus }),
+      });
+      if (res.ok) fetchRequests();
+      else alert("❌ Update failed!");
+    } catch {
+      alert("❌ Kuch galat hua!");
+    }
+  };
 
   // Delete request
   const handleDelete = async (id: string) => {
@@ -344,6 +362,22 @@ export default function HousekeepingPage() {
                 </p>
               )}
 
+             {activeTab === "PENDING" && (
+                <button
+                  onClick={() => handleStatusUpdate(req.id, "IN_PROGRESS")}
+                  className="w-full px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 text-sm font-medium transition mb-2"
+                >
+                  🧹 Start Cleaning
+                </button>
+              )}
+              {activeTab === "IN_PROGRESS" && (
+                <button
+                  onClick={() => handleStatusUpdate(req.id, "DONE")}
+                  className="w-full px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 text-sm font-medium transition mb-2"
+                >
+                  ✅ Mark Done
+                </button>
+              )}
               <button
                 onClick={() => handleDelete(req.id)}
                 className="w-full px-4 py-2 bg-red-50 text-red-500 rounded-lg hover:bg-red-100 text-sm font-medium transition"
