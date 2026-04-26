@@ -12,7 +12,7 @@ export default function StaffLoginPage() {
     if (!form.email || !form.password) {
       setError("Email aur password daalo!");
       return;
-    }
+    }y
     setLoading(true);
     setError("");
     try {
@@ -31,8 +31,9 @@ export default function StaffLoginPage() {
       }
     } catch (error) {
       setError("Kuch galat hua, dobara try karo!");
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   return (
