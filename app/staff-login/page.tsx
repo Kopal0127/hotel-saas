@@ -12,7 +12,7 @@ export default function StaffLoginPage() {
     if (!form.email || !form.password) {
       setError("Email aur password daalo!");
       return;
-    }y
+    }
     setLoading(true);
     setError("");
     try {
