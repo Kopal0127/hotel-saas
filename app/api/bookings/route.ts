@@ -328,11 +328,50 @@ export async function PUT(req: NextRequest) {
       return NextResponse.json({ error: "Invalid status!" }, { status: 400 });
     }
 
-    const booking = await prisma.booking.update({
+   const booking = await prisma.booking.update({
       where: { id },
       data: { status },
-      include: { room: true },
+      include: { room: true, bookingRooms: { include: { room: true } } },
     });
+
+    // ✅ Auto Housekeeping Request — CHECKED_OUT hone pe
+    if (status === "CHECKED_OUT") {
+      const hotelId = booking.room.hotelId;
+      
+      // Sab rooms ke liye housekeeping request banao
+      const roomsList = booking.bookingRooms.length > 0
+        ? booking.bookingRooms.map((br: any) => ({
+            roomId: br.roomId,
+            roomNumber: br.room.number,
+            roomType: br.room.type,
+          }))
+        : [{ roomId: booking.roomId, roomNumber: booking.room.number, roomType: booking.room.type }];
+
+      await Promise.all(roomsList.map(async (r: any) => {
+        // Duplicate check — same room ki request already exist nahi karni chahiye
+        const existing = await prisma.housekeepingRequest.findFirst({
+          where: {
+            roomId: r.roomId,
+            status: { in: ["PENDING", "IN_PROGRESS"] },
+          }
+        });
+
+        if (!existing) {
+          await prisma.housekeepingRequest.create({
+            data: {
+              hotelId,
+              roomId: r.roomId,
+              roomNumber: r.roomNumber,
+              roomType: r.roomType,
+              requestType: "CLEANING",
+              priority: "NORMAL",
+              status: "PENDING",
+              source: "CHECKOUT",
+            }
+          });
+        }
+      }));
+    }
 
     return NextResponse.json({ message: "Status update ho gaya!", booking });
   } catch (error) {

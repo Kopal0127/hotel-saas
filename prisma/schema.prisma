@@ -164,9 +164,11 @@ model HousekeepingRequest {
   hotelId     String
   roomId      String
   roomNumber  String
+  roomType    String   @default("Standard")
   requestType String   @default("CLEANING")
   status      String   @default("PENDING")
   priority    String   @default("NORMAL")
+  source      String   @default("MANUAL")
   notes       String?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
