@@ -331,7 +331,10 @@ export async function PUT(req: NextRequest) {
    const booking = await prisma.booking.update({
       where: { id },
       data: { status },
-      include: { room: true, bookingRooms: { include: { room: true } } },
+      include: { 
+        room: { include: { hotel: true } }, 
+        bookingRooms: { include: { room: true } } 
+      },
     });
 
     // ✅ Auto Housekeeping Request — CHECKED_OUT hone pe
