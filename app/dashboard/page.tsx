@@ -414,6 +414,7 @@ const handleHousekeepingRequest = async (bookingId: string) => {
                                     return;
                                   }
                                   if (opt.value === "BILL") handleMarkPaid(booking.id);
+                                  else if (opt.value === "HOUSEKEEPING") handleHousekeepingRequest(booking.id);
                                   else handleStatusChange(booking.id, opt.value);
                                 }}
                                 className={`w-full text-left px-4 py-2.5 text-sm hover:bg-gray-50 transition-colors ${opt.color} ${booking.status === opt.value ? "bg-gray-50 font-semibold" : ""} ${opt.disabled ? "cursor-not-allowed opacity-50" : ""}`}

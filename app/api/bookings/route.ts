@@ -357,12 +357,12 @@ export async function PUT(req: NextRequest) {
         });
 
         if (!existing) {
-          await prisma.housekeepingRequest.create({
+         await prisma.housekeepingRequest.create({
             data: {
               hotelId,
               roomId: r.roomId,
               roomNumber: r.roomNumber,
-              roomType: r.roomType,
+              roomType: r.roomType || "Standard",
               requestType: "CLEANING",
               priority: "NORMAL",
               status: "PENDING",
