@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } = "next/navigation";
+import { useRouter } from "next/navigation";
 
 interface HousekeepingRequest {
   id: string;
