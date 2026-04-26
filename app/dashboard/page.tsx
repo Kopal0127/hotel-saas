@@ -109,6 +109,42 @@ export default function Dashboard() {
   const getOrdersCount = (bookingId: string) => {
     return serviceOrders.filter(o => o.bookingId === bookingId).length;
   };
+const handleHousekeepingRequest = async (bookingId: string) => {
+    const booking = allBookings.find(b => b.id === bookingId);
+    if (!booking) return;
+
+    try {
+      const token = localStorage.getItem("token");
+      const hotelsRes = await fetch("/api/hotels");
+      const hotelsData = await hotelsRes.json();
+      const hotelId = hotelsData.hotels[0].id;
+
+      const roomsList = booking.rooms && booking.rooms.length > 0
+        ? booking.rooms
+        : [{ roomId: booking.roomId, roomNumber: booking.roomNumber, roomType: booking.roomType }];
+
+      await Promise.all(roomsList.map((r: any) =>
+        fetch("/api/housekeeping", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            hotelId,
+            roomId: r.roomId,
+            roomNumber: r.roomNumber,
+            roomType: r.roomType || "Standard",
+            requestType: "CLEANING",
+            priority: "NORMAL",
+            source: "MANUAL",
+          }),
+        })
+      ));
+
+      showToast("✅ Housekeeping request create ho gayi!", "success");
+    } catch {
+      showToast("❌ Request create nahi ho saki!", "error");
+    }
+    setOpenActionId(null);
+  };
 
   const handleMarkPaid = async (bookingId: string) => {
     const pendingOrders = serviceOrders.filter(o => o.bookingId === bookingId && o.paymentStatus === "UNPAID");
@@ -209,9 +245,10 @@ export default function Dashboard() {
     PARTIAL_UPI: "📱 Partial", CHECKOUT_PAYMENT: "🏨 Checkout",
   };
 
-  const actionOptions = [
+ const actionOptions = [
     { value: "CHECKED_IN", label: "✅ Check-in", color: "text-blue-600" },
     { value: "CHECKED_OUT", label: "🚪 Check-out", color: "text-orange-600" },
+    { value: "HOUSEKEEPING", label: "🧹 Housekeeping Request", color: "text-teal-600" },
     { value: "CANCELLED", label: "❌ Cancel", color: "text-red-600" },
     { value: "UPGRADED", label: "⬆️ Upgrade", color: "text-purple-600" },
   ];
