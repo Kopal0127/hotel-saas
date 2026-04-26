@@ -388,10 +388,16 @@ const handleHousekeepingRequest = async (bookingId: string) => {
                   {(() => {
                     const pendingBill = activeFilter === "checkout" ? getPendingBill(booking.id) : 0;
                     const showBillAction = activeFilter === "checkout" && pendingBill > 0;
-                    const actionOpts: any[] = showBillAction
+                   const actionOpts: any[] = showBillAction
                       ? [
                           { value: "BILL", label: `💰 Pay Bill (₹${pendingBill})`, color: "text-green-600" },
                           { value: "CHECKED_OUT", label: "🚪 Check-out", color: "text-gray-400", disabled: true },
+                        ]
+                      : activeFilter === "checkout"
+                      ? [
+                          { value: "CHECKED_OUT", label: "🚪 Check-out", color: "text-orange-600" },
+                          { value: "HOUSEKEEPING", label: "🧹 Housekeeping Request", color: "text-teal-600" },
+                          { value: "UPGRADED", label: "⬆️ Upgrade", color: "text-purple-600" },
                         ]
                       : actionOptions;
                     return (
