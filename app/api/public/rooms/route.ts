@@ -17,9 +17,21 @@ export async function GET(req: NextRequest) {
     const checkInDate = new Date(checkIn);
     const checkOutDate = new Date(checkOut);
 
-    // Sab rooms fetch karo
+   // Sab rooms fetch karo
     const allRooms = await prisma.room.findMany({
       where: { hotelId },
+      select: {
+        id: true,
+        number: true,
+        type: true,
+        price: true,
+        maxAdults: true,
+        maxChildren: true,
+        maxInfants: true,
+        bedType: true,
+        roomSize: true,
+        roomView: true,
+      }
     });
 
     // Booked rooms find karo
