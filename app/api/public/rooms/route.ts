@@ -10,8 +10,28 @@ export async function GET(req: NextRequest) {
     const checkIn = searchParams.get("checkIn");
     const checkOut = searchParams.get("checkOut");
 
-    if (!hotelId || !checkIn || !checkOut) {
-      return NextResponse.json({ error: "hotelId, checkIn, checkOut chahiye!" }, { status: 400 });
+    if (!hotelId) {
+      return NextResponse.json({ error: "hotelId chahiye!" }, { status: 400 });
+    }
+
+    // Agar dates nahi hain toh sab rooms return karo
+    if (!checkIn || !checkOut) {
+      const allRooms = await prisma.room.findMany({
+        where: { hotelId },
+        select: {
+          id: true,
+          number: true,
+          type: true,
+          price: true,
+          maxAdults: true,
+          maxChildren: true,
+          maxInfants: true,
+          bedType: true,
+          roomSize: true,
+          roomView: true,
+        }
+      });
+      return NextResponse.json({ rooms: allRooms });
     }
 
     const checkInDate = new Date(checkIn);

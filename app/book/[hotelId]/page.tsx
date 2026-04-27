@@ -71,7 +71,19 @@ export default function PublicBookingPage() {
 
   useEffect(() => {
     fetchHotelData();
+    fetchAllRooms();
   }, [hotelId]);
+
+  const fetchAllRooms = async () => {
+    try {
+      const res = await fetch(`/api/public/rooms?hotelId=${hotelId}`);
+      const data = await res.json();
+      setAvailableRooms(data.rooms || []);
+      setStep("rooms");
+    } catch (error) {
+      console.error(error);
+    }
+  };
 
   const fetchHotelData = async () => {
     try {
@@ -92,7 +104,7 @@ export default function PublicBookingPage() {
     }
   };
 
-  const handleSearch = async () => {
+ const handleSearch = async () => {
     if (!checkIn || !checkOut) {
       alert("Check-in aur Check-out date select karo!");
       return;
