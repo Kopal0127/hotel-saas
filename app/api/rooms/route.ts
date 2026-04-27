@@ -21,12 +21,13 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   try {
-    const {
+   const {
       type, price, hotelId, startNumber, totalRooms,
       taxGroup, sacCode,
       defaultAdultStay, defaultChildStay, defaultInfantStay,
       maxAdults, maxChildren, maxInfants,
       extraAdultRate, extraChildRate, extraInfantRate,
+      bedType, roomSize, roomView,
     } = await req.json();
 
     if (!type || !price || !hotelId || !startNumber || !totalRooms) {
@@ -59,6 +60,9 @@ export async function POST(req: NextRequest) {
         extraAdultRate: extraAdultRate ? parseFloat(extraAdultRate) : 0,
         extraChildRate: extraChildRate ? parseFloat(extraChildRate) : 0,
         extraInfantRate: extraInfantRate ? parseFloat(extraInfantRate) : 0,
+        bedType: bedType || null,
+        roomSize: roomSize || null,
+        roomView: roomView || null,
       });
     }
 
