@@ -15,10 +15,9 @@ export default function RoomsPage() {
   const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState<"details" | "other">("details");
 
-  const [form, setForm] = useState({
+ const [form, setForm] = useState({
     type: "",
     hotelId: "",
-    // Room Details
     taxGroup: "",
     sacCode: "",
     defaultAdultStay: "1",
@@ -30,10 +29,12 @@ export default function RoomsPage() {
     extraAdultRate: "0",
     extraChildRate: "0",
     extraInfantRate: "0",
-    // Other Details
     maxAdults: "2",
     maxChildren: "0",
     maxInfants: "0",
+    bedType: "",
+    roomSize: "",
+    roomView: "",
   });
 
   const [confirm, setConfirm] = useState({ isOpen: false, roomId: "" });
@@ -81,8 +82,9 @@ export default function RoomsPage() {
           taxGroup: "", sacCode: "",
           defaultAdultStay: "1", defaultChildStay: "0", defaultInfantStay: "0",
           price: "", startNumber: "", totalRooms: "",
-          extraAdultRate: "0", extraChildRate: "0", extraInfantRate: "0",
+         extraAdultRate: "0", extraChildRate: "0", extraInfantRate: "0",
           maxAdults: "2", maxChildren: "0", maxInfants: "0",
+          bedType: "", roomSize: "", roomView: "",
         });
         setShowForm(false);
         setActiveTab("details");
@@ -265,6 +267,34 @@ export default function RoomsPage() {
                   <label className="text-sm font-medium text-gray-700 mb-1 block">Extra Infant Rate (₹)</label>
                   <input type="number" placeholder="0" value={form.extraInfantRate}
                     onChange={(e) => setForm({ ...form, extraInfantRate: e.target.value })}
+                    className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-blue-500" />
+                </div>
+
+               {/* Row 5 — Bed Type, Room Size, Room View */}
+                <div>
+                  <label className="text-sm font-medium text-gray-700 mb-1 block">Bed Type</label>
+                  <select value={form.bedType}
+                    onChange={(e) => setForm({ ...form, bedType: e.target.value })}
+                    className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-blue-500">
+                    <option value="">Select Bed Type</option>
+                    <option value="King Size Bed">👑 King Size Bed</option>
+                    <option value="Queen Size Bed">🛏️ Queen Size Bed</option>
+                    <option value="Single Bed">🛏️ Single Bed</option>
+                    <option value="Double Bed">🛏️ Double Bed</option>
+                    <option value="Twin Bed">🛏️ Twin Bed</option>
+                    <option value="Bunk Bed">🛏️ Bunk Bed</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-gray-700 mb-1 block">Room Size</label>
+                  <input type="text" placeholder="e.g. 324 sq. ft." value={form.roomSize}
+                    onChange={(e) => setForm({ ...form, roomSize: e.target.value })}
+                    className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-blue-500" />
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-gray-700 mb-1 block">Room View</label>
+                  <input type="text" placeholder="e.g. City View, Pool View" value={form.roomView}
+                    onChange={(e) => setForm({ ...form, roomView: e.target.value })}
                     className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-blue-500" />
                 </div>
 

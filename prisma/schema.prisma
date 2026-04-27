@@ -50,6 +50,9 @@ model Room {
   extraAdultRate     Float?       @default(0)
   extraChildRate     Float?       @default(0)
   extraInfantRate    Float?       @default(0)
+  bedType            String?
+  roomSize           String?
+  roomView           String?
   hotel              Hotel        @relation(fields: [hotelId], references: [id])
   bookings           Booking[]
   ratePlans          RatePlan[]
