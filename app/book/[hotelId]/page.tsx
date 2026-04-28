@@ -346,9 +346,10 @@ export default function PublicBookingPage() {
                         <div>
                           <p className="text-xs text-gray-500 mb-1">Children (0-12)</p>
                           <div className="flex items-center gap-2">
-                            <button onClick={() => {
+                           <button onClick={() => {
                               if (rg.children > 0) {
-                                setRoomGuests(prev => prev.map((r, idx) => idx === i ? { ...r, children: r.children - 1 } : r));
+                                const updated = roomGuests.map((r, idx) => idx === i ? { ...r, children: r.children - 1 } : r);
+                                setRoomGuests(updateRoomsFromGuests(updated));
                               }
                             }} className="w-8 h-8 rounded border border-gray-300 flex items-center justify-center">—</button>
                             <span>{rg.children}</span>
