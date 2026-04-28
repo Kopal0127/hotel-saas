@@ -168,15 +168,10 @@ export default function PublicBookingPage() {
     if (availableRooms.length === 0) return newRoomGuests;
     const firstRoom = availableRooms[0];
 
-    // Per room calculation — extra mattress consider karo
-    let totalRoomsNeeded = 0;
+   let totalRoomsNeeded = 0;
     const maxAdults = firstRoom.maxAdults || 2;
     const maxChildren = firstRoom.maxChildren || 0;
-    const maxInfants = firstRoom.maxInfants || 0;
-    const baseCapacity = maxAdults + maxChildren + maxInfants;
 
-    // Pehle room ke guests check karo
-   // Total extra people = adults + children jo default se zyada hain
     const totalAdults = newRoomGuests.reduce((sum, r) => sum + r.adults, 0);
     const totalChildren = newRoomGuests.reduce((sum, r) => sum + r.children, 0);
     const totalExtraMattress = newRoomGuests.reduce((sum, r) => sum + r.extraMattress, 0);
