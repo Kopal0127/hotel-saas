@@ -187,13 +187,19 @@ export default function PublicBookingPage() {
     // Base capacity per room
     const baseCapacity = maxAdults + maxChildren;
 
-    // Effective capacity with extra mattress
-    const effectiveCapacity = (engine?.allowExtraMattress && totalExtraMattress >= 1)
-      ? baseCapacity + 1
-      : baseCapacity;
+   // Extra people jo base capacity se zyada hain
+    const extraPeople = Math.max(0, totalPeople - baseCapacity);
 
-    // Rooms needed
-    totalRoomsNeeded = Math.ceil(totalPeople / effectiveCapacity);
+    if (extraPeople === 0) {
+      // Sab fit hain ek room mein
+      totalRoomsNeeded = 1;
+    } else if (engine?.allowExtraMattress && totalExtraMattress >= 1 && extraPeople <= totalExtraMattress) {
+      // Extra mattress se extra people cover ho gaye → 1 room
+      totalRoomsNeeded = 1;
+    } else {
+      // Extra mattress nahi ya kaafi nahi → zyada rooms
+      totalRoomsNeeded = Math.ceil(totalPeople / baseCapacity);
+    }
     totalRoomsNeeded = Math.max(1, totalRoomsNeeded);
 
     const currentRooms = newRoomGuests.length;
