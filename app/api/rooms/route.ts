@@ -98,9 +98,27 @@ export async function DELETE(req: NextRequest) {
     const { searchParams } = new URL(req.url);
     const id = searchParams.get("id");
     if (!id) return NextResponse.json({ error: "ID chahiye!" }, { status: 400 });
+
+    // Pehle linked bookings check karo
+    const bookings = await prisma.booking.findMany({
+      where: { 
+        OR: [
+          { roomId: id },
+          { bookingRooms: { some: { roomId: id } } }
+        ]
+      }
+    });
+
+    if (bookings.length > 0) {
+      return NextResponse.json({ 
+        error: `Yeh room ${bookings.length} booking(s) se linked hai! Pehle bookings delete karo.` 
+      }, { status: 400 });
+    }
+
     await prisma.room.delete({ where: { id } });
     return NextResponse.json({ message: "Room delete ho gaya!" });
   } catch (error) {
+    console.error(error);
     return NextResponse.json({ error: "Kuch galat hua!" }, { status: 500 });
   }
 }

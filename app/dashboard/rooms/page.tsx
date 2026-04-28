@@ -103,10 +103,19 @@ export default function RoomsPage() {
  const handleDeleteAll = async (rooms: any[]) => {
     if (!window.confirm(`Kya aap "${rooms[0].type}" type ke sab ${rooms.length} rooms delete karna chahte ho?`)) return;
     try {
-      await Promise.all(rooms.map(room =>
-        fetch(`/api/rooms?id=${room.id}`, { method: "DELETE" })
+      const results = await Promise.all(rooms.map(room =>
+        fetch(`/api/rooms?id=${room.id}`, { method: "DELETE" }).then(r => r.json())
       ));
-      showToast(`✅ Sab ${rooms.length} rooms delete ho gaye!`, "success");
+      
+      const failed = results.filter(r => r.error);
+      const success = results.filter(r => !r.error);
+
+      if (success.length > 0) {
+        showToast(`✅ ${success.length} rooms delete ho gaye!`, "success");
+      }
+      if (failed.length > 0) {
+        showToast(`⚠️ ${failed.length} rooms delete nahi hue — bookings linked hain!`, "warning");
+      }
       fetchHotelAndRooms();
     } catch (error) {
       showToast("❌ Delete nahi ho saka!", "error");
