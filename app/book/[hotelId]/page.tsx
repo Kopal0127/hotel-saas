@@ -151,20 +151,11 @@ export default function PublicBookingPage() {
  const totalGuests = roomGuests.reduce((sum, r) => sum + r.adults + r.children, 0);
   const totalRooms = roomGuests.length;
 
-// Auto room calculation
-  const calculateAutoRooms = (guests: number, room: any) => {
-    const maxAdults = room.maxAdults || 2;
-    const maxChildren = room.maxChildren || 0;
-    const maxInfants = room.maxInfants || 0;
-    const baseCapacity = maxAdults + maxChildren + maxInfants;
-    const effectiveCapacity = engine?.allowExtraMattress
-      ? baseCapacity + 1
-      : baseCapacity;
-    return Math.ceil(guests / effectiveCapacity);
-  };
+// Extra mattress allowed hai ya nahi
+  const isExtraMattressAllowed = engine?.allowExtraMattress === true;
 
   // Auto update rooms when guests change
-  const updateRoomsFromGuests = (newRoomGuests: RoomGuest[], currentEngine = engine) => {
+ const updateRoomsFromGuests = (newRoomGuests: RoomGuest[]) => {
    if (availableRooms.length === 0) return newRoomGuests;
     // Sabse zyada capacity wala room use karo
     const firstRoom = availableRooms.reduce((best, room) => {
@@ -193,7 +184,7 @@ export default function PublicBookingPage() {
     if (extraPeople === 0) {
       // Sab fit hain ek room mein
       totalRoomsNeeded = 1;
-    } else if (currentEngine?.allowExtraMattress && totalExtraMattress >= 1 && extraPeople <= totalExtraMattress) {
+   } else if (isExtraMattressAllowed && totalExtraMattress >= 1 && extraPeople <= totalExtraMattress) {
       // Extra mattress se extra people cover ho gaye → 1 room
       totalRoomsNeeded = 1;
     } else {
