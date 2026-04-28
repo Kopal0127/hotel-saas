@@ -165,8 +165,13 @@ export default function PublicBookingPage() {
 
   // Auto update rooms when guests change
   const updateRoomsFromGuests = (newRoomGuests: RoomGuest[]) => {
-    if (availableRooms.length === 0) return newRoomGuests;
-    const firstRoom = availableRooms[0];
+   if (availableRooms.length === 0) return newRoomGuests;
+    // Sabse zyada capacity wala room use karo
+    const firstRoom = availableRooms.reduce((best, room) => {
+      const bestCap = (best.maxAdults || 0) + (best.maxChildren || 0);
+      const roomCap = (room.maxAdults || 0) + (room.maxChildren || 0);
+      return roomCap > bestCap ? room : best;
+    }, availableRooms[0]);
 
    let totalRoomsNeeded = 0;
     const maxAdults = firstRoom.maxAdults || 2;
