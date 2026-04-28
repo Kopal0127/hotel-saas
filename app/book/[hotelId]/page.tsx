@@ -151,7 +151,7 @@ export default function PublicBookingPage() {
  const totalGuests = roomGuests.reduce((sum, r) => sum + r.adults + r.children, 0);
   const totalRooms = roomGuests.length;
 
-  // Auto room calculation
+// Auto room calculation
   const calculateAutoRooms = (guests: number, room: any) => {
     const maxAdults = room.maxAdults || 2;
     const maxChildren = room.maxChildren || 0;
@@ -161,6 +161,26 @@ export default function PublicBookingPage() {
       ? baseCapacity + 1
       : baseCapacity;
     return Math.ceil(guests / effectiveCapacity);
+  };
+
+  // Auto update rooms when guests change
+  const updateRoomsFromGuests = (newRoomGuests: RoomGuest[]) => {
+    if (availableRooms.length === 0) return newRoomGuests;
+    const firstRoom = availableRooms[0];
+    const totalG = newRoomGuests.reduce((sum, r) => sum + r.adults + r.children, 0);
+    const autoRooms = calculateAutoRooms(totalG, firstRoom);
+    const currentRooms = newRoomGuests.length;
+
+    if (autoRooms > currentRooms) {
+      const toAdd = autoRooms - currentRooms;
+      const added = Array.from({ length: toAdd }, () => ({
+        roomId: "", adults: 0, children: 0, extraMattress: 0
+      }));
+      return [...newRoomGuests, ...added];
+    } else if (autoRooms < currentRooms) {
+      return newRoomGuests.slice(0, autoRooms);
+    }
+    return newRoomGuests;
   };
 
   if (loading) {
