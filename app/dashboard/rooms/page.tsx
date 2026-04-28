@@ -100,8 +100,8 @@ export default function RoomsPage() {
 
   const handleDeleteClick = (roomId: string) => { setConfirm({ isOpen: true, roomId }); };
 
-  const handleDeleteAll = async (rooms: any[]) => {
-    if (!confirm(`Kya aap "${rooms[0].type}" type ke sab ${rooms.length} rooms delete karna chahte ho?`)) return;
+ const handleDeleteAll = async (rooms: any[]) => {
+    if (!window.confirm(`Kya aap "${rooms[0].type}" type ke sab ${rooms.length} rooms delete karna chahte ho?`)) return;
     try {
       await Promise.all(rooms.map(room =>
         fetch(`/api/rooms?id=${room.id}`, { method: "DELETE" })
