@@ -34,7 +34,7 @@ export async function GET(req: NextRequest) {
 // PUT — Update booking engine settings
 export async function PUT(req: NextRequest) {
   try {
-    const {
+   const {
       hotelId,
       description,
       amenities,
@@ -42,6 +42,7 @@ export async function PUT(req: NextRequest) {
       bannerImage,
       galleryImages,
       isActive,
+      allowExtraMattress,
     } = await req.json();
 
     if (!hotelId) {
@@ -50,13 +51,14 @@ export async function PUT(req: NextRequest) {
 
     const engine = await prisma.bookingEngine.upsert({
       where: { hotelId },
-      update: {
+     update: {
         description: description ?? undefined,
         amenities: amenities ?? undefined,
         nearestAttractions: nearestAttractions ?? undefined,
         bannerImage: bannerImage ?? undefined,
         galleryImages: galleryImages ?? undefined,
         isActive: isActive ?? undefined,
+        allowExtraMattress: allowExtraMattress ?? undefined,
       },
       create: {
         hotelId,
@@ -66,6 +68,7 @@ export async function PUT(req: NextRequest) {
         bannerImage: bannerImage || null,
         galleryImages: galleryImages || [],
         isActive: isActive ?? true,
+        allowExtraMattress: allowExtraMattress ?? false,
       },
     });
 

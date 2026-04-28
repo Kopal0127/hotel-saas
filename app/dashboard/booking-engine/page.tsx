@@ -23,13 +23,14 @@ export default function BookingEnginePage() {
   const [activeTab, setActiveTab] = useState<"general" | "amenities" | "attractions" | "photos">("general");
   const [uploading, setUploading] = useState(false);
 
-  const [engine, setEngine] = useState({
+ const [engine, setEngine] = useState({
     description: "",
     amenities: [] as string[],
     nearestAttractions: [] as { name: string; distance: string }[],
     bannerImage: "",
     galleryImages: [] as string[],
     isActive: true,
+    allowExtraMattress: false,
   });
 
   const [newAttraction, setNewAttraction] = useState({ name: "", distance: "" });
@@ -52,7 +53,7 @@ export default function BookingEnginePage() {
 
         const engineRes = await fetch(`/api/booking-engine?hotelId=${hId}`);
         const engineData = await engineRes.json();
-        if (engineData.engine) {
+       if (engineData.engine) {
           setEngine({
             description: engineData.engine.description || "",
             amenities: engineData.engine.amenities || [],
@@ -60,6 +61,7 @@ export default function BookingEnginePage() {
             bannerImage: engineData.engine.bannerImage || "",
             galleryImages: engineData.engine.galleryImages || [],
             isActive: engineData.engine.isActive ?? true,
+            allowExtraMattress: engineData.engine.allowExtraMattress ?? false,
           });
         }
       }
@@ -183,6 +185,16 @@ export default function BookingEnginePage() {
             <p className="text-sm text-gray-500 mt-1">{hotelName} ka public booking page manage karo</p>
           </div>
           <div className="flex gap-3">
+          {/* Extra Mattress Toggle */}
+            <div className="flex items-center gap-2 bg-white border border-gray-200 rounded-lg px-4 py-2">
+              <span className="text-sm text-gray-600">🛏️ Extra Mattress</span>
+              <button
+                onClick={() => setEngine(prev => ({ ...prev, allowExtraMattress: !prev.allowExtraMattress }))}
+                className={`w-10 h-5 rounded-full transition-colors ${engine.allowExtraMattress ? "bg-blue-500" : "bg-gray-300"}`}
+              >
+                <div className={`w-4 h-4 bg-white rounded-full shadow transition-transform mx-0.5 ${engine.allowExtraMattress ? "translate-x-5" : "translate-x-0"}`}></div>
+              </button>
+            </div>
             {/* Active Toggle */}
             <div className="flex items-center gap-2 bg-white border border-gray-200 rounded-lg px-4 py-2">
               <span className="text-sm text-gray-600">Active</span>
