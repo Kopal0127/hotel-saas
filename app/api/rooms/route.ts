@@ -122,3 +122,42 @@ export async function DELETE(req: NextRequest) {
     return NextResponse.json({ error: "Kuch galat hua!" }, { status: 500 });
   }
 }
+export async function PUT(req: NextRequest) {
+  try {
+    const {
+      id, type, price, taxGroup, sacCode,
+      defaultAdultStay, defaultChildStay, defaultInfantStay,
+      extraAdultRate, extraChildRate, extraInfantRate,
+      bedType, roomSize, roomView,
+    } = await req.json();
+
+    if (!id) return NextResponse.json({ error: "ID chahiye!" }, { status: 400 });
+
+    const room = await prisma.room.update({
+      where: { id },
+      data: {
+        type,
+        price: parseFloat(price),
+        taxGroup: taxGroup || null,
+        sacCode: sacCode || null,
+        defaultAdultStay: parseInt(defaultAdultStay) || 1,
+        defaultChildStay: parseInt(defaultChildStay) || 0,
+        defaultInfantStay: parseInt(defaultInfantStay) || 0,
+        maxAdults: parseInt(defaultAdultStay) || 1,
+        maxChildren: parseInt(defaultChildStay) || 0,
+        maxInfants: parseInt(defaultInfantStay) || 0,
+        extraAdultRate: parseFloat(extraAdultRate) || 0,
+        extraChildRate: parseFloat(extraChildRate) || 0,
+        extraInfantRate: parseFloat(extraInfantRate) || 0,
+        bedType: bedType || null,
+        roomSize: roomSize || null,
+        roomView: roomView || null,
+      },
+    });
+
+    return NextResponse.json({ message: "Room update ho gaya!", room });
+  } catch (error) {
+    console.error(error);
+    return NextResponse.json({ error: "Update nahi ho saka!" }, { status: 500 });
+  }
+}

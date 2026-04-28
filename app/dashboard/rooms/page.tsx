@@ -37,7 +37,15 @@ export default function RoomsPage() {
     roomView: "",
   });
 
-  const [confirm, setConfirm] = useState({ isOpen: false, roomId: "" });
+ const [confirm, setConfirm] = useState({ isOpen: false, roomId: "" });
+  const [editRoom, setEditRoom] = useState<any>(null);
+  const [editForm, setEditForm] = useState({
+    type: "", price: "", taxGroup: "", sacCode: "",
+    defaultAdultStay: "1", defaultChildStay: "0", defaultInfantStay: "0",
+    extraAdultRate: "0", extraChildRate: "0", extraInfantRate: "0",
+    bedType: "", roomSize: "", roomView: "",
+  });
+  const [editLoading, setEditLoading] = useState(false);
 
   useEffect(() => { fetchHotelAndRooms(); }, []);
 
@@ -99,6 +107,46 @@ export default function RoomsPage() {
   };
 
   const handleDeleteClick = (roomId: string) => { setConfirm({ isOpen: true, roomId }); };
+  const handleEditClick = (room: any) => {
+    setEditRoom(room);
+    setEditForm({
+      type: room.type || "",
+      price: room.price?.toString() || "",
+      taxGroup: room.taxGroup || "",
+      sacCode: room.sacCode || "",
+      defaultAdultStay: room.defaultAdultStay?.toString() || "1",
+      defaultChildStay: room.defaultChildStay?.toString() || "0",
+      defaultInfantStay: room.defaultInfantStay?.toString() || "0",
+      extraAdultRate: room.extraAdultRate?.toString() || "0",
+      extraChildRate: room.extraChildRate?.toString() || "0",
+      extraInfantRate: room.extraInfantRate?.toString() || "0",
+      bedType: room.bedType || "",
+      roomSize: room.roomSize || "",
+      roomView: room.roomView || "",
+    });
+  };
+
+  const handleEditSubmit = async () => {
+    setEditLoading(true);
+    try {
+      const res = await fetch("/api/rooms", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: editRoom.id, ...editForm }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        showToast("✅ Room update ho gaya!", "success");
+        setEditRoom(null);
+        fetchHotelAndRooms();
+      } else {
+        showToast(data.error || "❌ Update nahi ho saka!", "error");
+      }
+    } catch (error) {
+      showToast("❌ Kuch galat hua!", "error");
+    }
+    setEditLoading(false);
+  };
 
  const handleDeleteAll = async (rooms: any[]) => {
     if (!window.confirm(`Kya aap "${rooms[0].type}" type ke sab ${rooms.length} rooms delete karna chahte ho?`)) return;
@@ -382,13 +430,25 @@ export default function RoomsPage() {
                 <div className="p-6">
                   <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-3">
                     {typeRooms.map((room: any) => (
-                      <div key={room.id} className="group relative bg-green-50 border border-green-200 rounded-xl p-3 text-center hover:bg-red-50 hover:border-red-200 cursor-pointer transition-colors"
-                        onClick={() => handleDeleteClick(room.id)}>
+                     <div key={room.id} className="group relative bg-green-50 border border-green-200 rounded-xl p-3 text-center transition-colors">
                         <div className="text-lg mb-1">🛏️</div>
-                        <div className="text-sm font-bold text-gray-800 group-hover:text-red-600">#{room.number}</div>
-                        <div className="text-xs text-gray-500 mt-0.5 group-hover:text-red-500">{room.type}</div>
-                        <div className="text-xs text-green-600 font-medium mt-1 group-hover:text-red-500">₹{room.price}/night</div>
-                        <span className="hidden group-hover:block text-xs text-red-500 mt-1">🗑️ Delete</span>
+                        <div className="text-sm font-bold text-gray-800">#{room.number}</div>
+                        <div className="text-xs text-gray-500 mt-0.5">{room.type}</div>
+                        <div className="text-xs text-green-600 font-medium mt-1">₹{room.price}/night</div>
+                        <div className="flex gap-1 mt-2">
+                          <button
+                            onClick={() => handleEditClick(room)}
+                            className="flex-1 text-xs bg-blue-50 text-blue-600 rounded-lg py-1 hover:bg-blue-100"
+                          >
+                            ✏️
+                          </button>
+                          <button
+                            onClick={() => handleDeleteClick(room.id)}
+                            className="flex-1 text-xs bg-red-50 text-red-500 rounded-lg py-1 hover:bg-red-100"
+                          >
+                            🗑️
+                          </button>
+                        </div>
                       </div>
                     ))}
                   </div>
@@ -408,6 +468,120 @@ export default function RoomsPage() {
         onCancel={() => setConfirm({ isOpen: false, roomId: "" })}
         isDangerous={true}
       />
+
+     {/* Edit Modal */}
+      {editRoom && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-lg font-bold text-gray-900">✏️ Room #{editRoom.number} Edit Karo</h3>
+              <button onClick={() => setEditRoom(null)} className="text-gray-400 hover:text-gray-600 text-xl">✕</button>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div>
+                <label className="text-sm font-medium text-gray-700 mb-1 block">Room Type</label>
+                <input type="text" value={editForm.type}
+                  onChange={(e) => setEditForm({ ...editForm, type: e.target.value })}
+                  className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-blue-500" />
+              </div>
+              <div>
+                <label className="text-sm font-medium text-gray-700 mb-1 block">Tax Group</label>
+                <select value={editForm.taxGroup}
+                  onChange={(e) => setEditForm({ ...editForm, taxGroup: e.target.value })}
+                  className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-blue-500">
+                  {taxGroups.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
+                </select>
+              </div>
+              <div>
+                <label className="text-sm font-medium text-gray-700 mb-1 block">SAC Code</label>
+                <input type="text" value={editForm.sacCode}
+                  onChange={(e) => setEditForm({ ...editForm, sacCode: e.target.value })}
+                  className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-blue-500" />
+              </div>
+              <div>
+                <label className="text-sm font-medium text-gray-700 mb-1 block">Default Adult Stay</label>
+                <input type="number" value={editForm.defaultAdultStay}
+                  onChange={(e) => setEditForm({ ...editForm, defaultAdultStay: e.target.value })}
+                  className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-blue-500" />
+              </div>
+              <div>
+                <label className="text-sm font-medium text-gray-700 mb-1 block">Default Child Stay</label>
+                <input type="number" value={editForm.defaultChildStay}
+                  onChange={(e) => setEditForm({ ...editForm, defaultChildStay: e.target.value })}
+                  className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-blue-500" />
+              </div>
+              <div>
+                <label className="text-sm font-medium text-gray-700 mb-1 block">Default Infant Stay</label>
+                <input type="number" value={editForm.defaultInfantStay}
+                  onChange={(e) => setEditForm({ ...editForm, defaultInfantStay: e.target.value })}
+                  className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-blue-500" />
+              </div>
+              <div>
+                <label className="text-sm font-medium text-gray-700 mb-1 block">Price per Night (₹)</label>
+                <input type="number" value={editForm.price}
+                  onChange={(e) => setEditForm({ ...editForm, price: e.target.value })}
+                  className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-blue-500" />
+              </div>
+              <div>
+                <label className="text-sm font-medium text-gray-700 mb-1 block">Extra Adult Rate (₹)</label>
+                <input type="number" value={editForm.extraAdultRate}
+                  onChange={(e) => setEditForm({ ...editForm, extraAdultRate: e.target.value })}
+                  className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-blue-500" />
+              </div>
+              <div>
+                <label className="text-sm font-medium text-gray-700 mb-1 block">Extra Child Rate (₹)</label>
+                <input type="number" value={editForm.extraChildRate}
+                  onChange={(e) => setEditForm({ ...editForm, extraChildRate: e.target.value })}
+                  className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-blue-500" />
+              </div>
+              <div>
+                <label className="text-sm font-medium text-gray-700 mb-1 block">Extra Infant Rate (₹)</label>
+                <input type="number" value={editForm.extraInfantRate}
+                  onChange={(e) => setEditForm({ ...editForm, extraInfantRate: e.target.value })}
+                  className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-blue-500" />
+              </div>
+              <div>
+                <label className="text-sm font-medium text-gray-700 mb-1 block">Bed Type</label>
+                <select value={editForm.bedType}
+                  onChange={(e) => setEditForm({ ...editForm, bedType: e.target.value })}
+                  className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-blue-500">
+                  <option value="">Select Bed Type</option>
+                  <option value="King Size Bed">👑 King Size Bed</option>
+                  <option value="Queen Size Bed">🛏️ Queen Size Bed</option>
+                  <option value="Single Bed">🛏️ Single Bed</option>
+                  <option value="Double Bed">🛏️ Double Bed</option>
+                  <option value="Twin Bed">🛏️ Twin Bed</option>
+                  <option value="Bunk Bed">🛏️ Bunk Bed</option>
+                </select>
+              </div>
+              <div>
+                <label className="text-sm font-medium text-gray-700 mb-1 block">Room Size</label>
+                <input type="text" placeholder="e.g. 324 sq. ft." value={editForm.roomSize}
+                  onChange={(e) => setEditForm({ ...editForm, roomSize: e.target.value })}
+                  className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-blue-500" />
+              </div>
+              <div>
+                <label className="text-sm font-medium text-gray-700 mb-1 block">Room View</label>
+                <input type="text" placeholder="e.g. City View" value={editForm.roomView}
+                  onChange={(e) => setEditForm({ ...editForm, roomView: e.target.value })}
+                  className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-blue-500" />
+              </div>
+            </div>
+
+            <div className="flex gap-3 mt-6">
+              <button onClick={handleEditSubmit} disabled={editLoading}
+                className="bg-blue-600 text-white px-6 py-2 rounded-lg text-sm hover:bg-blue-700 disabled:opacity-50">
+                {editLoading ? "Saving..." : "✅ Save Changes"}
+              </button>
+              <button onClick={() => setEditRoom(null)}
+                className="bg-gray-100 text-gray-600 px-6 py-2 rounded-lg text-sm hover:bg-gray-200">
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {toast && <Toast message={toast.message} type={toast.type} onClose={hideToast} />}
     </div>
