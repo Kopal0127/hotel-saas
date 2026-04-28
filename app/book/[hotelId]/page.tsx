@@ -181,15 +181,25 @@ export default function PublicBookingPage() {
     const totalChildren = newRoomGuests.reduce((sum, r) => sum + r.children, 0);
     const totalExtraMattress = newRoomGuests.reduce((sum, r) => sum + r.extraMattress, 0);
 
-    // Extra people jo capacity se zyada hain
-    const extraPeople = Math.max(0, totalAdults - maxAdults) + Math.max(0, totalChildren - maxChildren);
+    // Total people
+    const totalPeople = totalAdults + totalChildren;
+    
+    // Base capacity per room (adults + children default)
+    const baseCapacity = maxAdults + maxChildren;
+    
+    // Extra people jo ek room ki capacity se zyada hain
+    const extraPeople = Math.max(0, totalPeople - baseCapacity);
 
-    // Agar extra mattress hai aur extra people <= 1 toh 1 room kaafi
-    if (engine?.allowExtraMattress && totalExtraMattress >= 1 && extraPeople <= 1) {
+    // Logic:
+    // 1. Agar extra people = 0 → 1 room
+    // 2. Agar extra people > 0 AND extra mattress >= extraPeople AND extraPeople <= 1 → 1 room
+    // 3. Warna → Math.ceil(totalPeople / baseCapacity) rooms
+    if (extraPeople === 0) {
+      totalRoomsNeeded = 1;
+    } else if (engine?.allowExtraMattress && totalExtraMattress >= extraPeople && extraPeople <= 1) {
       totalRoomsNeeded = 1;
     } else {
-      const effectiveCapacity = engine?.allowExtraMattress ? baseCapacity + 1 : baseCapacity;
-      totalRoomsNeeded = Math.ceil((totalAdults + totalChildren) / effectiveCapacity);
+      totalRoomsNeeded = Math.ceil(totalPeople / baseCapacity);
     }
     totalRoomsNeeded = Math.max(1, totalRoomsNeeded);
 
