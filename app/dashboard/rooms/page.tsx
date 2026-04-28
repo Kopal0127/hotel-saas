@@ -110,11 +110,13 @@ export default function RoomsPage() {
       const failed = results.filter(r => r.error);
       const success = results.filter(r => !r.error);
 
-      if (success.length > 0) {
+     if (success.length > 0) {
         showToast(`✅ ${success.length} rooms delete ho gaye!`, "success");
       }
-      if (failed.length > 0) {
-        showToast(`⚠️ ${failed.length} rooms delete nahi hue — bookings linked hain!`, "warning");
+      if (failed.length > 0 && success.length === 0) {
+        showToast(`⚠️ Sab rooms mein bookings linked hain — delete nahi ho sake!`, "warning");
+      } else if (failed.length > 0) {
+        showToast(`ℹ️ ${failed.length} rooms skip hue — unme bookings hain`, "info");
       }
       fetchHotelAndRooms();
     } catch (error) {
