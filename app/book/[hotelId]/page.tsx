@@ -27,6 +27,7 @@ interface BookingEngine {
   bannerImage: string;
   galleryImages: string[];
   isActive: boolean;
+  allowExtraMattress: boolean;
 }
 
 interface RoomGuest {
