@@ -147,8 +147,20 @@ export default function PublicBookingPage() {
     return selectedRooms.reduce((sum, r) => sum + (r.price * nights), 0);
   };
 
-  const totalGuests = roomGuests.reduce((sum, r) => sum + r.adults + r.children, 0);
+ const totalGuests = roomGuests.reduce((sum, r) => sum + r.adults + r.children, 0);
   const totalRooms = roomGuests.length;
+
+  // Auto room calculation
+  const calculateAutoRooms = (guests: number, room: any) => {
+    const maxAdults = room.maxAdults || 2;
+    const maxChildren = room.maxChildren || 0;
+    const maxInfants = room.maxInfants || 0;
+    const baseCapacity = maxAdults + maxChildren + maxInfants;
+    const effectiveCapacity = engine?.allowExtraMattress
+      ? baseCapacity + 1
+      : baseCapacity;
+    return Math.ceil(guests / effectiveCapacity);
+  };
 
   if (loading) {
     return (
@@ -263,14 +275,16 @@ export default function PublicBookingPage() {
                         <div>
                           <p className="text-xs text-gray-500 mb-1">Adults</p>
                           <div className="flex items-center gap-2">
-                            <button onClick={() => {
+                           <button onClick={() => {
                               if (rg.adults > 1) {
-                                setRoomGuests(prev => prev.map((r, idx) => idx === i ? { ...r, adults: r.adults - 1 } : r));
+                                const updated = roomGuests.map((r, idx) => idx === i ? { ...r, adults: r.adults - 1 } : r);
+                                setRoomGuests(updateRoomsFromGuests(updated));
                               }
                             }} className="w-8 h-8 rounded border border-gray-300 flex items-center justify-center">—</button>
                             <span>{rg.adults}</span>
-                            <button onClick={() => {
-                              setRoomGuests(prev => prev.map((r, idx) => idx === i ? { ...r, adults: r.adults + 1 } : r));
+                           <button onClick={() => {
+                              const updated = roomGuests.map((r, idx) => idx === i ? { ...r, adults: r.adults + 1 } : r);
+                              setRoomGuests(updateRoomsFromGuests(updated));
                             }} className="w-8 h-8 rounded border border-gray-300 flex items-center justify-center">+</button>
                           </div>
                         </div>
@@ -283,8 +297,9 @@ export default function PublicBookingPage() {
                               }
                             }} className="w-8 h-8 rounded border border-gray-300 flex items-center justify-center">—</button>
                             <span>{rg.children}</span>
-                            <button onClick={() => {
-                              setRoomGuests(prev => prev.map((r, idx) => idx === i ? { ...r, children: r.children + 1 } : r));
+                           <button onClick={() => {
+                              const updated = roomGuests.map((r, idx) => idx === i ? { ...r, children: r.children + 1 } : r);
+                              setRoomGuests(updateRoomsFromGuests(updated));
                             }} className="w-8 h-8 rounded border border-gray-300 flex items-center justify-center">+</button>
                           </div>
                         </div>
