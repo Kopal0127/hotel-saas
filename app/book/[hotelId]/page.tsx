@@ -176,15 +176,21 @@ export default function PublicBookingPage() {
     const baseCapacity = maxAdults + maxChildren + maxInfants;
 
     // Pehle room ke guests check karo
-    let remainingGuests = newRoomGuests.reduce((sum, r) => sum + r.adults + r.children, 0);
+   // Total extra people = adults + children jo default se zyada hain
+    const totalAdults = newRoomGuests.reduce((sum, r) => sum + r.adults, 0);
+    const totalChildren = newRoomGuests.reduce((sum, r) => sum + r.children, 0);
     const totalExtraMattress = newRoomGuests.reduce((sum, r) => sum + r.extraMattress, 0);
 
-    // Extra mattress ON hai toh effective capacity +1
-    const effectiveCapacity = engine?.allowExtraMattress
-      ? baseCapacity + Math.min(totalExtraMattress, 1)
-      : baseCapacity;
+    // Extra people jo capacity se zyada hain
+    const extraPeople = Math.max(0, totalAdults - maxAdults) + Math.max(0, totalChildren - maxChildren);
 
-    totalRoomsNeeded = Math.ceil(remainingGuests / effectiveCapacity);
+    // Agar extra mattress hai aur extra people <= 1 toh 1 room kaafi
+    if (engine?.allowExtraMattress && totalExtraMattress >= 1 && extraPeople <= 1) {
+      totalRoomsNeeded = 1;
+    } else {
+      const effectiveCapacity = engine?.allowExtraMattress ? baseCapacity + 1 : baseCapacity;
+      totalRoomsNeeded = Math.ceil((totalAdults + totalChildren) / effectiveCapacity);
+    }
     totalRoomsNeeded = Math.max(1, totalRoomsNeeded);
 
     const currentRooms = newRoomGuests.length;
@@ -353,8 +359,10 @@ export default function PublicBookingPage() {
                             }
                           }} className="w-8 h-8 rounded border border-gray-300 flex items-center justify-center">—</button>
                           <span>{rg.extraMattress}</span>
-                          <button onClick={() => {
-                            setRoomGuests(prev => prev.map((r, idx) => idx === i ? { ...r, extraMattress: r.extraMattress + 1 } : r));
+                         <button onClick={() => {
+                            if (rg.extraMattress < 1) {
+                              setRoomGuests(prev => prev.map((r, idx) => idx === i ? { ...r, extraMattress: r.extraMattress + 1 } : r));
+                            }
                           }} className="w-8 h-8 rounded border border-gray-300 flex items-center justify-center">+</button>
                         </div>
                       </div>
