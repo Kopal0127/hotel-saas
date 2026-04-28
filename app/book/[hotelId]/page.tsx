@@ -167,18 +167,36 @@ export default function PublicBookingPage() {
   const updateRoomsFromGuests = (newRoomGuests: RoomGuest[]) => {
     if (availableRooms.length === 0) return newRoomGuests;
     const firstRoom = availableRooms[0];
-    const totalG = newRoomGuests.reduce((sum, r) => sum + r.adults + r.children, 0);
-    const autoRooms = calculateAutoRooms(totalG, firstRoom);
+
+    // Per room calculation — extra mattress consider karo
+    let totalRoomsNeeded = 0;
+    const maxAdults = firstRoom.maxAdults || 2;
+    const maxChildren = firstRoom.maxChildren || 0;
+    const maxInfants = firstRoom.maxInfants || 0;
+    const baseCapacity = maxAdults + maxChildren + maxInfants;
+
+    // Pehle room ke guests check karo
+    let remainingGuests = newRoomGuests.reduce((sum, r) => sum + r.adults + r.children, 0);
+    const totalExtraMattress = newRoomGuests.reduce((sum, r) => sum + r.extraMattress, 0);
+
+    // Extra mattress ON hai toh effective capacity +1
+    const effectiveCapacity = engine?.allowExtraMattress
+      ? baseCapacity + Math.min(totalExtraMattress, 1)
+      : baseCapacity;
+
+    totalRoomsNeeded = Math.ceil(remainingGuests / effectiveCapacity);
+    totalRoomsNeeded = Math.max(1, totalRoomsNeeded);
+
     const currentRooms = newRoomGuests.length;
 
-    if (autoRooms > currentRooms) {
-      const toAdd = autoRooms - currentRooms;
+    if (totalRoomsNeeded > currentRooms) {
+      const toAdd = totalRoomsNeeded - currentRooms;
       const added = Array.from({ length: toAdd }, () => ({
         roomId: "", adults: 0, children: 0, extraMattress: 0
       }));
       return [...newRoomGuests, ...added];
-    } else if (autoRooms < currentRooms) {
-      return newRoomGuests.slice(0, autoRooms);
+    } else if (totalRoomsNeeded < currentRooms) {
+      return newRoomGuests.slice(0, totalRoomsNeeded);
     }
     return newRoomGuests;
   };
