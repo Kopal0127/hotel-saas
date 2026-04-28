@@ -164,7 +164,7 @@ export default function PublicBookingPage() {
   };
 
   // Auto update rooms when guests change
-  const updateRoomsFromGuests = (newRoomGuests: RoomGuest[]) => {
+  const updateRoomsFromGuests = (newRoomGuests: RoomGuest[], currentEngine = engine) => {
    if (availableRooms.length === 0) return newRoomGuests;
     // Sabse zyada capacity wala room use karo
     const firstRoom = availableRooms.reduce((best, room) => {
@@ -193,7 +193,7 @@ export default function PublicBookingPage() {
     if (extraPeople === 0) {
       // Sab fit hain ek room mein
       totalRoomsNeeded = 1;
-    } else if (engine?.allowExtraMattress && totalExtraMattress >= 1 && extraPeople <= totalExtraMattress) {
+    } else if (currentEngine?.allowExtraMattress && totalExtraMattress >= 1 && extraPeople <= totalExtraMattress) {
       // Extra mattress se extra people cover ho gaye → 1 room
       totalRoomsNeeded = 1;
     } else {
