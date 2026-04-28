@@ -100,6 +100,19 @@ export default function RoomsPage() {
 
   const handleDeleteClick = (roomId: string) => { setConfirm({ isOpen: true, roomId }); };
 
+  const handleDeleteAll = async (rooms: any[]) => {
+    if (!confirm(`Kya aap "${rooms[0].type}" type ke sab ${rooms.length} rooms delete karna chahte ho?`)) return;
+    try {
+      await Promise.all(rooms.map(room =>
+        fetch(`/api/rooms?id=${room.id}`, { method: "DELETE" })
+      ));
+      showToast(`✅ Sab ${rooms.length} rooms delete ho gaye!`, "success");
+      fetchHotelAndRooms();
+    } catch (error) {
+      showToast("❌ Delete nahi ho saka!", "error");
+    }
+  };
+
   const handleDeleteConfirm = async () => {
     try {
       const res = await fetch(`/api/rooms?id=${confirm.roomId}`, { method: "DELETE" });
@@ -335,7 +348,7 @@ export default function RoomsPage() {
           <div className="space-y-6">
             {Object.entries(groupedRooms).map(([type, typeRooms]: any) => (
               <div key={type} className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-                <div className="bg-gray-50 px-6 py-4 flex items-center justify-between border-b border-gray-100">
+               <div className="bg-gray-50 px-6 py-4 flex items-center justify-between border-b border-gray-100">
                   <div className="flex items-center gap-3">
                     <span className="text-2xl">🛏️</span>
                     <div>
@@ -343,9 +356,17 @@ export default function RoomsPage() {
                       <p className="text-xs text-gray-500">{typeRooms.length} rooms • ₹{typeRooms[0].price}/night</p>
                     </div>
                   </div>
-                  <span className="bg-blue-100 text-blue-700 text-sm font-bold px-3 py-1 rounded-full">
-                    {typeRooms.length} Rooms
-                  </span>
+                  <div className="flex items-center gap-3">
+                    <span className="bg-blue-100 text-blue-700 text-sm font-bold px-3 py-1 rounded-full">
+                      {typeRooms.length} Rooms
+                    </span>
+                    <button
+                      onClick={() => handleDeleteAll(typeRooms)}
+                      className="bg-red-50 text-red-500 text-sm font-medium px-3 py-1 rounded-full hover:bg-red-100 transition"
+                    >
+                      🗑️ Delete All
+                    </button>
+                  </div>
                 </div>
                 <div className="p-6">
                   <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-3">
