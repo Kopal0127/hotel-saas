@@ -34,6 +34,7 @@ interface RoomGuest {
   roomId: string;
   adults: number;
   children: number;
+  infants: number;
   extraMattress: number;
 }
 
@@ -52,8 +53,8 @@ export default function PublicBookingPage() {
   const [checkIn, setCheckIn] = useState("");
   const [checkOut, setCheckOut] = useState("");
   const [showGuestPicker, setShowGuestPicker] = useState(false);
-  const [roomGuests, setRoomGuests] = useState<RoomGuest[]>([
-    { roomId: "", adults: 2, children: 0, extraMattress: 0 }
+ const [roomGuests, setRoomGuests] = useState<RoomGuest[]>([
+    { roomId: "", adults: 2, children: 0, infants: 0, extraMattress: 0 }
   ]);
 
   // Selected rooms
@@ -184,7 +185,7 @@ export default function PublicBookingPage() {
     if (extraPeople === 0) {
       // Sab fit hain ek room mein
       totalRoomsNeeded = 1;
-   } else if (isExtraMattressAllowed && totalExtraMattress >= 1 && extraPeople <= totalExtraMattress) {
+   } else if (engine?.allowExtraMattress === true && totalExtraMattress >= 1 && extraPeople <= totalExtraMattress) {
       // Extra mattress se extra people cover ho gaye → 1 room
       totalRoomsNeeded = 1;
     } else {
@@ -199,8 +200,8 @@ export default function PublicBookingPage() {
 
     if (totalRoomsNeeded > currentRooms) {
       const toAdd = totalRoomsNeeded - currentRooms;
-      const added = Array.from({ length: toAdd }, () => ({
-        roomId: "", adults: 0, children: 0, extraMattress: 0
+     const added = Array.from({ length: toAdd }, () => ({
+        roomId: "", adults: 0, children: 0, infants: 0, extraMattress: 0
       }));
       return [...newRoomGuests, ...added];
     } else if (totalRoomsNeeded < currentRooms) {
@@ -308,7 +309,7 @@ export default function PublicBookingPage() {
                       >—</button>
                       <span className="font-medium">{roomGuests.length}</span>
                       <button
-                        onClick={() => setRoomGuests(prev => [...prev, { roomId: "", adults: 2, children: 0, extraMattress: 0 }])}
+                       onClick={() => setRoomGuests(prev => [...prev, { roomId: "", adults: 2, children: 0, infants: 0, extraMattress: 0 }])}
                         className="w-8 h-8 rounded border border-gray-300 flex items-center justify-center hover:bg-gray-100"
                       >+</button>
                     </div>
@@ -352,6 +353,24 @@ export default function PublicBookingPage() {
                           </div>
                         </div>
                       </div>
+                      {/* Infants */}
+                      <div className="mt-2">
+                        <p className="text-xs text-gray-500 mb-1">Infants (0-2)</p>
+                        <div className="flex items-center gap-2">
+                          <button onClick={() => {
+                            if (rg.infants > 0) {
+                              const updated = roomGuests.map((r, idx) => idx === i ? { ...r, infants: r.infants - 1 } : r);
+                              setRoomGuests(updateRoomsFromGuests(updated));
+                            }
+                          }} className="w-8 h-8 rounded border border-gray-300 flex items-center justify-center">—</button>
+                          <span>{rg.infants}</span>
+                          <button onClick={() => {
+                            const updated = roomGuests.map((r, idx) => idx === i ? { ...r, infants: r.infants + 1 } : r);
+                            setRoomGuests(updateRoomsFromGuests(updated));
+                          }} className="w-8 h-8 rounded border border-gray-300 flex items-center justify-center">+</button>
+                        </div>
+                      </div>
+
                       {/* Extra Mattress */}
                       <div className="mt-2">
                         <p className="text-xs text-gray-500 mb-1">Extra Mattress</p>
