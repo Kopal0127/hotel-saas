@@ -194,6 +194,8 @@ export default function PublicBookingPage() {
     totalRoomsNeeded = Math.max(1, totalRoomsNeeded);
 
     const currentRooms = newRoomGuests.length;
+    
+    console.log("totalRoomsNeeded:", totalRoomsNeeded, "currentRooms:", currentRooms, "extraPeople:", extraPeople, "totalExtraMattress:", totalExtraMattress, "isExtraMattressAllowed:", isExtraMattressAllowed);
 
     if (totalRoomsNeeded > currentRooms) {
       const toAdd = totalRoomsNeeded - currentRooms;
