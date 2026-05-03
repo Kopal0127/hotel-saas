@@ -18,6 +18,10 @@ interface Room {
   maxAdults: number;
   maxChildren: number;
   maxInfants: number;
+  defaultAdultStay: number;
+  defaultChildStay: number;
+  defaultInfantStay: number;
+  extraMattressLimit: number;
 }
 
 interface BookingEngine {
@@ -54,7 +58,7 @@ export default function PublicBookingPage() {
   const [checkOut, setCheckOut] = useState("");
   const [showGuestPicker, setShowGuestPicker] = useState(false);
  const [roomGuests, setRoomGuests] = useState<RoomGuest[]>([
-    { roomId: "", adults: 2, children: 0, infants: 0, extraMattress: 0 }
+    { roomId: "", adults: 1, children: 0, infants: 0, extraMattress: 0 }
   ]);
 
   // Selected rooms
@@ -174,10 +178,10 @@ export default function PublicBookingPage() {
     const totalExtraMattress = newRoomGuests.reduce((sum, r) => sum + r.extraMattress, 0);
 
    // Total people
-    const totalPeople = totalAdults + totalChildren;
+    const totalPeople = totalAdults + totalChildren + newRoomGuests.reduce((sum, r) => sum + r.infants, 0);
     
     // Base capacity per room
-    const baseCapacity = maxAdults + maxChildren;
+   const baseCapacity = maxAdults + maxChildren + (firstRoom.maxInfants || 0);
 
    // Extra people jo base capacity se zyada hain
     const extraPeople = Math.max(0, totalPeople - baseCapacity);
@@ -309,7 +313,7 @@ export default function PublicBookingPage() {
                       >—</button>
                       <span className="font-medium">{roomGuests.length}</span>
                       <button
-                       onClick={() => setRoomGuests(prev => [...prev, { roomId: "", adults: 2, children: 0, infants: 0, extraMattress: 0 }])}
+                       onClick={() => setRoomGuests(prev => [...prev, { roomId: "", adults: 1, children: 0, infants: 0, extraMattress: 0 }])}
                         className="w-8 h-8 rounded border border-gray-300 flex items-center justify-center hover:bg-gray-100"
                       >+</button>
                     </div>
@@ -383,7 +387,7 @@ export default function PublicBookingPage() {
                           }} className="w-8 h-8 rounded border border-gray-300 flex items-center justify-center">—</button>
                           <span>{rg.extraMattress}</span>
                         <button onClick={() => {
-                            if (rg.extraMattress < 1) {
+                           if (rg.extraMattress < (availableRooms[0]?.extraMattressLimit ?? 1)) {
                               const updated = roomGuests.map((r, idx) => idx === i ? { ...r, extraMattress: r.extraMattress + 1 } : r);
                               setRoomGuests(updateRoomsFromGuests(updated));
                             }

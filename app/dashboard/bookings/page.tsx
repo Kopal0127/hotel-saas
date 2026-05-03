@@ -1,5 +1,6 @@
 "use client";
 import DatePicker from "react-datepicker";
+// @ts-ignore
 import "react-datepicker/dist/react-datepicker.css";
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
