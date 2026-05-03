@@ -163,31 +163,20 @@ export default function PublicBookingPage() {
   const updateRoomsFromGuests = (newRoomGuests: RoomGuest[]) => {
     if (availableRooms.length === 0) return newRoomGuests;
 
-    const firstRoom = availableRooms.reduce((best, room) => {
-      const bestCap = (best.defaultAdultStay || 1) + (best.defaultChildStay || 0) + (best.defaultInfantStay || 0);
-      const roomCap = (room.defaultAdultStay || 1) + (room.defaultChildStay || 0) + (room.defaultInfantStay || 0);
-      return roomCap > bestCap ? room : best;
-    }, availableRooms[0]);
-
-    const baseCapacity = (firstRoom.defaultAdultStay || 1) + (firstRoom.defaultChildStay || 0) + (firstRoom.defaultInfantStay || 0);
-    const extraMattressLimit = firstRoom.extraMattressLimit || 0;
+    const firstRoom = availableRooms[0];
+    const defaultAdult = firstRoom.defaultAdultStay || 1;
+    const defaultChild = firstRoom.defaultChildStay || 0;
+    const defaultInfant = firstRoom.defaultInfantStay || 0;
 
     const totalAdults = newRoomGuests.reduce((sum, r) => sum + r.adults, 0);
     const totalChildren = newRoomGuests.reduce((sum, r) => sum + r.children, 0);
     const totalInfants = newRoomGuests.reduce((sum, r) => sum + r.infants, 0);
-    const totalExtraMattress = newRoomGuests.reduce((sum, r) => sum + r.extraMattress, 0);
-    const totalPeople = totalAdults + totalChildren + totalInfants;
 
-    const extraPeople = Math.max(0, totalPeople - baseCapacity);
+    const roomsForAdults = Math.ceil(totalAdults / defaultAdult);
+    const roomsForChildren = defaultChild > 0 ? Math.ceil(totalChildren / defaultChild) : 1;
+    const roomsForInfants = defaultInfant > 0 ? Math.ceil(totalInfants / defaultInfant) : 1;
 
-    let totalRoomsNeeded = 0;
-    if (extraPeople === 0) {
-      totalRoomsNeeded = 1;
-    } else if (extraMattressLimit > 0 && totalExtraMattress >= 1 && extraPeople <= totalExtraMattress) {
-      totalRoomsNeeded = 1;
-    } else {
-      totalRoomsNeeded = Math.ceil(totalPeople / baseCapacity);
-    }
+    let totalRoomsNeeded = Math.max(roomsForAdults, roomsForChildren, roomsForInfants);
     totalRoomsNeeded = Math.max(1, totalRoomsNeeded);
 
     const currentRooms = newRoomGuests.length;
@@ -196,9 +185,9 @@ export default function PublicBookingPage() {
       const toAdd = totalRoomsNeeded - currentRooms;
       const added = Array.from({ length: toAdd }, () => ({
         roomId: "",
-        adults: firstRoom.defaultAdultStay || 1,
-        children: firstRoom.defaultChildStay || 0,
-        infants: firstRoom.defaultInfantStay || 0,
+        adults: defaultAdult,
+        children: defaultChild,
+        infants: defaultInfant,
         extraMattress: 0
       }));
       return [...newRoomGuests, ...added];
@@ -229,7 +218,6 @@ export default function PublicBookingPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header */}
       <div className="bg-[#4a5568] text-white">
         <div className="max-w-6xl mx-auto px-4 py-6">
           <div className="flex items-center gap-4">
@@ -247,7 +235,6 @@ export default function PublicBookingPage() {
         </div>
       </div>
 
-      {/* Search Bar */}
       <div className="bg-white border-b shadow-sm">
         <div className="max-w-6xl mx-auto px-4 py-4">
           <div className="flex flex-wrap gap-4 items-end">
@@ -288,7 +275,6 @@ export default function PublicBookingPage() {
                     <button onClick={() => setShowGuestPicker(false)} className="text-gray-400 hover:text-gray-600">✕</button>
                   </div>
 
-                  {/* Total Rooms */}
                   <div className="flex justify-between items-center mb-4 pb-4 border-b">
                     <span className="text-sm text-gray-700">Total No. of Rooms</span>
                     <div className="flex items-center gap-3">
@@ -314,12 +300,10 @@ export default function PublicBookingPage() {
                     </div>
                   </div>
 
-                  {/* Per Room */}
                   {roomGuests.map((rg, i) => (
                     <div key={i} className="mb-4">
                       <p className="text-sm font-medium text-gray-700 mb-2">Room {i + 1}</p>
                       <div className="grid grid-cols-2 gap-3">
-                        {/* Adults */}
                         <div>
                           <p className="text-xs text-gray-500 mb-1">Adults</p>
                           <div className="flex items-center gap-2">
@@ -340,7 +324,6 @@ export default function PublicBookingPage() {
                             }} className="w-8 h-8 rounded border border-gray-300 flex items-center justify-center">+</button>
                           </div>
                         </div>
-                        {/* Children */}
                         <div>
                           <p className="text-xs text-gray-500 mb-1">Children (0-12)</p>
                           <div className="flex items-center gap-2">
@@ -359,7 +342,6 @@ export default function PublicBookingPage() {
                         </div>
                       </div>
 
-                      {/* Infants */}
                       <div className="mt-2">
                         <p className="text-xs text-gray-500 mb-1">Infants (0-2)</p>
                         <div className="flex items-center gap-2">
@@ -377,7 +359,6 @@ export default function PublicBookingPage() {
                         </div>
                       </div>
 
-                      {/* Extra Mattress */}
                       <div className="mt-2">
                         <p className="text-xs text-gray-500 mb-1">Extra Mattress</p>
                         <div className="flex items-center gap-2">
