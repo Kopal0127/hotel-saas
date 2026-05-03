@@ -53,18 +53,15 @@ export default function PublicBookingPage() {
   const [searching, setSearching] = useState(false);
   const [step, setStep] = useState<"search" | "rooms" | "details" | "payment">("search");
 
-  // Search params
   const [checkIn, setCheckIn] = useState("");
   const [checkOut, setCheckOut] = useState("");
   const [showGuestPicker, setShowGuestPicker] = useState(false);
- const [roomGuests, setRoomGuests] = useState<RoomGuest[]>([
+  const [roomGuests, setRoomGuests] = useState<RoomGuest[]>([
     { roomId: "", adults: 1, children: 0, infants: 0, extraMattress: 0 }
   ]);
 
-  // Selected rooms
   const [selectedRooms, setSelectedRooms] = useState<any[]>([]);
 
-  // Guest details
   const [guestForm, setGuestForm] = useState({
     name: "",
     email: "",
@@ -72,7 +69,6 @@ export default function PublicBookingPage() {
     specialRequests: "",
   });
 
-  // Active room tab
   const [activeRoomTab, setActiveRoomTab] = useState<"amenities" | "description" | "photos" | "attractions">("amenities");
 
   useEffect(() => {
@@ -108,10 +104,8 @@ export default function PublicBookingPage() {
         fetch(`/api/public/hotel?hotelId=${hotelId}`),
         fetch(`/api/booking-engine?hotelId=${hotelId}`),
       ]);
-
       const hotelData = await hotelRes.json();
       const engineData = await engineRes.json();
-
       setHotel(hotelData.hotel);
       setEngine(engineData.engine);
     } catch (error) {
@@ -121,7 +115,7 @@ export default function PublicBookingPage() {
     }
   };
 
- const handleSearch = async () => {
+  const handleSearch = async () => {
     if (!checkIn || !checkOut) {
       alert("Check-in aur Check-out date select karo!");
       return;
@@ -130,7 +124,6 @@ export default function PublicBookingPage() {
       alert("Check-out date, Check-in se baad honi chahiye!");
       return;
     }
-
     setSearching(true);
     try {
       const res = await fetch(
@@ -164,14 +157,10 @@ export default function PublicBookingPage() {
     return selectedRooms.reduce((sum, r) => sum + (r.price * nights), 0);
   };
 
- const totalGuests = roomGuests.reduce((sum, r) => sum + r.adults + r.children, 0);
+  const totalGuests = roomGuests.reduce((sum, r) => sum + r.adults + r.children, 0);
   const totalRooms = roomGuests.length;
 
-// Extra mattress allowed hai ya nahi
-  const isExtraMattressAllowed = engine?.allowExtraMattress === true;
-
-  // Auto update rooms when guests change
-const updateRoomsFromGuests = (newRoomGuests: RoomGuest[]) => {
+  const updateRoomsFromGuests = (newRoomGuests: RoomGuest[]) => {
     if (availableRooms.length === 0) return newRoomGuests;
 
     const firstRoom = availableRooms.reduce((best, room) => {
@@ -262,7 +251,6 @@ const updateRoomsFromGuests = (newRoomGuests: RoomGuest[]) => {
       <div className="bg-white border-b shadow-sm">
         <div className="max-w-6xl mx-auto px-4 py-4">
           <div className="flex flex-wrap gap-4 items-end">
-            {/* Check In */}
             <div>
               <label className="text-xs text-gray-500 block mb-1">CHECK IN</label>
               <input
@@ -273,8 +261,6 @@ const updateRoomsFromGuests = (newRoomGuests: RoomGuest[]) => {
                 className="border border-gray-200 rounded-lg px-4 py-2 text-sm focus:outline-none focus:border-blue-500"
               />
             </div>
-
-            {/* Check Out */}
             <div>
               <label className="text-xs text-gray-500 block mb-1">CHECK OUT</label>
               <input
@@ -286,7 +272,6 @@ const updateRoomsFromGuests = (newRoomGuests: RoomGuest[]) => {
               />
             </div>
 
-            {/* Rooms & Guests */}
             <div className="relative">
               <label className="text-xs text-gray-500 block mb-1">ROOMS & GUESTS</label>
               <button
@@ -296,7 +281,6 @@ const updateRoomsFromGuests = (newRoomGuests: RoomGuest[]) => {
                 {totalRooms} Room{totalRooms > 1 ? "s" : ""}, {totalGuests} Guest{totalGuests > 1 ? "s" : ""}
               </button>
 
-              {/* Guest Picker Dropdown */}
               {showGuestPicker && (
                 <div className="absolute top-16 left-0 bg-white border border-gray-200 rounded-xl shadow-xl z-50 w-80 p-4">
                   <div className="flex justify-between items-center mb-4">
@@ -318,7 +302,13 @@ const updateRoomsFromGuests = (newRoomGuests: RoomGuest[]) => {
                       >—</button>
                       <span className="font-medium">{roomGuests.length}</span>
                       <button
-                       onClick={() => setRoomGuests(prev => [...prev, { roomId: "", adults: 1, children: 0, infants: 0, extraMattress: 0 }])}
+                        onClick={() => setRoomGuests(prev => [...prev, {
+                          roomId: "",
+                          adults: availableRooms[0]?.defaultAdultStay || 1,
+                          children: availableRooms[0]?.defaultChildStay || 0,
+                          infants: availableRooms[0]?.defaultInfantStay || 0,
+                          extraMattress: 0
+                        }])}
                         className="w-8 h-8 rounded border border-gray-300 flex items-center justify-center hover:bg-gray-100"
                       >+</button>
                     </div>
@@ -329,39 +319,46 @@ const updateRoomsFromGuests = (newRoomGuests: RoomGuest[]) => {
                     <div key={i} className="mb-4">
                       <p className="text-sm font-medium text-gray-700 mb-2">Room {i + 1}</p>
                       <div className="grid grid-cols-2 gap-3">
+                        {/* Adults */}
                         <div>
                           <p className="text-xs text-gray-500 mb-1">Adults</p>
                           <div className="flex items-center gap-2">
-                           <button onClick={() => {
-                              if (rg.adults > 1) {
+                            <button onClick={() => {
+                              const defaultAdult = availableRooms[0]?.defaultAdultStay || 1;
+                              if (rg.adults > defaultAdult) {
                                 const updated = roomGuests.map((r, idx) => idx === i ? { ...r, adults: r.adults - 1 } : r);
+                                setRoomGuests(updateRoomsFromGuests(updated));
+                              } else if (roomGuests.length > 1) {
+                                const updated = roomGuests.filter((_, idx) => idx !== i);
                                 setRoomGuests(updateRoomsFromGuests(updated));
                               }
                             }} className="w-8 h-8 rounded border border-gray-300 flex items-center justify-center">—</button>
                             <span>{rg.adults}</span>
-                           <button onClick={() => {
+                            <button onClick={() => {
                               const updated = roomGuests.map((r, idx) => idx === i ? { ...r, adults: r.adults + 1 } : r);
                               setRoomGuests(updateRoomsFromGuests(updated));
                             }} className="w-8 h-8 rounded border border-gray-300 flex items-center justify-center">+</button>
                           </div>
                         </div>
+                        {/* Children */}
                         <div>
                           <p className="text-xs text-gray-500 mb-1">Children (0-12)</p>
                           <div className="flex items-center gap-2">
-                           <button onClick={() => {
+                            <button onClick={() => {
                               if (rg.children > 0) {
                                 const updated = roomGuests.map((r, idx) => idx === i ? { ...r, children: r.children - 1 } : r);
                                 setRoomGuests(updateRoomsFromGuests(updated));
                               }
                             }} className="w-8 h-8 rounded border border-gray-300 flex items-center justify-center">—</button>
                             <span>{rg.children}</span>
-                           <button onClick={() => {
+                            <button onClick={() => {
                               const updated = roomGuests.map((r, idx) => idx === i ? { ...r, children: r.children + 1 } : r);
                               setRoomGuests(updateRoomsFromGuests(updated));
                             }} className="w-8 h-8 rounded border border-gray-300 flex items-center justify-center">+</button>
                           </div>
                         </div>
                       </div>
+
                       {/* Infants */}
                       <div className="mt-2">
                         <p className="text-xs text-gray-500 mb-1">Infants (0-2)</p>
@@ -391,8 +388,8 @@ const updateRoomsFromGuests = (newRoomGuests: RoomGuest[]) => {
                             }
                           }} className="w-8 h-8 rounded border border-gray-300 flex items-center justify-center">—</button>
                           <span>{rg.extraMattress}</span>
-                        <button onClick={() => {
-                           if (rg.extraMattress < (availableRooms[0]?.extraMattressLimit ?? 1)) {
+                          <button onClick={() => {
+                            if (rg.extraMattress < (availableRooms[0]?.extraMattressLimit ?? 0)) {
                               const updated = roomGuests.map((r, idx) => idx === i ? { ...r, extraMattress: r.extraMattress + 1 } : r);
                               setRoomGuests(updateRoomsFromGuests(updated));
                             }
@@ -412,7 +409,6 @@ const updateRoomsFromGuests = (newRoomGuests: RoomGuest[]) => {
               )}
             </div>
 
-            {/* Check Availability */}
             <button
               onClick={handleSearch}
               disabled={searching}
@@ -422,7 +418,6 @@ const updateRoomsFromGuests = (newRoomGuests: RoomGuest[]) => {
             </button>
           </div>
 
-          {/* Stay info */}
           {checkIn && checkOut && (
             <p className="text-xs text-gray-500 mt-2">
               📅 {new Date(checkIn).toLocaleDateString("en-IN")} → {new Date(checkOut).toLocaleDateString("en-IN")} • {calculateNights()} Night{calculateNights() > 1 ? "s" : ""}
@@ -432,7 +427,6 @@ const updateRoomsFromGuests = (newRoomGuests: RoomGuest[]) => {
       </div>
 
       <div className="max-w-6xl mx-auto px-4 py-6">
-        {/* Rooms Section */}
         {step === "rooms" && (
           <div>
             <h2 className="text-lg font-bold text-gray-800 mb-4">
@@ -446,7 +440,6 @@ const updateRoomsFromGuests = (newRoomGuests: RoomGuest[]) => {
               </div>
             ) : (
               <div className="space-y-4">
-                {/* Group by type */}
                 {Object.entries(
                   availableRooms.reduce((acc: any, room) => {
                     if (!acc[room.type]) acc[room.type] = [];
@@ -455,9 +448,7 @@ const updateRoomsFromGuests = (newRoomGuests: RoomGuest[]) => {
                   }, {})
                 ).map(([type, rooms]: any) => (
                   <div key={type} className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
-                    {/* Room Header */}
                     <div className="flex gap-4 p-6">
-                      {/* Image */}
                       <div className="w-48 h-36 bg-gray-100 rounded-xl overflow-hidden flex-shrink-0">
                         {engine?.galleryImages?.[0] ? (
                           <img src={engine.galleryImages[0]} alt={type} className="w-full h-full object-cover" />
@@ -465,11 +456,9 @@ const updateRoomsFromGuests = (newRoomGuests: RoomGuest[]) => {
                           <div className="w-full h-full flex items-center justify-center text-4xl">🛏️</div>
                         )}
                       </div>
-
-                      {/* Details */}
                       <div className="flex-1">
                         <h3 className="text-lg font-bold text-gray-800">{type}</h3>
-                       <p className="text-sm text-gray-500 mt-1">
+                        <p className="text-sm text-gray-500 mt-1">
                           👥 Max {rooms[0].maxAdults} Adults, {rooms[0].maxChildren} Children
                         </p>
                         <p className="text-sm text-gray-500">{rooms.length} room{rooms.length > 1 ? "s" : ""} available</p>
@@ -477,8 +466,6 @@ const updateRoomsFromGuests = (newRoomGuests: RoomGuest[]) => {
                         {rooms[0].roomSize && <p className="text-sm text-gray-500">📐 {rooms[0].roomSize}</p>}
                         {rooms[0].roomView && <p className="text-sm text-gray-500">🪟 {rooms[0].roomView}</p>}
                       </div>
-
-                      {/* Price */}
                       <div className="text-right">
                         <p className="text-2xl font-bold text-blue-600">₹{rooms[0].price}</p>
                         <p className="text-xs text-gray-400">per night</p>
@@ -500,7 +487,6 @@ const updateRoomsFromGuests = (newRoomGuests: RoomGuest[]) => {
                       </div>
                     </div>
 
-                    {/* Tabs */}
                     <div className="border-t border-gray-100">
                       <div className="flex gap-6 px-6 pt-3">
                         {["amenities", "description", "photos", "attractions"].map(tab => (
@@ -517,7 +503,6 @@ const updateRoomsFromGuests = (newRoomGuests: RoomGuest[]) => {
                           </button>
                         ))}
                       </div>
-
                       <div className="px-6 py-4">
                         {activeRoomTab === "amenities" && (
                           <div className="flex flex-wrap gap-2">
@@ -553,7 +538,6 @@ const updateRoomsFromGuests = (newRoomGuests: RoomGuest[]) => {
               </div>
             )}
 
-            {/* Selected Rooms Summary */}
             {selectedRooms.length > 0 && (
               <div className="fixed bottom-0 left-0 right-0 bg-white border-t shadow-lg p-4">
                 <div className="max-w-6xl mx-auto flex justify-between items-center">
@@ -573,7 +557,6 @@ const updateRoomsFromGuests = (newRoomGuests: RoomGuest[]) => {
           </div>
         )}
 
-        {/* Guest Details */}
         {step === "details" && (
           <div className="max-w-2xl mx-auto">
             <h2 className="text-lg font-bold text-gray-800 mb-4">Guest Details</h2>
@@ -621,7 +604,6 @@ const updateRoomsFromGuests = (newRoomGuests: RoomGuest[]) => {
                 </div>
               </div>
 
-              {/* Booking Summary */}
               <div className="bg-gray-50 rounded-xl p-4 mt-4">
                 <h4 className="font-semibold text-gray-800 mb-3">📋 Booking Summary</h4>
                 {selectedRooms.map((room, i) => (
@@ -660,7 +642,6 @@ const updateRoomsFromGuests = (newRoomGuests: RoomGuest[]) => {
           </div>
         )}
 
-        {/* Payment */}
         {step === "payment" && (
           <div className="max-w-2xl mx-auto">
             <h2 className="text-lg font-bold text-gray-800 mb-4">Payment</h2>
@@ -672,18 +653,15 @@ const updateRoomsFromGuests = (newRoomGuests: RoomGuest[]) => {
                 <p className="text-sm text-gray-600">Nights: {calculateNights()}</p>
                 <p className="text-xl font-bold text-blue-600 mt-2">Total: ₹{calculateTotal()}</p>
               </div>
-
               <p className="text-sm text-gray-500 text-center mb-4">
                 🔒 Secure payment powered by Razorpay
               </p>
-
               <button
                 onClick={() => alert("Razorpay integration coming soon! Real keys needed.")}
                 className="w-full py-4 bg-blue-600 text-white rounded-xl font-bold text-lg hover:bg-blue-700"
               >
                 💳 Pay ₹{calculateTotal()}
               </button>
-
               <button
                 onClick={() => setStep("details")}
                 className="w-full py-2 mt-3 bg-gray-100 text-gray-600 rounded-lg text-sm hover:bg-gray-200"
@@ -694,7 +672,6 @@ const updateRoomsFromGuests = (newRoomGuests: RoomGuest[]) => {
           </div>
         )}
 
-        {/* Default — Hotel Info */}
         {step === "search" && (
           <div className="mt-6">
             {engine?.description && (
@@ -703,7 +680,6 @@ const updateRoomsFromGuests = (newRoomGuests: RoomGuest[]) => {
                 <p className="text-gray-600 text-sm leading-relaxed">{engine.description}</p>
               </div>
             )}
-
             {engine?.amenities && engine.amenities.length > 0 && (
               <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 mb-6">
                 <h3 className="text-lg font-bold text-gray-800 mb-3">✨ Amenities</h3>
@@ -714,7 +690,6 @@ const updateRoomsFromGuests = (newRoomGuests: RoomGuest[]) => {
                 </div>
               </div>
             )}
-
             {engine?.galleryImages && engine.galleryImages.length > 0 && (
               <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 mb-6">
                 <h3 className="text-lg font-bold text-gray-800 mb-3">🖼️ Photos</h3>
@@ -725,7 +700,6 @@ const updateRoomsFromGuests = (newRoomGuests: RoomGuest[]) => {
                 </div>
               </div>
             )}
-
             {engine?.nearestAttractions && engine.nearestAttractions.length > 0 && (
               <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
                 <h3 className="text-lg font-bold text-gray-800 mb-3">📍 Nearest Attractions</h3>
