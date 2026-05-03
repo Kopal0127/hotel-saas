@@ -26,6 +26,10 @@ export async function GET(req: NextRequest) {
           maxAdults: true,
           maxChildren: true,
           maxInfants: true,
+          defaultAdultStay: true,
+          defaultChildStay: true,
+          defaultInfantStay: true,
+          extraMattressLimit: true,
           bedType: true,
           roomSize: true,
           roomView: true,
@@ -37,7 +41,7 @@ export async function GET(req: NextRequest) {
     const checkInDate = new Date(checkIn);
     const checkOutDate = new Date(checkOut);
 
-   // Sab rooms fetch karo
+    // Sab rooms fetch karo
     const allRooms = await prisma.room.findMany({
       where: { hotelId },
       select: {
@@ -48,6 +52,10 @@ export async function GET(req: NextRequest) {
         maxAdults: true,
         maxChildren: true,
         maxInfants: true,
+        defaultAdultStay: true,
+        defaultChildStay: true,
+        defaultInfantStay: true,
+        extraMattressLimit: true,
         bedType: true,
         roomSize: true,
         roomView: true,
