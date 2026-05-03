@@ -84,7 +84,18 @@ export default function PublicBookingPage() {
     try {
       const res = await fetch(`/api/public/rooms?hotelId=${hotelId}`);
       const data = await res.json();
-      setAvailableRooms(data.rooms || []);
+      const rooms = data.rooms || [];
+      setAvailableRooms(rooms);
+      if (rooms.length > 0) {
+        const base = rooms[0];
+        setRoomGuests([{
+          roomId: "",
+          adults: base.defaultAdultStay ?? 1,
+          children: base.defaultChildStay ?? 0,
+          infants: base.defaultInfantStay ?? 0,
+          extraMattress: 0
+        }]);
+      }
       setStep("rooms");
     } catch (error) {
       console.error(error);
@@ -160,52 +171,46 @@ export default function PublicBookingPage() {
   const isExtraMattressAllowed = engine?.allowExtraMattress === true;
 
   // Auto update rooms when guests change
- const updateRoomsFromGuests = (newRoomGuests: RoomGuest[]) => {
-   if (availableRooms.length === 0) return newRoomGuests;
-    // Sabse zyada capacity wala room use karo
+const updateRoomsFromGuests = (newRoomGuests: RoomGuest[]) => {
+    if (availableRooms.length === 0) return newRoomGuests;
+
     const firstRoom = availableRooms.reduce((best, room) => {
-      const bestCap = (best.maxAdults || 0) + (best.maxChildren || 0);
-      const roomCap = (room.maxAdults || 0) + (room.maxChildren || 0);
+      const bestCap = (best.defaultAdultStay || 1) + (best.defaultChildStay || 0) + (best.defaultInfantStay || 0);
+      const roomCap = (room.defaultAdultStay || 1) + (room.defaultChildStay || 0) + (room.defaultInfantStay || 0);
       return roomCap > bestCap ? room : best;
     }, availableRooms[0]);
 
-   let totalRoomsNeeded = 0;
-    const maxAdults = firstRoom.maxAdults || 2;
-    const maxChildren = firstRoom.maxChildren || 0;
+    const baseCapacity = (firstRoom.defaultAdultStay || 1) + (firstRoom.defaultChildStay || 0) + (firstRoom.defaultInfantStay || 0);
+    const extraMattressLimit = firstRoom.extraMattressLimit || 0;
 
     const totalAdults = newRoomGuests.reduce((sum, r) => sum + r.adults, 0);
     const totalChildren = newRoomGuests.reduce((sum, r) => sum + r.children, 0);
+    const totalInfants = newRoomGuests.reduce((sum, r) => sum + r.infants, 0);
     const totalExtraMattress = newRoomGuests.reduce((sum, r) => sum + r.extraMattress, 0);
+    const totalPeople = totalAdults + totalChildren + totalInfants;
 
-   // Total people
-    const totalPeople = totalAdults + totalChildren + newRoomGuests.reduce((sum, r) => sum + r.infants, 0);
-    
-    // Base capacity per room
-   const baseCapacity = maxAdults + maxChildren + (firstRoom.maxInfants || 0);
-
-   // Extra people jo base capacity se zyada hain
     const extraPeople = Math.max(0, totalPeople - baseCapacity);
 
+    let totalRoomsNeeded = 0;
     if (extraPeople === 0) {
-      // Sab fit hain ek room mein
       totalRoomsNeeded = 1;
-   } else if (engine?.allowExtraMattress === true && totalExtraMattress >= 1 && extraPeople <= totalExtraMattress) {
-      // Extra mattress se extra people cover ho gaye → 1 room
+    } else if (extraMattressLimit > 0 && totalExtraMattress >= 1 && extraPeople <= totalExtraMattress) {
       totalRoomsNeeded = 1;
     } else {
-      // Extra mattress nahi ya kaafi nahi → zyada rooms
       totalRoomsNeeded = Math.ceil(totalPeople / baseCapacity);
     }
     totalRoomsNeeded = Math.max(1, totalRoomsNeeded);
 
     const currentRooms = newRoomGuests.length;
-    
-    console.log("totalRoomsNeeded:", totalRoomsNeeded, "currentRooms:", currentRooms, "extraPeople:", extraPeople, "totalExtraMattress:", totalExtraMattress, "isExtraMattressAllowed:", isExtraMattressAllowed);
 
     if (totalRoomsNeeded > currentRooms) {
       const toAdd = totalRoomsNeeded - currentRooms;
-     const added = Array.from({ length: toAdd }, () => ({
-        roomId: "", adults: 0, children: 0, infants: 0, extraMattress: 0
+      const added = Array.from({ length: toAdd }, () => ({
+        roomId: "",
+        adults: firstRoom.defaultAdultStay || 1,
+        children: firstRoom.defaultChildStay || 0,
+        infants: firstRoom.defaultInfantStay || 0,
+        extraMattress: 0
       }));
       return [...newRoomGuests, ...added];
     } else if (totalRoomsNeeded < currentRooms) {
