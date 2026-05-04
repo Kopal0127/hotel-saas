@@ -21,7 +21,8 @@ interface Room {
   defaultAdultStay: number;
   defaultChildStay: number;
   defaultInfantStay: number;
-  extraMattressLimit: number;
+ extraMattressLimit: number;
+  extraMattressRate: number;
 }
 
 interface BookingEngine {
@@ -594,9 +595,17 @@ export default function PublicBookingPage() {
               <div className="bg-gray-50 rounded-xl p-4 mt-4">
                 <h4 className="font-semibold text-gray-800 mb-3">📋 Booking Summary</h4>
                 {selectedRooms.map((room, i) => (
-                  <div key={i} className="flex justify-between text-sm mb-2">
-                    <span>{room.type} Room</span>
-                    <span>₹{room.price} × {calculateNights()} nights = ₹{room.price * calculateNights()}</span>
+                  <div key={i} className="mb-2">
+                    <div className="flex justify-between text-sm">
+                      <span>{room.type} Room</span>
+                      <span>₹{room.price} × {calculateNights()} nights = ₹{room.price * calculateNights()}</span>
+                    </div>
+                    {totalMattresses > 0 && (room.extraMattressRate || 0) > 0 && (
+                      <div className="flex justify-between text-sm text-gray-500 mt-1">
+                        <span>Extra Mattress × {totalMattresses}</span>
+                        <span>₹{room.extraMattressRate} × {totalMattresses} × {calculateNights()} nights = ₹{(room.extraMattressRate || 0) * totalMattresses * calculateNights()}</span>
+                      </div>
+                    )}
                   </div>
                 ))}
                 <div className="border-t border-gray-200 mt-2 pt-2 flex justify-between font-bold">

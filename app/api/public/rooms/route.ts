@@ -14,7 +14,6 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: "hotelId chahiye!" }, { status: 400 });
     }
 
-    // Agar dates nahi hain toh sab rooms return karo
     if (!checkIn || !checkOut) {
       const allRooms = await prisma.room.findMany({
         where: { hotelId },
@@ -30,6 +29,7 @@ export async function GET(req: NextRequest) {
           defaultChildStay: true,
           defaultInfantStay: true,
           extraMattressLimit: true,
+          extraMattressRate: true,
           bedType: true,
           roomSize: true,
           roomView: true,
@@ -41,7 +41,6 @@ export async function GET(req: NextRequest) {
     const checkInDate = new Date(checkIn);
     const checkOutDate = new Date(checkOut);
 
-    // Sab rooms fetch karo
     const allRooms = await prisma.room.findMany({
       where: { hotelId },
       select: {
@@ -56,13 +55,13 @@ export async function GET(req: NextRequest) {
         defaultChildStay: true,
         defaultInfantStay: true,
         extraMattressLimit: true,
+        extraMattressRate: true,
         bedType: true,
         roomSize: true,
         roomView: true,
       }
     });
 
-    // Booked rooms find karo
     const bookedBookings = await prisma.booking.findMany({
       where: {
         room: { hotelId },
@@ -77,7 +76,6 @@ export async function GET(req: NextRequest) {
       },
     });
 
-    // Booked room IDs
     const bookedRoomIds = new Set<string>();
     bookedBookings.forEach((b) => {
       if (b.bookingRooms.length > 0) {
@@ -87,7 +85,6 @@ export async function GET(req: NextRequest) {
       }
     });
 
-    // Available rooms
     const availableRooms = allRooms.filter((r) => !bookedRoomIds.has(r.id));
 
     return NextResponse.json({ rooms: availableRooms });
