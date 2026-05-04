@@ -441,8 +441,8 @@ export default function PublicBookingPage() {
                       </div>
                       <div className="flex-1">
                         <h3 className="text-lg font-bold text-gray-800">{type}</h3>
-                        <p className="text-sm text-gray-500 mt-1">
-                          👥 Max {rooms[0].maxAdults} Adults, {rooms[0].maxChildren} Children
+                       <p className="text-sm text-gray-500 mt-1">
+                          👥 Maximum — Adults: {rooms[0].defaultAdultStay}, Children: {rooms[0].defaultChildStay}, Infants: {rooms[0].defaultInfantStay}, Mattress: {rooms[0].extraMattressLimit}
                         </p>
                         <p className="text-sm text-gray-500">{rooms.length} room{rooms.length > 1 ? "s" : ""} available</p>
                         {rooms[0].bedType && <p className="text-sm text-gray-500">🛏️ {rooms[0].bedType}</p>}
