@@ -21,12 +21,12 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   try {
-   const {
+    const {
       type, price, hotelId, startNumber, totalRooms,
       taxGroup, sacCode,
       defaultAdultStay, defaultChildStay, defaultInfantStay,
       maxAdults, maxChildren, maxInfants,
-      extraAdultRate, extraChildRate, extraInfantRate,
+      extraMattressRate,
       bedType, roomSize, roomView, extraMattressLimit,
     } = await req.json();
 
@@ -50,17 +50,14 @@ export async function POST(req: NextRequest) {
         hotelId,
         taxGroup: taxGroup || null,
         sacCode: sacCode || null,
-       defaultAdultStay: defaultAdultStay ? parseInt(defaultAdultStay) : 1,
+        defaultAdultStay: defaultAdultStay ? parseInt(defaultAdultStay) : 1,
         defaultChildStay: defaultChildStay ? parseInt(defaultChildStay) : 0,
         defaultInfantStay: defaultInfantStay ? parseInt(defaultInfantStay) : 0,
-        // Max = Default (Default value hi max hai)
         maxAdults: defaultAdultStay ? parseInt(defaultAdultStay) : 1,
         maxChildren: defaultChildStay ? parseInt(defaultChildStay) : 0,
         maxInfants: defaultInfantStay ? parseInt(defaultInfantStay) : 0,
-        extraAdultRate: extraAdultRate ? parseFloat(extraAdultRate) : 0,
-        extraChildRate: extraChildRate ? parseFloat(extraChildRate) : 0,
-        extraInfantRate: extraInfantRate ? parseFloat(extraInfantRate) : 0,
-       bedType: bedType || null,
+        extraMattressRate: extraMattressRate ? parseFloat(extraMattressRate) : 0,
+        bedType: bedType || null,
         roomSize: roomSize || null,
         roomView: roomView || null,
         extraMattressLimit: extraMattressLimit ? parseInt(extraMattressLimit) : 0,
@@ -100,9 +97,8 @@ export async function DELETE(req: NextRequest) {
     const id = searchParams.get("id");
     if (!id) return NextResponse.json({ error: "ID chahiye!" }, { status: 400 });
 
-   // Pehle ACTIVE linked bookings check karo
     const bookings = await prisma.booking.findMany({
-      where: { 
+      where: {
         OR: [
           { roomId: id },
           { bookingRooms: { some: { roomId: id } } }
@@ -112,8 +108,8 @@ export async function DELETE(req: NextRequest) {
     });
 
     if (bookings.length > 0) {
-      return NextResponse.json({ 
-        error: `Yeh room ${bookings.length} booking(s) se linked hai! Pehle bookings delete karo.` 
+      return NextResponse.json({
+        error: `Yeh room ${bookings.length} booking(s) se linked hai! Pehle bookings delete karo.`
       }, { status: 400 });
     }
 
@@ -124,12 +120,13 @@ export async function DELETE(req: NextRequest) {
     return NextResponse.json({ error: "Kuch galat hua!" }, { status: 500 });
   }
 }
+
 export async function PUT(req: NextRequest) {
   try {
     const {
       id, type, price, taxGroup, sacCode,
       defaultAdultStay, defaultChildStay, defaultInfantStay,
-      extraAdultRate, extraChildRate, extraInfantRate,
+      extraMattressRate,
       bedType, roomSize, roomView, extraMattressLimit,
     } = await req.json();
 
@@ -148,10 +145,8 @@ export async function PUT(req: NextRequest) {
         maxAdults: parseInt(defaultAdultStay) || 1,
         maxChildren: parseInt(defaultChildStay) || 0,
         maxInfants: parseInt(defaultInfantStay) || 0,
-        extraAdultRate: parseFloat(extraAdultRate) || 0,
-        extraChildRate: parseFloat(extraChildRate) || 0,
-        extraInfantRate: parseFloat(extraInfantRate) || 0,
-      bedType: bedType || null,
+        extraMattressRate: extraMattressRate ? parseFloat(extraMattressRate) : 0,
+        bedType: bedType || null,
         roomSize: roomSize || null,
         roomView: roomView || null,
         extraMattressLimit: extraMattressLimit ? parseInt(extraMattressLimit) : 0,

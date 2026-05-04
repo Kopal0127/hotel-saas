@@ -26,9 +26,7 @@ export default function RoomsPage() {
     price: "",
     startNumber: "",
     totalRooms: "",
-    extraAdultRate: "0",
-    extraChildRate: "0",
-    extraInfantRate: "0",
+   extraMattressRate: "0",
     maxAdults: "2",
     maxChildren: "0",
     maxInfants: "0",
@@ -43,7 +41,7 @@ export default function RoomsPage() {
  const [editForm, setEditForm] = useState({
     type: "", price: "", taxGroup: "", sacCode: "",
     defaultAdultStay: "1", defaultChildStay: "0", defaultInfantStay: "0",
-    extraAdultRate: "0", extraChildRate: "0", extraInfantRate: "0",
+   extraMattressRate: "0",
     bedType: "", roomSize: "", roomView: "", extraMattressLimit: "0",
   });
   const [editLoading, setEditLoading] = useState(false);
@@ -91,7 +89,7 @@ export default function RoomsPage() {
           taxGroup: "", sacCode: "",
           defaultAdultStay: "1", defaultChildStay: "0", defaultInfantStay: "0",
           price: "", startNumber: "", totalRooms: "",
-         extraAdultRate: "0", extraChildRate: "0", extraInfantRate: "0",
+        extraMattressRate: "0",
           maxAdults: "2", maxChildren: "0", maxInfants: "0",
          bedType: "", roomSize: "", roomView: "", extraMattressLimit: "0",
         });
@@ -118,9 +116,7 @@ export default function RoomsPage() {
       defaultAdultStay: room.defaultAdultStay?.toString() || "1",
       defaultChildStay: room.defaultChildStay?.toString() || "0",
       defaultInfantStay: room.defaultInfantStay?.toString() || "0",
-      extraAdultRate: room.extraAdultRate?.toString() || "0",
-      extraChildRate: room.extraChildRate?.toString() || "0",
-      extraInfantRate: room.extraInfantRate?.toString() || "0",
+     extraMattressRate: room.extraMattressRate?.toString() || "0",
      bedType: room.bedType || "",
       roomSize: room.roomSize || "",
       roomView: room.roomView || "",
@@ -325,22 +321,10 @@ export default function RoomsPage() {
                 </div>
 
                 {/* Row 4 — Extra Adult, Child, Infant Rate */}
-                <div>
-                  <label className="text-sm font-medium text-gray-700 mb-1 block">Extra Adult Rate (₹)</label>
-                  <input type="number" placeholder="500" value={form.extraAdultRate}
-                    onChange={(e) => setForm({ ...form, extraAdultRate: e.target.value })}
-                    className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-blue-500" />
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-gray-700 mb-1 block">Extra Child Rate (₹)</label>
-                  <input type="number" placeholder="100" value={form.extraChildRate}
-                    onChange={(e) => setForm({ ...form, extraChildRate: e.target.value })}
-                    className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-blue-500" />
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-gray-700 mb-1 block">Extra Infant Rate (₹)</label>
-                  <input type="number" placeholder="0" value={form.extraInfantRate}
-                    onChange={(e) => setForm({ ...form, extraInfantRate: e.target.value })}
+               <div>
+                  <label className="text-sm font-medium text-gray-700 mb-1 block">Extra Mattress Rate (₹)</label>
+                  <input type="number" placeholder="0" value={form.extraMattressRate}
+                    onChange={(e) => setForm({ ...form, extraMattressRate: e.target.value })}
                     className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-blue-500" />
                 </div>
 
@@ -531,22 +515,10 @@ export default function RoomsPage() {
                   onChange={(e) => setEditForm({ ...editForm, price: e.target.value })}
                   className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-blue-500" />
               </div>
-              <div>
-                <label className="text-sm font-medium text-gray-700 mb-1 block">Extra Adult Rate (₹)</label>
-                <input type="number" value={editForm.extraAdultRate}
-                  onChange={(e) => setEditForm({ ...editForm, extraAdultRate: e.target.value })}
-                  className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-blue-500" />
-              </div>
-              <div>
-                <label className="text-sm font-medium text-gray-700 mb-1 block">Extra Child Rate (₹)</label>
-                <input type="number" value={editForm.extraChildRate}
-                  onChange={(e) => setEditForm({ ...editForm, extraChildRate: e.target.value })}
-                  className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-blue-500" />
-              </div>
-              <div>
-                <label className="text-sm font-medium text-gray-700 mb-1 block">Extra Infant Rate (₹)</label>
-                <input type="number" value={editForm.extraInfantRate}
-                  onChange={(e) => setEditForm({ ...editForm, extraInfantRate: e.target.value })}
+             <div>
+                <label className="text-sm font-medium text-gray-700 mb-1 block">Extra Mattress Rate (₹)</label>
+                <input type="number" value={editForm.extraMattressRate}
+                  onChange={(e) => setEditForm({ ...editForm, extraMattressRate: e.target.value })}
                   className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-blue-500" />
               </div>
               <div>
