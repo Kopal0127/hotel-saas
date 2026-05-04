@@ -61,14 +61,12 @@ export default function PublicBookingPage() {
   ]);
 
   const [selectedRooms, setSelectedRooms] = useState<any[]>([]);
-
   const [guestForm, setGuestForm] = useState({
     name: "",
     email: "",
     phone: "",
     specialRequests: "",
   });
-
   const [activeRoomTab, setActiveRoomTab] = useState<"amenities" | "description" | "photos" | "attractions">("amenities");
 
   useEffect(() => {
@@ -157,44 +155,29 @@ export default function PublicBookingPage() {
     return selectedRooms.reduce((sum, r) => sum + (r.price * nights), 0);
   };
 
-  const totalGuests = roomGuests.reduce((sum, r) => sum + r.adults + r.children, 0);
+  // Top summary totals
   const totalRooms = roomGuests.length;
+  const totalAdults = roomGuests.reduce((sum, r) => sum + r.adults, 0);
+  const totalChildren = roomGuests.reduce((sum, r) => sum + r.children, 0);
+  const totalInfants = roomGuests.reduce((sum, r) => sum + r.infants, 0);
+  const totalMattresses = roomGuests.reduce((sum, r) => sum + r.extraMattress, 0);
+  const totalGuests = totalAdults + totalChildren;
 
-  const updateRoomsFromGuests = (newRoomGuests: RoomGuest[]) => {
-    if (availableRooms.length === 0) return newRoomGuests;
+  const addNewRoom = () => {
+    if (availableRooms.length === 0) return;
+    const base = availableRooms[0];
+    setRoomGuests(prev => [...prev, {
+      roomId: "",
+      adults: base.defaultAdultStay ?? 1,
+      children: base.defaultChildStay ?? 0,
+      infants: base.defaultInfantStay ?? 0,
+      extraMattress: 0
+    }]);
+  };
 
-    const firstRoom = availableRooms[0];
-    const defaultAdult = firstRoom.defaultAdultStay || 1;
-    const defaultChild = firstRoom.defaultChildStay || 0;
-    const defaultInfant = firstRoom.defaultInfantStay || 0;
-
-    const totalAdults = newRoomGuests.reduce((sum, r) => sum + r.adults, 0);
-    const totalChildren = newRoomGuests.reduce((sum, r) => sum + r.children, 0);
-    const totalInfants = newRoomGuests.reduce((sum, r) => sum + r.infants, 0);
-
-    const roomsForAdults = Math.ceil(totalAdults / defaultAdult);
-    const roomsForChildren = defaultChild > 0 ? Math.ceil(totalChildren / defaultChild) : 1;
-    const roomsForInfants = defaultInfant > 0 ? Math.ceil(totalInfants / defaultInfant) : 1;
-
-    let totalRoomsNeeded = Math.max(roomsForAdults, roomsForChildren, roomsForInfants);
-    totalRoomsNeeded = Math.max(1, totalRoomsNeeded);
-
-    const currentRooms = newRoomGuests.length;
-
-    if (totalRoomsNeeded > currentRooms) {
-      const toAdd = totalRoomsNeeded - currentRooms;
-      const added = Array.from({ length: toAdd }, () => ({
-        roomId: "",
-        adults: defaultAdult,
-        children: defaultChild,
-        infants: defaultInfant,
-        extraMattress: 0
-      }));
-      return [...newRoomGuests, ...added];
-    } else if (totalRoomsNeeded < currentRooms) {
-      return newRoomGuests.slice(0, totalRoomsNeeded);
-    }
-    return newRoomGuests;
+  const removeRoom = (index: number) => {
+    if (roomGuests.length <= 1) return;
+    setRoomGuests(prev => prev.filter((_, i) => i !== index));
   };
 
   if (loading) {
@@ -218,6 +201,7 @@ export default function PublicBookingPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
+      {/* Header */}
       <div className="bg-[#4a5568] text-white">
         <div className="max-w-6xl mx-auto px-4 py-6">
           <div className="flex items-center gap-4">
@@ -235,6 +219,7 @@ export default function PublicBookingPage() {
         </div>
       </div>
 
+      {/* Search Bar */}
       <div className="bg-white border-b shadow-sm">
         <div className="max-w-6xl mx-auto px-4 py-4">
           <div className="flex flex-wrap gap-4 items-end">
@@ -259,6 +244,7 @@ export default function PublicBookingPage() {
               />
             </div>
 
+            {/* Rooms & Guests Button */}
             <div className="relative">
               <label className="text-xs text-gray-500 block mb-1">ROOMS & GUESTS</label>
               <button
@@ -268,121 +254,137 @@ export default function PublicBookingPage() {
                 {totalRooms} Room{totalRooms > 1 ? "s" : ""}, {totalGuests} Guest{totalGuests > 1 ? "s" : ""}
               </button>
 
+              {/* Guest Picker Dropdown */}
               {showGuestPicker && (
-                <div className="absolute top-16 left-0 bg-white border border-gray-200 rounded-xl shadow-xl z-50 w-80 p-4">
+                <div className="absolute top-16 left-0 bg-white border border-gray-200 rounded-xl shadow-xl z-50 w-96 p-4">
+                  
+                  {/* Header */}
                   <div className="flex justify-between items-center mb-4">
                     <span className="font-semibold text-gray-800">Rooms & Guests</span>
-                    <button onClick={() => setShowGuestPicker(false)} className="text-gray-400 hover:text-gray-600">✕</button>
+                    <button onClick={() => setShowGuestPicker(false)} className="text-gray-400 hover:text-gray-600 text-lg">✕</button>
                   </div>
 
-                  <div className="flex justify-between items-center mb-4 pb-4 border-b">
-                    <span className="text-sm text-gray-700">Total No. of Rooms</span>
-                    <div className="flex items-center gap-3">
-                      <button
-                        onClick={() => {
-                          if (roomGuests.length > 1) {
-                            setRoomGuests(prev => prev.slice(0, -1));
-                          }
-                        }}
-                        className="w-8 h-8 rounded border border-gray-300 flex items-center justify-center hover:bg-gray-100"
-                      >—</button>
-                      <span className="font-medium">{roomGuests.length}</span>
-                      <button
-                        onClick={() => setRoomGuests(prev => [...prev, {
-                          roomId: "",
-                          adults: availableRooms[0]?.defaultAdultStay || 1,
-                          children: availableRooms[0]?.defaultChildStay || 0,
-                          infants: availableRooms[0]?.defaultInfantStay || 0,
-                          extraMattress: 0
-                        }])}
-                        className="w-8 h-8 rounded border border-gray-300 flex items-center justify-center hover:bg-gray-100"
-                      >+</button>
+                  {/* Top Summary Bar */}
+                  <div className="bg-blue-50 rounded-xl p-3 mb-4 grid grid-cols-5 gap-1 text-center">
+                    <div>
+                      <p className="text-xs text-gray-500">Rooms</p>
+                      <p className="font-bold text-gray-800 text-sm">{totalRooms}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-gray-500">Adults</p>
+                      <p className="font-bold text-gray-800 text-sm">{totalAdults}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-gray-500">Children</p>
+                      <p className="font-bold text-gray-800 text-sm">{totalChildren}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-gray-500">Infants</p>
+                      <p className="font-bold text-gray-800 text-sm">{totalInfants}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-gray-500">Mattresses</p>
+                      <p className="font-bold text-gray-800 text-sm">{totalMattresses}</p>
                     </div>
                   </div>
 
-                  {roomGuests.map((rg, i) => (
-                    <div key={i} className="mb-4">
-                      <p className="text-sm font-medium text-gray-700 mb-2">Room {i + 1}</p>
-                      <div className="grid grid-cols-2 gap-3">
-                        <div>
-                          <p className="text-xs text-gray-500 mb-1">Adults</p>
-                          <div className="flex items-center gap-2">
-                            <button onClick={() => {
-                              const defaultAdult = availableRooms[0]?.defaultAdultStay || 1;
-                              if (rg.adults > defaultAdult) {
-                                const updated = roomGuests.map((r, idx) => idx === i ? { ...r, adults: r.adults - 1 } : r);
-                                setRoomGuests(updateRoomsFromGuests(updated));
-                              } else if (roomGuests.length > 1) {
-                                const updated = roomGuests.filter((_, idx) => idx !== i);
-                                setRoomGuests(updateRoomsFromGuests(updated));
-                              }
-                            }} className="w-8 h-8 rounded border border-gray-300 flex items-center justify-center">—</button>
-                            <span>{rg.adults}</span>
-                            <button onClick={() => {
-                              const updated = roomGuests.map((r, idx) => idx === i ? { ...r, adults: r.adults + 1 } : r);
-                              setRoomGuests(updateRoomsFromGuests(updated));
-                            }} className="w-8 h-8 rounded border border-gray-300 flex items-center justify-center">+</button>
+                  {/* Per Room */}
+                  <div className="max-h-72 overflow-y-auto space-y-3 pr-1">
+                    {roomGuests.map((rg, i) => (
+                      <div key={i} className="border border-gray-200 rounded-xl p-3">
+                        {/* Room Header */}
+                        <div className="flex justify-between items-center mb-3">
+                          <p className="text-sm font-semibold text-gray-700">Room {i + 1}</p>
+                          {roomGuests.length > 1 && (
+                            <button
+                              onClick={() => removeRoom(i)}
+                              className="text-xs text-red-500 hover:text-red-700 border border-red-200 rounded-lg px-2 py-1"
+                            >
+                              Remove
+                            </button>
+                          )}
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-3">
+                          {/* Adults — disabled */}
+                          <div>
+                            <p className="text-xs text-gray-500 mb-1">Adults</p>
+                            <div className="flex items-center gap-2">
+                              <button disabled className="w-8 h-8 rounded border border-gray-200 flex items-center justify-center text-gray-300 cursor-not-allowed">—</button>
+                              <span className="text-sm font-medium">{rg.adults}</span>
+                              <button disabled className="w-8 h-8 rounded border border-gray-200 flex items-center justify-center text-gray-300 cursor-not-allowed">+</button>
+                            </div>
+                          </div>
+
+                          {/* Children — disabled */}
+                          <div>
+                            <p className="text-xs text-gray-500 mb-1">Children (0-12)</p>
+                            <div className="flex items-center gap-2">
+                              <button disabled className="w-8 h-8 rounded border border-gray-200 flex items-center justify-center text-gray-300 cursor-not-allowed">—</button>
+                              <span className="text-sm font-medium">{rg.children}</span>
+                              <button disabled className="w-8 h-8 rounded border border-gray-200 flex items-center justify-center text-gray-300 cursor-not-allowed">+</button>
+                            </div>
                           </div>
                         </div>
-                        <div>
-                          <p className="text-xs text-gray-500 mb-1">Children (0-12)</p>
+
+                        {/* Infants — disabled */}
+                        <div className="mt-2">
+                          <p className="text-xs text-gray-500 mb-1">Infants (0-2)</p>
                           <div className="flex items-center gap-2">
-                            <button onClick={() => {
-                              if (rg.children > 0) {
-                                const updated = roomGuests.map((r, idx) => idx === i ? { ...r, children: r.children - 1 } : r);
-                                setRoomGuests(updateRoomsFromGuests(updated));
-                              }
-                            }} className="w-8 h-8 rounded border border-gray-300 flex items-center justify-center">—</button>
-                            <span>{rg.children}</span>
-                            <button onClick={() => {
-                              const updated = roomGuests.map((r, idx) => idx === i ? { ...r, children: r.children + 1 } : r);
-                              setRoomGuests(updateRoomsFromGuests(updated));
-                            }} className="w-8 h-8 rounded border border-gray-300 flex items-center justify-center">+</button>
+                            <button disabled className="w-8 h-8 rounded border border-gray-200 flex items-center justify-center text-gray-300 cursor-not-allowed">—</button>
+                            <span className="text-sm font-medium">{rg.infants}</span>
+                            <button disabled className="w-8 h-8 rounded border border-gray-200 flex items-center justify-center text-gray-300 cursor-not-allowed">+</button>
+                          </div>
+                        </div>
+
+                        {/* Extra Mattress — enabled */}
+                        <div className="mt-2">
+                          <p className="text-xs text-gray-500 mb-1">Extra Mattress</p>
+                          <div className="flex items-center gap-2">
+                            <button
+                              onClick={() => {
+                                if (rg.extraMattress > 0) {
+                                  setRoomGuests(prev => prev.map((r, idx) =>
+                                    idx === i ? { ...r, extraMattress: r.extraMattress - 1 } : r
+                                  ));
+                                }
+                              }}
+                              className="w-8 h-8 rounded border border-gray-300 flex items-center justify-center hover:bg-gray-100"
+                            >—</button>
+                            <span className="text-sm font-medium">{rg.extraMattress}</span>
+                            <button
+                              onClick={() => {
+                                const limit = availableRooms[0]?.extraMattressLimit ?? 0;
+                                if (rg.extraMattress < limit) {
+                                  setRoomGuests(prev => prev.map((r, idx) =>
+                                    idx === i ? { ...r, extraMattress: r.extraMattress + 1 } : r
+                                  ));
+                                }
+                              }}
+                              className={`w-8 h-8 rounded border flex items-center justify-center ${
+                                rg.extraMattress < (availableRooms[0]?.extraMattressLimit ?? 0)
+                                  ? "border-gray-300 hover:bg-gray-100"
+                                  : "border-gray-200 text-gray-300 cursor-not-allowed"
+                              }`}
+                            >+</button>
                           </div>
                         </div>
                       </div>
+                    ))}
+                  </div>
 
-                      <div className="mt-2">
-                        <p className="text-xs text-gray-500 mb-1">Infants (0-2)</p>
-                        <div className="flex items-center gap-2">
-                          <button onClick={() => {
-                            if (rg.infants > 0) {
-                              const updated = roomGuests.map((r, idx) => idx === i ? { ...r, infants: r.infants - 1 } : r);
-                              setRoomGuests(updateRoomsFromGuests(updated));
-                            }
-                          }} className="w-8 h-8 rounded border border-gray-300 flex items-center justify-center">—</button>
-                          <span>{rg.infants}</span>
-                          <button onClick={() => {
-                            const updated = roomGuests.map((r, idx) => idx === i ? { ...r, infants: r.infants + 1 } : r);
-                            setRoomGuests(updateRoomsFromGuests(updated));
-                          }} className="w-8 h-8 rounded border border-gray-300 flex items-center justify-center">+</button>
-                        </div>
-                      </div>
+                  {/* Add New Room Button */}
+                  <button
+                    onClick={addNewRoom}
+                    className="w-full mt-3 py-2 border-2 border-dashed border-blue-300 text-blue-600 rounded-xl text-sm font-medium hover:bg-blue-50 transition"
+                  >
+                    + Add New Room
+                  </button>
 
-                      <div className="mt-2">
-                        <p className="text-xs text-gray-500 mb-1">Extra Mattress</p>
-                        <div className="flex items-center gap-2">
-                          <button onClick={() => {
-                            if (rg.extraMattress > 0) {
-                              const updated = roomGuests.map((r, idx) => idx === i ? { ...r, extraMattress: r.extraMattress - 1 } : r);
-                              setRoomGuests(updateRoomsFromGuests(updated));
-                            }
-                          }} className="w-8 h-8 rounded border border-gray-300 flex items-center justify-center">—</button>
-                          <span>{rg.extraMattress}</span>
-                          <button onClick={() => {
-                            if (rg.extraMattress < (availableRooms[0]?.extraMattressLimit ?? 0)) {
-                              const updated = roomGuests.map((r, idx) => idx === i ? { ...r, extraMattress: r.extraMattress + 1 } : r);
-                              setRoomGuests(updateRoomsFromGuests(updated));
-                            }
-                          }} className="w-8 h-8 rounded border border-gray-300 flex items-center justify-center">+</button>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-
+                  {/* Done */}
                   <button
                     onClick={() => setShowGuestPicker(false)}
-                    className="w-full py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700"
+                    className="w-full mt-2 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700"
                   >
                     Done
                   </button>
@@ -700,4 +702,3 @@ export default function PublicBookingPage() {
     </div>
   );
 }
-
