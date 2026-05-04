@@ -21,7 +21,7 @@ interface Room {
   defaultAdultStay: number;
   defaultChildStay: number;
   defaultInfantStay: number;
- extraMattressLimit: number;
+  extraMattressLimit: number;
   extraMattressRate: number;
 }
 
@@ -57,9 +57,12 @@ export default function PublicBookingPage() {
   const [checkIn, setCheckIn] = useState("");
   const [checkOut, setCheckOut] = useState("");
   const [showGuestPicker, setShowGuestPicker] = useState(false);
-  const [roomGuests, setRoomGuests] = useState<RoomGuest[]>([
-    { roomId: "", adults: 1, children: 0, infants: 0, extraMattress: 0 }
-  ]);
+  const [guests, setGuests] = useState({
+    adults: 1,
+    children: 0,
+    infants: 0,
+    extraMattress: 0,
+  });
 
   const [selectedRooms, setSelectedRooms] = useState<any[]>([]);
   const [guestForm, setGuestForm] = useState({
@@ -83,13 +86,12 @@ export default function PublicBookingPage() {
       setAvailableRooms(rooms);
       if (rooms.length > 0) {
         const base = rooms[0];
-        setRoomGuests([{
-          roomId: "",
+        setGuests({
           adults: base.defaultAdultStay ?? 1,
           children: base.defaultChildStay ?? 0,
           infants: base.defaultInfantStay ?? 0,
-          extraMattress: 0
-        }]);
+          extraMattress: 0,
+        });
       }
       setStep("rooms");
     } catch (error) {
@@ -137,8 +139,27 @@ export default function PublicBookingPage() {
     setSearching(false);
   };
 
- const handleSelectRoom = (room: Room, count: number) => {
-    const existing = selectedRooms.filter(r => r.type === room.type);
+  const calculateNights = () => {
+    if (!checkIn || !checkOut) return 0;
+    return Math.ceil((new Date(checkOut).getTime() - new Date(checkIn).getTime()) / (1000 * 60 * 60 * 24));
+  };
+
+  // Auto calculate rooms needed
+  const calculateRoomsNeeded = () => {
+    if (availableRooms.length === 0) return 1;
+    const base = availableRooms[0];
+    const defaultAdult = base.defaultAdultStay || 1;
+    const defaultChild = base.defaultChildStay || 0;
+    const defaultInfant = base.defaultInfantStay || 0;
+    const roomsForAdults = Math.ceil(guests.adults / defaultAdult);
+    const roomsForChildren = defaultChild > 0 ? Math.ceil(guests.children / defaultChild) : 1;
+    const roomsForInfants = defaultInfant > 0 ? Math.ceil(guests.infants / defaultInfant) : 1;
+    return Math.max(1, roomsForAdults, roomsForChildren, roomsForInfants);
+  };
+
+  const roomsNeeded = calculateRoomsNeeded();
+
+  const handleSelectRoom = (room: Room, count: number) => {
     if (count === 0) {
       setSelectedRooms(prev => prev.filter(r => r.type !== room.type));
     } else {
@@ -147,44 +168,16 @@ export default function PublicBookingPage() {
     }
   };
 
-  const calculateNights = () => {
-    if (!checkIn || !checkOut) return 0;
-    return Math.ceil((new Date(checkOut).getTime() - new Date(checkIn).getTime()) / (1000 * 60 * 60 * 24));
-  };
-
- const calculateTotal = () => {
+  const calculateTotal = () => {
     const nights = calculateNights();
     return selectedRooms.reduce((sum, r) => {
       const roomTotal = r.price * nights;
-      const mattressTotal = (r.extraMattressRate || 0) * totalMattresses * nights;
+      const mattressTotal = (r.extraMattressRate || 0) * guests.extraMattress * nights;
       return sum + roomTotal + mattressTotal;
     }, 0);
   };
 
-  // Top summary totals
-  const totalRooms = roomGuests.length;
-  const totalAdults = roomGuests.reduce((sum, r) => sum + r.adults, 0);
-  const totalChildren = roomGuests.reduce((sum, r) => sum + r.children, 0);
-  const totalInfants = roomGuests.reduce((sum, r) => sum + r.infants, 0);
-  const totalMattresses = roomGuests.reduce((sum, r) => sum + r.extraMattress, 0);
-  const totalGuests = totalAdults + totalChildren;
-
-  const addNewRoom = () => {
-    if (availableRooms.length === 0) return;
-    const base = availableRooms[0];
-    setRoomGuests(prev => [...prev, {
-      roomId: "",
-      adults: base.defaultAdultStay ?? 1,
-      children: base.defaultChildStay ?? 0,
-      infants: base.defaultInfantStay ?? 0,
-      extraMattress: 0
-    }]);
-  };
-
-  const removeRoom = (index: number) => {
-    if (roomGuests.length <= 1) return;
-    setRoomGuests(prev => prev.filter((_, i) => i !== index));
-  };
+  const totalGuests = guests.adults + guests.children;
 
   if (loading) {
     return (
@@ -257,140 +250,103 @@ export default function PublicBookingPage() {
                 onClick={() => setShowGuestPicker(!showGuestPicker)}
                 className="border border-gray-200 rounded-lg px-4 py-2 text-sm bg-white hover:border-blue-400 min-w-[160px] text-left"
               >
-                {totalRooms} Room{totalRooms > 1 ? "s" : ""}, {totalGuests} Guest{totalGuests > 1 ? "s" : ""}
+                {roomsNeeded} Room{roomsNeeded > 1 ? "s" : ""}, {totalGuests} Guest{totalGuests > 1 ? "s" : ""}
               </button>
 
-              {/* Guest Picker Dropdown */}
               {showGuestPicker && (
-                <div className="absolute top-16 left-0 bg-white border border-gray-200 rounded-xl shadow-xl z-50 w-96 p-4">
-                  
-                  {/* Header */}
+                <div className="absolute top-16 left-0 bg-white border border-gray-200 rounded-xl shadow-xl z-50 w-80 p-4">
                   <div className="flex justify-between items-center mb-4">
                     <span className="font-semibold text-gray-800">Rooms & Guests</span>
                     <button onClick={() => setShowGuestPicker(false)} className="text-gray-400 hover:text-gray-600 text-lg">✕</button>
                   </div>
 
-                  {/* Top Summary Bar */}
+                  {/* Top Summary */}
                   <div className="bg-blue-50 rounded-xl p-3 mb-4 grid grid-cols-5 gap-1 text-center">
                     <div>
                       <p className="text-xs text-gray-500">Rooms</p>
-                      <p className="font-bold text-gray-800 text-sm">{totalRooms}</p>
+                      <p className="font-bold text-gray-800 text-sm">{roomsNeeded}</p>
                     </div>
                     <div>
                       <p className="text-xs text-gray-500">Adults</p>
-                      <p className="font-bold text-gray-800 text-sm">{totalAdults}</p>
+                      <p className="font-bold text-gray-800 text-sm">{guests.adults}</p>
                     </div>
                     <div>
                       <p className="text-xs text-gray-500">Children</p>
-                      <p className="font-bold text-gray-800 text-sm">{totalChildren}</p>
+                      <p className="font-bold text-gray-800 text-sm">{guests.children}</p>
                     </div>
                     <div>
                       <p className="text-xs text-gray-500">Infants</p>
-                      <p className="font-bold text-gray-800 text-sm">{totalInfants}</p>
+                      <p className="font-bold text-gray-800 text-sm">{guests.infants}</p>
                     </div>
                     <div>
-                      <p className="text-xs text-gray-500">Mattresses</p>
-                      <p className="font-bold text-gray-800 text-sm">{totalMattresses}</p>
+                      <p className="text-xs text-gray-500">Mattress</p>
+                      <p className="font-bold text-gray-800 text-sm">{guests.extraMattress}</p>
                     </div>
                   </div>
 
-                  {/* Per Room */}
-                  <div className="max-h-72 overflow-y-auto space-y-3 pr-1">
-                    {roomGuests.map((rg, i) => (
-                      <div key={i} className="border border-gray-200 rounded-xl p-3">
-                        {/* Room Header */}
-                        <div className="flex justify-between items-center mb-3">
-                          <p className="text-sm font-semibold text-gray-700">Room {i + 1}</p>
-                          {roomGuests.length > 1 && (
-                            <button
-                              onClick={() => removeRoom(i)}
-                              className="text-xs text-red-500 hover:text-red-700 border border-red-200 rounded-lg px-2 py-1"
-                            >
-                              Remove
-                            </button>
-                          )}
-                        </div>
-
-                        <div className="grid grid-cols-2 gap-3">
-                          {/* Adults — disabled */}
-                          <div>
-                            <p className="text-xs text-gray-500 mb-1">Adults</p>
-                            <div className="flex items-center gap-2">
-                              <button disabled className="w-8 h-8 rounded border border-gray-200 flex items-center justify-center text-gray-300 cursor-not-allowed">—</button>
-                              <span className="text-sm font-medium">{rg.adults}</span>
-                              <button disabled className="w-8 h-8 rounded border border-gray-200 flex items-center justify-center text-gray-300 cursor-not-allowed">+</button>
-                            </div>
-                          </div>
-
-                          {/* Children — disabled */}
-                          <div>
-                            <p className="text-xs text-gray-500 mb-1">Children (0-12)</p>
-                            <div className="flex items-center gap-2">
-                              <button disabled className="w-8 h-8 rounded border border-gray-200 flex items-center justify-center text-gray-300 cursor-not-allowed">—</button>
-                              <span className="text-sm font-medium">{rg.children}</span>
-                              <button disabled className="w-8 h-8 rounded border border-gray-200 flex items-center justify-center text-gray-300 cursor-not-allowed">+</button>
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* Infants — disabled */}
-                        <div className="mt-2">
-                          <p className="text-xs text-gray-500 mb-1">Infants (0-2)</p>
-                          <div className="flex items-center gap-2">
-                            <button disabled className="w-8 h-8 rounded border border-gray-200 flex items-center justify-center text-gray-300 cursor-not-allowed">—</button>
-                            <span className="text-sm font-medium">{rg.infants}</span>
-                            <button disabled className="w-8 h-8 rounded border border-gray-200 flex items-center justify-center text-gray-300 cursor-not-allowed">+</button>
-                          </div>
-                        </div>
-
-                        {/* Extra Mattress — enabled */}
-                        <div className="mt-2">
-                          <p className="text-xs text-gray-500 mb-1">Extra Mattress</p>
-                          <div className="flex items-center gap-2">
-                            <button
-                              onClick={() => {
-                                if (rg.extraMattress > 0) {
-                                  setRoomGuests(prev => prev.map((r, idx) =>
-                                    idx === i ? { ...r, extraMattress: r.extraMattress - 1 } : r
-                                  ));
-                                }
-                              }}
-                              className="w-8 h-8 rounded border border-gray-300 flex items-center justify-center hover:bg-gray-100"
-                            >—</button>
-                            <span className="text-sm font-medium">{rg.extraMattress}</span>
-                            <button
-                              onClick={() => {
-                                const limit = availableRooms[0]?.extraMattressLimit ?? 0;
-                                if (rg.extraMattress < limit) {
-                                  setRoomGuests(prev => prev.map((r, idx) =>
-                                    idx === i ? { ...r, extraMattress: r.extraMattress + 1 } : r
-                                  ));
-                                }
-                              }}
-                              className={`w-8 h-8 rounded border flex items-center justify-center ${
-                                rg.extraMattress < (availableRooms[0]?.extraMattressLimit ?? 0)
-                                  ? "border-gray-300 hover:bg-gray-100"
-                                  : "border-gray-200 text-gray-300 cursor-not-allowed"
-                              }`}
-                            >+</button>
-                          </div>
-                        </div>
+                  {/* Guest Inputs — 2 column grid */}
+                  <div className="grid grid-cols-2 gap-3">
+                    {/* Adults */}
+                    <div>
+                      <p className="text-xs text-gray-500 mb-1">Adults</p>
+                      <div className="flex items-center gap-2">
+                        <button onClick={() => setGuests(prev => ({ ...prev, adults: Math.max(1, prev.adults - 1) }))}
+                          className="w-8 h-8 rounded border border-gray-300 flex items-center justify-center hover:bg-gray-100">—</button>
+                        <span className="text-sm font-medium">{guests.adults}</span>
+                        <button onClick={() => setGuests(prev => ({ ...prev, adults: prev.adults + 1 }))}
+                          className="w-8 h-8 rounded border border-gray-300 flex items-center justify-center hover:bg-gray-100">+</button>
                       </div>
-                    ))}
+                    </div>
+
+                    {/* Children */}
+                    <div>
+                      <p className="text-xs text-gray-500 mb-1">Children (0-12)</p>
+                      <div className="flex items-center gap-2">
+                        <button onClick={() => setGuests(prev => ({ ...prev, children: Math.max(0, prev.children - 1) }))}
+                          className="w-8 h-8 rounded border border-gray-300 flex items-center justify-center hover:bg-gray-100">—</button>
+                        <span className="text-sm font-medium">{guests.children}</span>
+                        <button onClick={() => setGuests(prev => ({ ...prev, children: prev.children + 1 }))}
+                          className="w-8 h-8 rounded border border-gray-300 flex items-center justify-center hover:bg-gray-100">+</button>
+                      </div>
+                    </div>
+
+                    {/* Infants */}
+                    <div>
+                      <p className="text-xs text-gray-500 mb-1">Infants (0-2)</p>
+                      <div className="flex items-center gap-2">
+                        <button onClick={() => setGuests(prev => ({ ...prev, infants: Math.max(0, prev.infants - 1) }))}
+                          className="w-8 h-8 rounded border border-gray-300 flex items-center justify-center hover:bg-gray-100">—</button>
+                        <span className="text-sm font-medium">{guests.infants}</span>
+                        <button onClick={() => setGuests(prev => ({ ...prev, infants: prev.infants + 1 }))}
+                          className="w-8 h-8 rounded border border-gray-300 flex items-center justify-center hover:bg-gray-100">+</button>
+                      </div>
+                    </div>
+
+                    {/* Extra Mattress */}
+                    <div>
+                      <p className="text-xs text-gray-500 mb-1">Extra Mattress</p>
+                      <div className="flex items-center gap-2">
+                        <button onClick={() => setGuests(prev => ({ ...prev, extraMattress: Math.max(0, prev.extraMattress - 1) }))}
+                          className="w-8 h-8 rounded border border-gray-300 flex items-center justify-center hover:bg-gray-100">—</button>
+                        <span className="text-sm font-medium">{guests.extraMattress}</span>
+                        <button onClick={() => {
+                          const limit = (availableRooms[0]?.extraMattressLimit ?? 0) * roomsNeeded;
+                          if (guests.extraMattress < limit) {
+                            setGuests(prev => ({ ...prev, extraMattress: prev.extraMattress + 1 }));
+                          }
+                        }}
+                          className={`w-8 h-8 rounded border flex items-center justify-center ${
+                            guests.extraMattress < (availableRooms[0]?.extraMattressLimit ?? 0) * roomsNeeded
+                              ? "border-gray-300 hover:bg-gray-100"
+                              : "border-gray-200 text-gray-300 cursor-not-allowed"
+                          }`}>+</button>
+                      </div>
+                    </div>
                   </div>
 
-                  {/* Add New Room Button */}
-                  <button
-                    onClick={addNewRoom}
-                    className="w-full mt-3 py-2 border-2 border-dashed border-blue-300 text-blue-600 rounded-xl text-sm font-medium hover:bg-blue-50 transition"
-                  >
-                    + Add New Room
-                  </button>
-
-                  {/* Done */}
                   <button
                     onClick={() => setShowGuestPicker(false)}
-                    className="w-full mt-2 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700"
+                    className="w-full mt-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700"
                   >
                     Done
                   </button>
@@ -419,7 +375,7 @@ export default function PublicBookingPage() {
         {step === "rooms" && (
           <div>
             <h2 className="text-lg font-bold text-gray-800 mb-4">
-              Select Room ({totalGuests} Guest{totalGuests > 1 ? "s" : ""})
+              Select Room ({totalGuests} Guest{totalGuests > 1 ? "s" : ""}) — {roomsNeeded} Room{roomsNeeded > 1 ? "s" : ""} Needed
             </h2>
 
             {availableRooms.length === 0 ? (
@@ -447,7 +403,7 @@ export default function PublicBookingPage() {
                       </div>
                       <div className="flex-1">
                         <h3 className="text-lg font-bold text-gray-800">{type}</h3>
-                       <p className="text-sm text-gray-500 mt-1">
+                        <p className="text-sm text-gray-500 mt-1">
                           👥 Maximum — Adults: {rooms[0].defaultAdultStay}, Children: {rooms[0].defaultChildStay}, Infants: {rooms[0].defaultInfantStay}, Mattress: {rooms[0].extraMattressLimit}
                         </p>
                         <p className="text-sm text-gray-500">{rooms.length} room{rooms.length > 1 ? "s" : ""} available</p>
@@ -463,7 +419,8 @@ export default function PublicBookingPage() {
                             Total: ₹{rooms[0].price * calculateNights()}
                           </p>
                         )}
-                       <div className="flex items-center gap-2 mt-2">
+                        {/* Room Select Counter */}
+                        <div className="flex items-center gap-2 mt-2 justify-end">
                           <button
                             onClick={() => {
                               const count = selectedRooms.filter(r => r.type === type).length;
@@ -471,7 +428,7 @@ export default function PublicBookingPage() {
                             }}
                             className="w-8 h-8 rounded border border-gray-300 flex items-center justify-center hover:bg-gray-100 text-gray-600"
                           >—</button>
-                          <span className="font-medium text-sm">{selectedRooms.filter(r => r.type === type).length}</span>
+                          <span className="font-medium text-sm w-4 text-center">{selectedRooms.filter(r => r.type === type).length}</span>
                           <button
                             onClick={() => {
                               const count = selectedRooms.filter(r => r.type === type).length;
@@ -480,7 +437,7 @@ export default function PublicBookingPage() {
                             className="w-8 h-8 rounded border border-gray-300 flex items-center justify-center hover:bg-gray-100 text-gray-600"
                           >+</button>
                           {selectedRooms.filter(r => r.type === type).length > 0 && (
-                            <span className="text-green-600 text-sm font-medium">✅ Selected</span>
+                            <span className="text-green-600 text-xs font-medium">✅</span>
                           )}
                         </div>
                       </div>
@@ -563,43 +520,28 @@ export default function PublicBookingPage() {
               <div className="grid grid-cols-1 gap-4">
                 <div>
                   <label className="text-sm font-medium text-gray-700 mb-1 block">Full Name *</label>
-                  <input
-                    type="text"
-                    placeholder="Apna naam daalo"
-                    value={guestForm.name}
+                  <input type="text" placeholder="Apna naam daalo" value={guestForm.name}
                     onChange={(e) => setGuestForm(prev => ({ ...prev, name: e.target.value }))}
-                    className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-blue-500"
-                  />
+                    className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-blue-500" />
                 </div>
                 <div>
                   <label className="text-sm font-medium text-gray-700 mb-1 block">Email *</label>
-                  <input
-                    type="email"
-                    placeholder="apna@email.com"
-                    value={guestForm.email}
+                  <input type="email" placeholder="apna@email.com" value={guestForm.email}
                     onChange={(e) => setGuestForm(prev => ({ ...prev, email: e.target.value }))}
-                    className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-blue-500"
-                  />
+                    className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-blue-500" />
                 </div>
                 <div>
                   <label className="text-sm font-medium text-gray-700 mb-1 block">Phone *</label>
-                  <input
-                    type="tel"
-                    placeholder="10-digit mobile number"
-                    value={guestForm.phone}
+                  <input type="tel" placeholder="10-digit mobile number" value={guestForm.phone}
                     onChange={(e) => setGuestForm(prev => ({ ...prev, phone: e.target.value }))}
-                    className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-blue-500"
-                  />
+                    className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-blue-500" />
                 </div>
                 <div>
                   <label className="text-sm font-medium text-gray-700 mb-1 block">Special Requests</label>
-                  <textarea
-                    placeholder="Koi special request? (Optional)"
-                    value={guestForm.specialRequests}
+                  <textarea placeholder="Koi special request? (Optional)" value={guestForm.specialRequests}
                     onChange={(e) => setGuestForm(prev => ({ ...prev, specialRequests: e.target.value }))}
                     rows={3}
-                    className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-blue-500"
-                  />
+                    className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-blue-500" />
                 </div>
               </div>
 
@@ -611,14 +553,14 @@ export default function PublicBookingPage() {
                       <span>{room.type} Room</span>
                       <span>₹{room.price} × {calculateNights()} nights = ₹{room.price * calculateNights()}</span>
                     </div>
-                    {totalMattresses > 0 && (room.extraMattressRate || 0) > 0 && (
-                      <div className="flex justify-between text-sm text-gray-500 mt-1">
-                        <span>Extra Mattress × {totalMattresses}</span>
-                        <span>₹{room.extraMattressRate} × {totalMattresses} × {calculateNights()} nights = ₹{(room.extraMattressRate || 0) * totalMattresses * calculateNights()}</span>
-                      </div>
-                    )}
                   </div>
                 ))}
+                {guests.extraMattress > 0 && selectedRooms.length > 0 && (selectedRooms[0].extraMattressRate || 0) > 0 && (
+                  <div className="flex justify-between text-sm text-gray-500 mt-1">
+                    <span>Extra Mattress × {guests.extraMattress}</span>
+                    <span>₹{(selectedRooms[0].extraMattressRate || 0) * guests.extraMattress * calculateNights()}</span>
+                  </div>
+                )}
                 <div className="border-t border-gray-200 mt-2 pt-2 flex justify-between font-bold">
                   <span>Total</span>
                   <span className="text-blue-600">₹{calculateTotal()}</span>
@@ -626,10 +568,8 @@ export default function PublicBookingPage() {
               </div>
 
               <div className="flex gap-3 mt-4">
-                <button
-                  onClick={() => setStep("rooms")}
-                  className="px-4 py-2 bg-gray-100 text-gray-600 rounded-lg text-sm hover:bg-gray-200"
-                >
+                <button onClick={() => setStep("rooms")}
+                  className="px-4 py-2 bg-gray-100 text-gray-600 rounded-lg text-sm hover:bg-gray-200">
                   ← Back
                 </button>
                 <button
@@ -669,10 +609,8 @@ export default function PublicBookingPage() {
               >
                 💳 Pay ₹{calculateTotal()}
               </button>
-              <button
-                onClick={() => setStep("details")}
-                className="w-full py-2 mt-3 bg-gray-100 text-gray-600 rounded-lg text-sm hover:bg-gray-200"
-              >
+              <button onClick={() => setStep("details")}
+                className="w-full py-2 mt-3 bg-gray-100 text-gray-600 rounded-lg text-sm hover:bg-gray-200">
                 ← Back
               </button>
             </div>
