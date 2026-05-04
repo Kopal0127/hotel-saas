@@ -137,12 +137,13 @@ export default function PublicBookingPage() {
     setSearching(false);
   };
 
-  const handleSelectRoom = (room: Room) => {
-    const already = selectedRooms.find(r => r.id === room.id);
-    if (already) {
-      setSelectedRooms(prev => prev.filter(r => r.id !== room.id));
+ const handleSelectRoom = (room: Room, count: number) => {
+    const existing = selectedRooms.filter(r => r.type === room.type);
+    if (count === 0) {
+      setSelectedRooms(prev => prev.filter(r => r.type !== room.type));
     } else {
-      setSelectedRooms(prev => [...prev, { ...room, adults: 2, children: 0, extraMattress: 0 }]);
+      const newRooms = Array.from({ length: count }, () => ({ ...room }));
+      setSelectedRooms(prev => [...prev.filter(r => r.type !== room.type), ...newRooms]);
     }
   };
 
@@ -462,16 +463,26 @@ export default function PublicBookingPage() {
                             Total: ₹{rooms[0].price * calculateNights()}
                           </p>
                         )}
-                        <button
-                          onClick={() => handleSelectRoom(rooms[0])}
-                          className={`mt-2 px-4 py-2 rounded-lg text-sm font-medium transition ${
-                            selectedRooms.find(r => r.type === type)
-                              ? "bg-green-500 text-white"
-                              : "bg-blue-600 text-white hover:bg-blue-700"
-                          }`}
-                        >
-                          {selectedRooms.find(r => r.type === type) ? "✅ Selected" : "Select Room"}
-                        </button>
+                       <div className="flex items-center gap-2 mt-2">
+                          <button
+                            onClick={() => {
+                              const count = selectedRooms.filter(r => r.type === type).length;
+                              if (count > 0) handleSelectRoom(rooms[0], count - 1);
+                            }}
+                            className="w-8 h-8 rounded border border-gray-300 flex items-center justify-center hover:bg-gray-100 text-gray-600"
+                          >—</button>
+                          <span className="font-medium text-sm">{selectedRooms.filter(r => r.type === type).length}</span>
+                          <button
+                            onClick={() => {
+                              const count = selectedRooms.filter(r => r.type === type).length;
+                              if (count < rooms.length) handleSelectRoom(rooms[0], count + 1);
+                            }}
+                            className="w-8 h-8 rounded border border-gray-300 flex items-center justify-center hover:bg-gray-100 text-gray-600"
+                          >+</button>
+                          {selectedRooms.filter(r => r.type === type).length > 0 && (
+                            <span className="text-green-600 text-sm font-medium">✅ Selected</span>
+                          )}
+                        </div>
                       </div>
                     </div>
 
