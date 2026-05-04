@@ -35,15 +35,16 @@ export default function RoomsPage() {
     bedType: "",
     roomSize: "",
     roomView: "",
+    extraMattressLimit: "0",
   });
 
  const [confirm, setConfirm] = useState({ isOpen: false, roomId: "" });
   const [editRoom, setEditRoom] = useState<any>(null);
-  const [editForm, setEditForm] = useState({
+ const [editForm, setEditForm] = useState({
     type: "", price: "", taxGroup: "", sacCode: "",
     defaultAdultStay: "1", defaultChildStay: "0", defaultInfantStay: "0",
     extraAdultRate: "0", extraChildRate: "0", extraInfantRate: "0",
-    bedType: "", roomSize: "", roomView: "",
+    bedType: "", roomSize: "", roomView: "", extraMattressLimit: "0",
   });
   const [editLoading, setEditLoading] = useState(false);
 
@@ -92,7 +93,7 @@ export default function RoomsPage() {
           price: "", startNumber: "", totalRooms: "",
          extraAdultRate: "0", extraChildRate: "0", extraInfantRate: "0",
           maxAdults: "2", maxChildren: "0", maxInfants: "0",
-          bedType: "", roomSize: "", roomView: "",
+         bedType: "", roomSize: "", roomView: "", extraMattressLimit: "0",
         });
         setShowForm(false);
         setActiveTab("details");
@@ -120,9 +121,10 @@ export default function RoomsPage() {
       extraAdultRate: room.extraAdultRate?.toString() || "0",
       extraChildRate: room.extraChildRate?.toString() || "0",
       extraInfantRate: room.extraInfantRate?.toString() || "0",
-      bedType: room.bedType || "",
+     bedType: room.bedType || "",
       roomSize: room.roomSize || "",
       roomView: room.roomView || "",
+      extraMattressLimit: room.extraMattressLimit?.toString() || "0",
     });
   };
 
@@ -363,10 +365,16 @@ export default function RoomsPage() {
                     onChange={(e) => setForm({ ...form, roomSize: e.target.value })}
                     className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-blue-500" />
                 </div>
-                <div>
+              <div>
                   <label className="text-sm font-medium text-gray-700 mb-1 block">Room View</label>
                   <input type="text" placeholder="e.g. City View, Pool View" value={form.roomView}
                     onChange={(e) => setForm({ ...form, roomView: e.target.value })}
+                    className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-blue-500" />
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-gray-700 mb-1 block">Extra Mattress Limit</label>
+                  <input type="number" placeholder="0" value={form.extraMattressLimit}
+                    onChange={(e) => setForm({ ...form, extraMattressLimit: e.target.value })}
                     className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-blue-500" />
                 </div>
 
@@ -561,10 +569,16 @@ export default function RoomsPage() {
                   onChange={(e) => setEditForm({ ...editForm, roomSize: e.target.value })}
                   className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-blue-500" />
               </div>
-              <div>
+             <div>
                 <label className="text-sm font-medium text-gray-700 mb-1 block">Room View</label>
                 <input type="text" placeholder="e.g. City View" value={editForm.roomView}
                   onChange={(e) => setEditForm({ ...editForm, roomView: e.target.value })}
+                  className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-blue-500" />
+              </div>
+              <div>
+                <label className="text-sm font-medium text-gray-700 mb-1 block">Extra Mattress Limit</label>
+                <input type="number" placeholder="0" value={editForm.extraMattressLimit}
+                  onChange={(e) => setEditForm({ ...editForm, extraMattressLimit: e.target.value })}
                   className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-blue-500" />
               </div>
             </div>

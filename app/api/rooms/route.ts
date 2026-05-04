@@ -27,7 +27,7 @@ export async function POST(req: NextRequest) {
       defaultAdultStay, defaultChildStay, defaultInfantStay,
       maxAdults, maxChildren, maxInfants,
       extraAdultRate, extraChildRate, extraInfantRate,
-      bedType, roomSize, roomView,
+      bedType, roomSize, roomView, extraMattressLimit,
     } = await req.json();
 
     if (!type || !price || !hotelId || !startNumber || !totalRooms) {
@@ -60,9 +60,10 @@ export async function POST(req: NextRequest) {
         extraAdultRate: extraAdultRate ? parseFloat(extraAdultRate) : 0,
         extraChildRate: extraChildRate ? parseFloat(extraChildRate) : 0,
         extraInfantRate: extraInfantRate ? parseFloat(extraInfantRate) : 0,
-        bedType: bedType || null,
+       bedType: bedType || null,
         roomSize: roomSize || null,
         roomView: roomView || null,
+        extraMattressLimit: extraMattressLimit ? parseInt(extraMattressLimit) : 0,
       });
     }
 
@@ -129,7 +130,7 @@ export async function PUT(req: NextRequest) {
       id, type, price, taxGroup, sacCode,
       defaultAdultStay, defaultChildStay, defaultInfantStay,
       extraAdultRate, extraChildRate, extraInfantRate,
-      bedType, roomSize, roomView,
+      bedType, roomSize, roomView, extraMattressLimit,
     } = await req.json();
 
     if (!id) return NextResponse.json({ error: "ID chahiye!" }, { status: 400 });
@@ -150,9 +151,10 @@ export async function PUT(req: NextRequest) {
         extraAdultRate: parseFloat(extraAdultRate) || 0,
         extraChildRate: parseFloat(extraChildRate) || 0,
         extraInfantRate: parseFloat(extraInfantRate) || 0,
-        bedType: bedType || null,
+      bedType: bedType || null,
         roomSize: roomSize || null,
         roomView: roomView || null,
+        extraMattressLimit: extraMattressLimit ? parseInt(extraMattressLimit) : 0,
       },
     });
 
