@@ -150,9 +150,13 @@ export default function PublicBookingPage() {
     return Math.ceil((new Date(checkOut).getTime() - new Date(checkIn).getTime()) / (1000 * 60 * 60 * 24));
   };
 
-  const calculateTotal = () => {
+ const calculateTotal = () => {
     const nights = calculateNights();
-    return selectedRooms.reduce((sum, r) => sum + (r.price * nights), 0);
+    return selectedRooms.reduce((sum, r) => {
+      const roomTotal = r.price * nights;
+      const mattressTotal = (r.extraMattressRate || 0) * totalMattresses * nights;
+      return sum + roomTotal + mattressTotal;
+    }, 0);
   };
 
   // Top summary totals
