@@ -498,8 +498,14 @@ const calculateRoomsNeeded = () => {
                     <p className="font-bold text-gray-800">{selectedRooms.length} Room{selectedRooms.length > 1 ? "s" : ""} Selected</p>
                     <p className="text-sm text-gray-500">Total: ₹{calculateTotal()} for {calculateNights()} night{calculateNights() > 1 ? "s" : ""}</p>
                   </div>
-                  <button
-                    onClick={() => setStep("details")}
+                 <button
+                    onClick={() => {
+                      if (selectedRooms.length < roomsNeeded) {
+                        alert(`⚠️ Aapke ${guests.adults + guests.children + guests.infants} guests ke liye minimum ${roomsNeeded} room${roomsNeeded > 1 ? "s" : ""} required hain! Abhi ${selectedRooms.length} selected hai.`);
+                        return;
+                      }
+                      setStep("details");
+                    }}
                     className="px-6 py-3 bg-blue-600 text-white rounded-xl font-semibold hover:bg-blue-700"
                   >
                     Continue →
