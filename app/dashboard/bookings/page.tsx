@@ -693,16 +693,16 @@ export default function BookingsPage() {
                         <td className="px-4 py-3 align-top">
                           <div className="space-y-1">
                             {roomsList.map((r: any, i: number) => (
-                              <div key={i} className="text-xs">
-                                <span className="inline-flex items-center gap-1">
-                                  <span className="font-medium text-gray-900">#{r.roomNumber}</span>
-                                  <span className="text-gray-400">({r.roomType})</span>
-                                </span>
-                                <span className="text-gray-600 ml-2">
-                                  {r.adults || 1} Adult{(r.adults || 1) > 1 ? "s" : ""}
-                                  {(r.children || 0) > 0 ? ` / ${r.children} Child${r.children > 1 ? "ren" : ""}` : ""}
-                                  {(r.infants || 0) > 0 ? ` / ${r.infants} Infant${r.infants > 1 ? "s" : ""}` : ""}
-                                </span>
+                            <div key={i} className="text-xs">
+                                <div className="font-medium text-gray-900">
+                                  #{r.roomNumber} <span className="text-gray-400 font-normal">({r.roomType})</span>
+                                </div>
+                                <div className="text-gray-600 mt-0.5">
+                                  👤 {r.adults || 1}A
+                                  {(r.children || 0) > 0 ? ` · ${r.children}C` : ""}
+                                  {(r.infants || 0) > 0 ? ` · ${r.infants}I` : ""}
+                                  {(r.extraMattress || 0) > 0 ? ` · ${r.extraMattress}🛏️` : ""}
+                                </div>
                               </div>
                             ))}
                           </div>
