@@ -145,16 +145,13 @@ export default function PublicBookingPage() {
   };
 
   // Auto calculate rooms needed
-  const calculateRoomsNeeded = () => {
+const calculateRoomsNeeded = () => {
     if (availableRooms.length === 0) return 1;
     const base = availableRooms[0];
-    const defaultAdult = base.defaultAdultStay || 1;
-    const defaultChild = base.defaultChildStay || 0;
-    const defaultInfant = base.defaultInfantStay || 0;
-    const roomsForAdults = Math.ceil(guests.adults / defaultAdult);
-    const roomsForChildren = defaultChild > 0 ? Math.ceil(guests.children / defaultChild) : 1;
-    const roomsForInfants = defaultInfant > 0 ? Math.ceil(guests.infants / defaultInfant) : 1;
-    return Math.max(1, roomsForAdults, roomsForChildren, roomsForInfants);
+    const baseCapacity = (base.defaultAdultStay || 1) + (base.defaultChildStay || 0) + (base.defaultInfantStay || 0);
+    const totalGuests = guests.adults + guests.children + guests.infants;
+    const guestsAfterMattress = Math.max(1, totalGuests - guests.extraMattress);
+    return Math.max(1, Math.ceil(guestsAfterMattress / baseCapacity));
   };
 
   const roomsNeeded = calculateRoomsNeeded();
