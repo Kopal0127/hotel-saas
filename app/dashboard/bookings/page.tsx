@@ -697,11 +697,11 @@ export default function BookingsPage() {
                                 <div className="font-medium text-gray-900">
                                   #{r.roomNumber} <span className="text-gray-400 font-normal">({r.roomType})</span>
                                 </div>
-                                <div className="text-gray-600 mt-0.5">
-                                  👤 {r.adults || 1}A
-                                  {(r.children || 0) > 0 ? ` · ${r.children}C` : ""}
-                                  {(r.infants || 0) > 0 ? ` · ${r.infants}I` : ""}
-                                  {(r.extraMattress || 0) > 0 ? ` · ${r.extraMattress}🛏️` : ""}
+                              <div className="text-gray-600 mt-0.5" style={{fontSize: "11px"}}>
+                                  Adult-{r.adults || 1}
+                                  {(r.children || 0) > 0 ? ` · Child-${r.children}` : ""}
+                                  {(r.infants || 0) > 0 ? ` · Infant-${r.infants}` : ""}
+                                  {(r.extraMattress || 0) > 0 ? ` · Mattress-${r.extraMattress}` : ""}
                                 </div>
                               </div>
                             ))}
