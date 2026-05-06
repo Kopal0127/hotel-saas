@@ -329,24 +329,17 @@ export default function PublicBookingPage() {
                         <button onClick={() => setGuests(prev => ({ ...prev, extraMattress: Math.max(0, prev.extraMattress - 1) }))}
                           className="w-8 h-8 rounded border border-gray-300 flex items-center justify-center hover:bg-gray-100">—</button>
                         <span className="text-sm font-medium">{guests.extraMattress}</span>
-                       <button onClick={() => {
-                          const base = availableRooms[0];
-                          const baseCapacity = ((base?.defaultAdultStay || 1) + (base?.defaultChildStay || 0) + (base?.defaultInfantStay || 0)) * roomsNeeded;
-                          const totalGuests = guests.adults + guests.children + guests.infants;
-                          const extraPeople = Math.max(0, totalGuests - baseCapacity);
-                          const maxMattress = Math.min(extraPeople, (base?.extraMattressLimit || 0) * roomsNeeded);
+                      <button onClick={() => {
+                          const maxMattress = (availableRooms[0]?.extraMattressLimit || 0) * roomsNeeded;
                           if (guests.extraMattress < maxMattress) {
                             setGuests(prev => ({ ...prev, extraMattress: prev.extraMattress + 1 }));
                           }
                         }}
-                          className={`w-8 h-8 rounded border flex items-center justify-center ${(() => {
-                            const base = availableRooms[0];
-                            const baseCapacity = ((base?.defaultAdultStay || 1) + (base?.defaultChildStay || 0) + (base?.defaultInfantStay || 0)) * roomsNeeded;
-                            const totalGuests = guests.adults + guests.children + guests.infants;
-                            const extraPeople = Math.max(0, totalGuests - baseCapacity);
-                            const maxMattress = Math.min(extraPeople, (base?.extraMattressLimit || 0) * roomsNeeded);
-                            return guests.extraMattress < maxMattress ? "border-gray-300 hover:bg-gray-100" : "border-gray-200 text-gray-300 cursor-not-allowed";
-                          })()}`}>+</button>
+                          className={`w-8 h-8 rounded border flex items-center justify-center ${
+                            guests.extraMattress < (availableRooms[0]?.extraMattressLimit || 0) * roomsNeeded
+                              ? "border-gray-300 hover:bg-gray-100"
+                              : "border-gray-200 text-gray-300 cursor-not-allowed"
+                          }`}>+</button>
                       </div>
                     </div>
                   </div>
