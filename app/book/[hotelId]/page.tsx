@@ -544,7 +544,15 @@ const calculateRoomsNeeded = () => {
 
         {step === "details" && (
           <div className="max-w-2xl mx-auto">
-            <h2 className="text-lg font-bold text-gray-800 mb-4">Guest Details</h2>
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-lg font-bold text-gray-800">Guest Details</h2>
+              <button
+                onClick={() => setStep("rooms")}
+                className="text-sm text-blue-600 hover:text-blue-700 font-medium"
+              >
+                ← Back to Rooms
+              </button>
+            </div>
             <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
               <div className="grid grid-cols-1 gap-4">
                 <div>
