@@ -148,10 +148,36 @@ export default function PublicBookingPage() {
 const calculateRoomsNeeded = () => {
     if (availableRooms.length === 0) return 1;
     const base = availableRooms[0];
-    const baseCapacity = (base.defaultAdultStay || 1) + (base.defaultChildStay || 0) + (base.defaultInfantStay || 0);
-    const totalGuests = guests.adults + guests.children + guests.infants;
-    const guestsAfterMattress = Math.max(1, totalGuests - guests.extraMattress);
-    return Math.max(1, Math.ceil(guestsAfterMattress / baseCapacity));
+    const defaultAdult = base.defaultAdultStay || 1;
+    const defaultChild = base.defaultChildStay || 0;
+    const defaultInfant = base.defaultInfantStay || 0;
+    const extraMattressLimit = base.extraMattressLimit || 0;
+
+    // Adults se rooms calculate karo
+    const roomsForAdults = Math.ceil(guests.adults / defaultAdult);
+
+    // Children alag check karo
+    const roomsForChildren = defaultChild > 0
+      ? Math.ceil(guests.children / defaultChild)
+      : guests.children > 0 ? roomsForAdults : 1;
+
+    // Infants alag check karo
+    const roomsForInfants = defaultInfant > 0
+      ? Math.ceil(guests.infants / defaultInfant)
+      : guests.infants > 0 ? roomsForAdults : 1;
+
+    // Base rooms needed
+    let roomsNeeded = Math.max(1, roomsForAdults, roomsForChildren, roomsForInfants);
+
+    // Mattress se rooms kam ho sakte hain
+    // Har room mein extraMattressLimit extra log reh sakte hain
+    if (guests.extraMattress > 0 && extraMattressLimit > 0) {
+      const adultsAfterMattress = Math.max(0, guests.adults - guests.extraMattress);
+      const roomsAfterMattress = Math.ceil(adultsAfterMattress / defaultAdult);
+      roomsNeeded = Math.max(1, roomsAfterMattress, roomsForChildren, roomsForInfants);
+    }
+
+    return roomsNeeded;
   };
 
   const roomsNeeded = calculateRoomsNeeded();
