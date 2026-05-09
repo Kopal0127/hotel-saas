@@ -33,6 +33,8 @@ export async function GET(req: NextRequest) {
           bedType: true,
           roomSize: true,
           roomView: true,
+          photos: true,
+          mainPhoto: true,
         }
       });
       return NextResponse.json({ rooms: allRooms });
@@ -59,6 +61,8 @@ export async function GET(req: NextRequest) {
         bedType: true,
         roomSize: true,
         roomView: true,
+        photos: true,
+        mainPhoto: true,
       }
     });
 

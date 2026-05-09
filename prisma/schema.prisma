@@ -50,8 +50,10 @@ model Room {
   extraAdultRate     Float?       @default(0)
   extraChildRate     Float?       @default(0)
   extraInfantRate    Float?       @default(0)
-  extraMattressLimit Int?         @default(1)
+ extraMattressLimit Int?         @default(1)
   extraMattressRate  Float?       @default(0)
+  photos             String[]     @default([])
+  mainPhoto          String?
   bedType            String?
   roomSize           String?
   roomView           String?

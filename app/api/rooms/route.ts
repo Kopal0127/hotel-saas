@@ -124,10 +124,11 @@ export async function DELETE(req: NextRequest) {
 export async function PUT(req: NextRequest) {
   try {
     const {
-      id, type, price, taxGroup, sacCode,
+     id, type, price, taxGroup, sacCode,
       defaultAdultStay, defaultChildStay, defaultInfantStay,
       extraMattressRate,
       bedType, roomSize, roomView, extraMattressLimit,
+      photos, mainPhoto,
     } = await req.json();
 
     if (!id) return NextResponse.json({ error: "ID chahiye!" }, { status: 400 });
@@ -149,7 +150,9 @@ export async function PUT(req: NextRequest) {
         bedType: bedType || null,
         roomSize: roomSize || null,
         roomView: roomView || null,
-        extraMattressLimit: extraMattressLimit ? parseInt(extraMattressLimit) : 0,
+       extraMattressLimit: extraMattressLimit ? parseInt(extraMattressLimit) : 0,
+        photos: photos ?? undefined,
+        mainPhoto: mainPhoto ?? undefined,
       },
     });
 

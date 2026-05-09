@@ -23,6 +23,8 @@ interface Room {
   defaultInfantStay: number;
   extraMattressLimit: number;
   extraMattressRate: number;
+  photos: string[];
+  mainPhoto: string;
 }
 
 interface BookingEngine {
@@ -66,6 +68,7 @@ export default function PublicBookingPage() {
   });
 
   const [selectedRooms, setSelectedRooms] = useState<any[]>([]);
+  const [carouselIndexes, setCarouselIndexes] = useState<Record<string, number>>({});
   const [guestForm, setGuestForm] = useState({
     name: "",
     email: "",
@@ -418,12 +421,37 @@ const calculateRoomsNeeded = () => {
                 ).map(([type, rooms]: any) => (
                   <div key={type} className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
                     <div className="flex gap-4 p-6">
-                      <div className="w-48 h-36 bg-gray-100 rounded-xl overflow-hidden flex-shrink-0">
-                        {engine?.galleryImages?.[0] ? (
-                          <img src={engine.galleryImages[0]} alt={type} className="w-full h-full object-cover" />
-                        ) : (
-                          <div className="w-full h-full flex items-center justify-center text-4xl">🛏️</div>
-                        )}
+                    <div className="w-48 h-36 bg-gray-100 rounded-xl overflow-hidden flex-shrink-0 relative">
+                        {(() => {
+                          const roomPhotos = rooms[0]?.photos || [];
+                          const mainPhoto = rooms[0]?.mainPhoto || "";
+                          const orderedPhotos = mainPhoto
+                            ? [mainPhoto, ...roomPhotos.filter((p: string) => p !== mainPhoto)]
+                            : roomPhotos;
+                          const carouselIdx = carouselIndexes[type] || 0;
+                          if (orderedPhotos.length === 0) {
+                            return <div className="w-full h-full flex items-center justify-center text-4xl">🛏️</div>;
+                          }
+                          return (
+                            <>
+                              <img src={orderedPhotos[carouselIdx]} alt={type} className="w-full h-full object-cover" />
+                              {orderedPhotos.length > 1 && (
+                                <>
+                                  <button onClick={() => setCarouselIndexes(prev => ({ ...prev, [type]: (carouselIdx - 1 + orderedPhotos.length) % orderedPhotos.length }))}
+                                    className="absolute left-1 top-1/2 -translate-y-1/2 bg-black bg-opacity-40 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs hover:bg-opacity-70">‹</button>
+                                  <button onClick={() => setCarouselIndexes(prev => ({ ...prev, [type]: (carouselIdx + 1) % orderedPhotos.length }))}
+                                    className="absolute right-1 top-1/2 -translate-y-1/2 bg-black bg-opacity-40 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs hover:bg-opacity-70">›</button>
+                                  <div className="absolute bottom-1 left-0 right-0 flex justify-center gap-1">
+                                    {orderedPhotos.map((_: string, idx: number) => (
+                                      <div key={idx} onClick={() => setCarouselIndexes(prev => ({ ...prev, [type]: idx }))}
+                                        className={`w-1.5 h-1.5 rounded-full cursor-pointer ${carouselIdx === idx ? "bg-white" : "bg-white bg-opacity-50"}`} />
+                                    ))}
+                                  </div>
+                                </>
+                              )}
+                            </>
+                          );
+                        })()}
                       </div>
                       <div className="flex-1">
                         <h3 className="text-lg font-bold text-gray-800">{type}</h3>
