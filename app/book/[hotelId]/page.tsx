@@ -700,8 +700,42 @@ const calculateRoomsNeeded = () => {
                         email: guestForm.email,
                         contact: guestForm.phone,
                       },
-                      handler: async (response: any) => {
-                        alert("✅ Payment successful! Booking confirmed.");
+                     handler: async (response: any) => {
+                        try {
+                          const bookingRes = await fetch("/api/public/booking", {
+                            method: "POST",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({
+                              hotelId,
+                              guestName: guestForm.name,
+                              guestEmail: guestForm.email,
+                              guestPhone: guestForm.phone,
+                              checkIn,
+                              checkOut,
+                              amount: calculateTotal(),
+                              rooms: selectedRooms.map(r => ({
+                                type: r.type,
+                                price: r.price,
+                                adults: guests.adults,
+                                children: guests.children,
+                                infants: guests.infants,
+                              })),
+                              extraMattress: guests.extraMattress,
+                              specialRequests: guestForm.specialRequests,
+                              razorpayPaymentId: response.razorpay_payment_id,
+                              razorpayOrderId: response.razorpay_order_id,
+                            }),
+                          });
+                          const bookingData = await bookingRes.json();
+                          if (bookingRes.ok) {
+                            setStep("search");
+                            alert(`✅ Booking Confirmed! Booking ID: #${bookingData.bookingId.slice(0, 8).toUpperCase()}`);
+                          } else {
+                            alert(bookingData.error || "Booking create nahi ho saki!");
+                          }
+                        } catch (error) {
+                          alert("Booking mein kuch galat hua!");
+                        }
                       },
                       theme: { color: "#2563eb" },
                     };
