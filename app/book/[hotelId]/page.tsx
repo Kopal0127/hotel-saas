@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
+import Script from "next/script";
 
 interface Hotel {
   id: string;
@@ -225,8 +226,9 @@ const calculateRoomsNeeded = () => {
     );
   }
 
-  return (
+ return (
     <div className="min-h-screen bg-gray-50">
+      <Script src="https://checkout.razorpay.com/v1/checkout.js" />
       {/* Header */}
       <div className="bg-[#4a5568] text-white">
         <div className="max-w-6xl mx-auto px-4 py-6">
@@ -673,7 +675,43 @@ const calculateRoomsNeeded = () => {
                 🔒 Secure payment powered by Razorpay
               </p>
               <button
-                onClick={() => alert("Razorpay integration coming soon! Real keys needed.")}
+                onClick={async () => {
+                  try {
+                    const res = await fetch("/api/public/create-order", {
+                      method: "POST",
+                      headers: { "Content-Type": "application/json" },
+                      body: JSON.stringify({ hotelId, amount: calculateTotal() }),
+                    });
+                    const data = await res.json();
+                    if (!res.ok) {
+                      alert(data.error || "Payment start nahi ho saka!");
+                      return;
+                    }
+
+                    const options = {
+                      key: data.keyId,
+                      amount: data.amount,
+                      currency: data.currency,
+                      order_id: data.orderId,
+                      name: hotel?.name || "Hotel",
+                      description: `Booking for ${selectedRooms.length} room(s)`,
+                      prefill: {
+                        name: guestForm.name,
+                        email: guestForm.email,
+                        contact: guestForm.phone,
+                      },
+                      handler: async (response: any) => {
+                        alert("✅ Payment successful! Booking confirmed.");
+                      },
+                      theme: { color: "#2563eb" },
+                    };
+
+                    const rzp = new (window as any).Razorpay(options);
+                    rzp.open();
+                  } catch (error) {
+                    alert("Payment mein kuch galat hua!");
+                  }
+                }}
                 className="w-full py-4 bg-blue-600 text-white rounded-xl font-bold text-lg hover:bg-blue-700"
               >
                 💳 Pay ₹{calculateTotal()}
