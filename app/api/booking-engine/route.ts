@@ -43,6 +43,7 @@ export async function PUT(req: NextRequest) {
       galleryImages,
       isActive,
       allowExtraMattress,
+      cancellationPolicies,
     } = await req.json();
 
     if (!hotelId) {
@@ -57,8 +58,9 @@ export async function PUT(req: NextRequest) {
         nearestAttractions: nearestAttractions ?? undefined,
         bannerImage: bannerImage ?? undefined,
         galleryImages: galleryImages ?? undefined,
-        isActive: isActive ?? undefined,
+       isActive: isActive ?? undefined,
         allowExtraMattress: allowExtraMattress ?? undefined,
+        cancellationPolicies: cancellationPolicies ?? undefined,
       },
       create: {
         hotelId,
@@ -69,6 +71,7 @@ export async function PUT(req: NextRequest) {
         galleryImages: galleryImages || [],
         isActive: isActive ?? true,
         allowExtraMattress: allowExtraMattress ?? false,
+        cancellationPolicies: cancellationPolicies || [],
       },
     });
 

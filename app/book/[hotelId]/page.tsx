@@ -31,8 +31,9 @@ interface BookingEngine {
   nearestAttractions: { name: string; distance: string }[];
   bannerImage: string;
   galleryImages: string[];
-  isActive: boolean;
+ isActive: boolean;
   allowExtraMattress: boolean;
+  cancellationPolicies: string[];
 }
 
 interface RoomGuest {
@@ -71,7 +72,7 @@ export default function PublicBookingPage() {
     phone: "",
     specialRequests: "",
   });
-  const [activeRoomTab, setActiveRoomTab] = useState<"amenities" | "description" | "photos" | "attractions">("amenities");
+  const [activeRoomTab, setActiveRoomTab] = useState<"amenities" | "description" | "cancellation" | "attractions">("amenities");
 
   useEffect(() => {
     fetchHotelData();
@@ -468,7 +469,7 @@ const calculateRoomsNeeded = () => {
 
                     <div className="border-t border-gray-100">
                       <div className="flex gap-6 px-6 pt-3">
-                        {["amenities", "description", "photos", "attractions"].map(tab => (
+                       {["amenities", "description", "cancellation", "attractions"].map(tab => (
                           <button
                             key={tab}
                             onClick={() => setActiveRoomTab(tab as any)}
@@ -493,11 +494,14 @@ const calculateRoomsNeeded = () => {
                         {activeRoomTab === "description" && (
                           <p className="text-sm text-gray-600">{engine?.description || "No description available"}</p>
                         )}
-                        {activeRoomTab === "photos" && (
-                          <div className="grid grid-cols-4 gap-3">
-                            {engine?.galleryImages?.length ? engine.galleryImages.map((img, i) => (
-                              <img key={i} src={img} alt="" className="h-24 w-full object-cover rounded-lg" />
-                            )) : <p className="text-gray-400 text-sm">No photos added</p>}
+                       {activeRoomTab === "cancellation" && (
+                          <div className="space-y-2">
+                            {engine?.cancellationPolicies?.length ? engine.cancellationPolicies.map((policy, i) => (
+                              <div key={i} className="flex items-start gap-2 text-sm text-gray-700">
+                                <span className="text-blue-500 mt-0.5">📌</span>
+                                <span>{policy}</span>
+                              </div>
+                            )) : <p className="text-gray-400 text-sm">No cancellation policy added</p>}
                           </div>
                         )}
                         {activeRoomTab === "attractions" && (

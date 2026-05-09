@@ -20,7 +20,7 @@ export default function BookingEnginePage() {
   const [hotelName, setHotelName] = useState("");
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [activeTab, setActiveTab] = useState<"general" | "amenities" | "attractions" | "photos">("general");
+  const [activeTab, setActiveTab] = useState<"general" | "amenities" | "attractions" | "photos" | "cancellation">("general");
   const [uploading, setUploading] = useState(false);
 
  const [engine, setEngine] = useState({
@@ -31,10 +31,12 @@ export default function BookingEnginePage() {
     galleryImages: [] as string[],
     isActive: true,
     allowExtraMattress: false,
+    cancellationPolicies: [] as string[],
   });
 
   const [newAttraction, setNewAttraction] = useState({ name: "", distance: "" });
   const [customAmenity, setCustomAmenity] = useState("");
+  const [newPolicy, setNewPolicy] = useState("");
   const [bookingLink, setBookingLink] = useState("");
 
   useEffect(() => {
@@ -54,7 +56,7 @@ export default function BookingEnginePage() {
         const engineRes = await fetch(`/api/booking-engine?hotelId=${hId}`);
         const engineData = await engineRes.json();
        if (engineData.engine) {
-          setEngine({
+         setEngine({
             description: engineData.engine.description || "",
             amenities: engineData.engine.amenities || [],
             nearestAttractions: engineData.engine.nearestAttractions || [],
@@ -62,6 +64,7 @@ export default function BookingEnginePage() {
             galleryImages: engineData.engine.galleryImages || [],
             isActive: engineData.engine.isActive ?? true,
             allowExtraMattress: engineData.engine.allowExtraMattress ?? false,
+            cancellationPolicies: engineData.engine.cancellationPolicies || [],
           });
         }
       }
@@ -245,6 +248,7 @@ export default function BookingEnginePage() {
             { key: "amenities", label: "✨ Amenities" },
             { key: "attractions", label: "📍 Attractions" },
             { key: "photos", label: "🖼️ Photos" },
+            { key: "cancellation", label: "📋 Cancellation Policy" },
           ].map((tab) => (
             <button
               key={tab.key}
@@ -472,6 +476,63 @@ export default function BookingEnginePage() {
           </div>
         )}
       </div>
+
+      {/* Cancellation Policy Tab */}
+        {activeTab === "cancellation" && (
+          <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+            <h3 className="text-lg font-semibold text-gray-800 mb-4">📋 Cancellation Policy</h3>
+
+            {/* Add New Policy */}
+            <div className="flex gap-3 mb-6">
+              <input
+                type="text"
+                placeholder="e.g. Free cancellation 24 hours before check-in"
+                value={newPolicy}
+                onChange={(e) => setNewPolicy(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && newPolicy.trim()) {
+                    setEngine(prev => ({ ...prev, cancellationPolicies: [...prev.cancellationPolicies, newPolicy.trim()] }));
+                    setNewPolicy("");
+                  }
+                }}
+                className="flex-1 border border-gray-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-blue-500"
+              />
+              <button
+                onClick={() => {
+                  if (!newPolicy.trim()) return;
+                  setEngine(prev => ({ ...prev, cancellationPolicies: [...prev.cancellationPolicies, newPolicy.trim()] }));
+                  setNewPolicy("");
+                }}
+                className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700"
+              >
+                + Add
+              </button>
+            </div>
+
+            {/* Policy List */}
+            {engine.cancellationPolicies.length === 0 ? (
+              <p className="text-gray-400 text-sm text-center py-6">Koi policy nahi add ki</p>
+            ) : (
+              <div className="space-y-2">
+                {engine.cancellationPolicies.map((policy, i) => (
+                  <div key={i} className="flex items-center justify-between bg-gray-50 rounded-lg px-4 py-3">
+                    <p className="text-sm text-gray-700">📌 {policy}</p>
+                    <button
+                      onClick={() => setEngine(prev => ({
+                        ...prev,
+                        cancellationPolicies: prev.cancellationPolicies.filter((_, idx) => idx !== i)
+                      }))}
+                      className="text-red-400 hover:text-red-600 text-sm ml-3"
+                    >
+                      🗑️
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+            <p className="text-xs text-gray-400 mt-4">{engine.cancellationPolicies.length} policies added</p>
+          </div>
+        )}
 
       {toast && <Toast message={toast.message} type={toast.type} onClose={hideToast} />}
     </div>

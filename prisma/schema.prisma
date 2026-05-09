@@ -201,6 +201,7 @@ model BookingEngine {
   galleryImages       String[] @default([])
   isActive            Boolean  @default(true)
   allowExtraMattress  Boolean  @default(false)
+  cancellationPolicies String[] @default([])
   createdAt           DateTime @default(now())
   updatedAt           DateTime @updatedAt
 }
