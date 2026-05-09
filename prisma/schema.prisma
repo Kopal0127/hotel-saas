@@ -18,18 +18,20 @@ model User {
 }
 
 model Hotel {
-  id           String       @id @default(cuid())
-  name         String
-  address      String?
-  phone        String?
-  userId       String
-  user         User         @relation(fields: [userId], references: [id])
-  rooms        Room[]
-  createdAt    DateTime     @default(now())
-  channels     OtaChannel[]
-  otaBookings  OtaBooking[]
-  staffMembers Staff[]
+  id                String       @id @default(cuid())
+  name              String
+  address           String?
+  phone             String?
+  userId            String
+  user              User         @relation(fields: [userId], references: [id])
+  rooms             Room[]
+  createdAt         DateTime     @default(now())
+  channels          OtaChannel[]
+  otaBookings       OtaBooking[]
+  staffMembers      Staff[]
   serviceCategories ServiceCategory[]
+  razorpayKeyId     String?
+  razorpayKeySecret String?
 }
 
 model Room {

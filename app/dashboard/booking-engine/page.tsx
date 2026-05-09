@@ -22,7 +22,7 @@ export default function BookingEnginePage() {
   const [selectedRoomId, setSelectedRoomId] = useState("");
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [activeTab, setActiveTab] = useState<"general" | "amenities" | "attractions" | "photos" | "cancellation">("general");
+  const [activeTab, setActiveTab] = useState<"general" | "amenities" | "attractions" | "photos" | "cancellation" | "payment">("general");
   const [uploading, setUploading] = useState(false);
 
   const [engine, setEngine] = useState({
@@ -39,6 +39,9 @@ export default function BookingEnginePage() {
   const [newAttraction, setNewAttraction] = useState({ name: "", distance: "" });
   const [customAmenity, setCustomAmenity] = useState("");
   const [newPolicy, setNewPolicy] = useState("");
+  const [razorpayKeyId, setRazorpayKeyId] = useState("");
+  const [razorpayKeySecret, setRazorpayKeySecret] = useState("");
+  const [savingPayment, setSavingPayment] = useState(false);
   const [bookingLink, setBookingLink] = useState("");
 
   useEffect(() => { fetchData(); }, []);
@@ -55,6 +58,12 @@ export default function BookingEnginePage() {
         const roomsData = await roomsRes.json();
         setRooms(roomsData.rooms || []);
         setBookingLink(`${window.location.origin}/book/${hId}`);
+        const hotelRes2 = await fetch(`/api/hotels`);
+        const hotelData2 = await hotelRes2.json();
+        if (hotelData2.hotels && hotelData2.hotels.length > 0) {
+          setRazorpayKeyId(hotelData2.hotels[0].razorpayKeyId || "");
+          setRazorpayKeySecret(hotelData2.hotels[0].razorpayKeySecret || "");
+        }
         const engineRes = await fetch(`/api/booking-engine?hotelId=${hId}`);
         const engineData = await engineRes.json();
         if (engineData.engine) {
@@ -120,9 +129,28 @@ export default function BookingEnginePage() {
     setNewAttraction({ name: "", distance: "" });
   };
 
-  const copyLink = () => {
+ const copyLink = () => {
     navigator.clipboard.writeText(bookingLink);
     showToast("✅ Link copy ho gaya!", "success");
+  };
+
+  const handleSavePayment = async () => {
+    setSavingPayment(true);
+    try {
+      const res = await fetch("/api/hotels", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ razorpayKeyId, razorpayKeySecret }),
+      });
+      if (res.ok) {
+        showToast("✅ Payment keys save ho gayi!", "success");
+      } else {
+        showToast("❌ Save nahi ho saka!", "error");
+      }
+    } catch {
+      showToast("❌ Error!", "error");
+    }
+    setSavingPayment(false);
   };
 
   const refreshRooms = async () => {
@@ -241,6 +269,7 @@ export default function BookingEnginePage() {
             { key: "attractions", label: "📍 Attractions" },
             { key: "photos", label: "🖼️ Photos" },
             { key: "cancellation", label: "📋 Cancellation Policy" },
+            { key: "payment", label: "💳 Payment Gateway" },
           ].map((tab) => (
             <button key={tab.key} onClick={() => setActiveTab(tab.key as any)}
               className={`px-5 py-2 rounded-lg text-sm font-medium transition ${activeTab === tab.key ? "bg-blue-600 text-white" : "bg-white text-gray-600 border border-gray-200 hover:bg-gray-50"}`}>
@@ -418,6 +447,48 @@ export default function BookingEnginePage() {
           </div>
         )}
       </div>
+
+     {activeTab === "payment" && (
+          <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+            <h3 className="text-lg font-semibold text-gray-800 mb-2">💳 Razorpay Payment Gateway</h3>
+            <p className="text-sm text-gray-500 mb-6">Apni Razorpay keys daalo — guests booking engine se direct payment kar sakenge.</p>
+
+            <div className="space-y-4">
+              <div>
+                <label className="text-sm font-medium text-gray-700 mb-1 block">Razorpay Key ID</label>
+                <input
+                  type="text"
+                  placeholder="rzp_live_xxxxxxxxxxxx"
+                  value={razorpayKeyId}
+                  onChange={(e) => setRazorpayKeyId(e.target.value)}
+                  className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-blue-500"
+                />
+              </div>
+              <div>
+                <label className="text-sm font-medium text-gray-700 mb-1 block">Razorpay Key Secret</label>
+                <input
+                  type="password"
+                  placeholder="••••••••••••••••"
+                  value={razorpayKeySecret}
+                  onChange={(e) => setRazorpayKeySecret(e.target.value)}
+                  className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-blue-500"
+                />
+              </div>
+            </div>
+
+            <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-4 mt-4">
+              <p className="text-xs text-yellow-800">⚠️ Key Secret kabhi public nahi hoga — sirf backend payment processing ke liye use hoga.</p>
+            </div>
+
+            <button
+              onClick={handleSavePayment}
+              disabled={savingPayment}
+              className="mt-6 px-6 py-3 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 disabled:opacity-50"
+            >
+              {savingPayment ? "Saving..." : "💾 Save Payment Keys"}
+            </button>
+          </div>
+        )}
 
       {toast && <Toast message={toast.message} type={toast.type} onClose={hideToast} />}
     </div>
