@@ -1,6 +1,7 @@
 "use client";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+
 const featureItems = [
   { label: "Hotel Management", icon: "🏨" },
   { label: "Booking Engine", icon: "📅" },
@@ -28,6 +29,7 @@ const aboutItems = [
   { label: "Partner Program", icon: "🤝" },
   { label: "Clients Reviews", icon: "⭐" },
 ];
+
 const customFeatures = [
   { name: "Hotel Management (PMS)", price: 999 },
   { name: "Booking Engine", price: 499 },
@@ -43,103 +45,78 @@ const complementaryFeatures = [
   "Staff Login and Attendance",
 ];
 
-function useCustomPlan() {
+const allPlanFeatures = [
+  "Hotel Management (PMS)",
+  "Booking Engine",
+  "Channel Manager",
+  "Revenue Management",
+  "Restaurant Software",
+  "Reports & Analytics",
+  "Housekeeping & Room Service",
+  "Inventory & Maintenance",
+  "Staff Login and Attendance",
+];
+
+function CustomPlanCard({ onDemo }: { onDemo: () => void }) {
   const [selected, setSelected] = useState<string[]>([]);
-  const toggle = (name: string) => setSelected(prev => prev.includes(name) ? prev.filter(f => f !== name) : [...prev, name]);
-  const total = customFeatures.filter(f => selected.includes(f.name)).reduce((sum, f) => sum + f.price, 0);
-  const hotelAdded = selected.includes("Hotel Management (PMS)");
-  return { selected, toggle, total, hotelAdded };
-}
-
-const customPlanState = { selected: [] as string[], toggle: (_: string) => {}, total: 0, hotelAdded: false };
-
-function CustomTotal() {
-  const { total } = useCustomPlan();
-  return <span>{total.toLocaleString("en-IN")}</span>;
-}
-
-function CustomPlanFeatures() {
-  const { selected, toggle, hotelAdded } = useCustomPlan();
-  return (
-    <>
-      {customFeatures.map((f, i) => (
-        <div key={i}>
-          <div className="flex items-center justify-between px-6 py-3 border-b border-gray-100">
-            <span className="text-sm text-gray-700">{f.name}</span>
-            <div className="flex items-center gap-2">
-              <span className="text-xs text-gray-400">₹{f.price}</span>
-              <button onClick={() => toggle(f.name)}
-                className={`w-7 h-7 rounded-full border-2 flex items-center justify-center text-sm font-bold transition ${selected.includes(f.name) ? "bg-teal-500 border-teal-500 text-white" : "border-gray-300 text-gray-400 hover:border-teal-400"}`}>
-                {selected.includes(f.name) ? "−" : "+"}
-              </button>
-            </div>
-          </div>
-          {f.name === "Hotel Management (PMS)" && hotelAdded && complementaryFeatures.map((c, j) => (
-            <div key={j} className="flex items-center justify-between px-6 py-2 border-b border-gray-50 bg-teal-50">
-              <span className="text-xs text-teal-700">✓ {c}</span>
-              <span className="text-xs bg-teal-100 text-teal-600 px-2 py-0.5 rounded-full">Free</span>
-            </div>
-          ))}
-        </div>
-      ))}
-    </>
-  );
-}
 
   const toggle = (name: string) => {
-    setSelected(prev => prev.includes(name) ? prev.filter(f => f !== name) : [...prev, name]);
+    setSelected(prev =>
+      prev.includes(name) ? prev.filter(f => f !== name) : [...prev, name]
+    );
   };
 
   const total = customFeatures
     .filter(f => selected.includes(f.name))
     .reduce((sum, f) => sum + f.price, 0);
 
-  const complementaryVisible = selected.includes("Hotel Management (PMS)")
-    ? customFeatures[0].complementary
-    : [];
+  const hotelAdded = selected.includes("Hotel Management (PMS)");
 
   return (
-    <div className="border border-gray-200 rounded-2xl overflow-hidden">
-      <div className="bg-gradient-to-b from-teal-400 to-teal-300 p-8 text-white text-center">
-        <p className="text-sm font-semibold bg-white bg-opacity-20 inline-block px-4 py-1 rounded-full mb-4">Custom Plan</p>
-        <p className="text-5xl font-bold mb-1">₹{total.toLocaleString("en-IN")}</p>
-        <p className="text-teal-100 text-sm">Customized for you</p>
+    <div className="bg-white rounded-2xl overflow-hidden flex-1 max-w-sm z-10" style={{ boxShadow: "0 4px 24px rgba(0,0,0,0.10)" }}>
+      <div className="relative p-8 text-white text-center" style={{ minHeight: "160px", background: "linear-gradient(to bottom, #2dd4bf, #14b8a6)" }}>
+        <div className="absolute top-0 left-0 right-0 bottom-0 overflow-hidden pointer-events-none">
+          <div className="absolute w-16 h-16 rounded-full bg-white opacity-10" style={{ top: "10px", left: "20px" }}></div>
+          <div className="absolute w-8 h-8 rounded-full bg-white opacity-10" style={{ top: "40px", right: "30px" }}></div>
+        </div>
+        <div className="relative z-10">
+          <span className="inline-block border border-white border-opacity-60 text-white text-xs px-5 py-1.5 rounded-full mb-4">Custom Plan</span>
+          <p className="text-5xl font-bold mb-1">₹{total.toLocaleString("en-IN")}</p>
+          <p className="text-teal-100 text-sm">Customized for you</p>
+        </div>
       </div>
-      <div className="p-6 text-left space-y-3">
-        {customFeatures.map((f) => (
-          <div key={f.name}>
-            <div className="flex items-center justify-between text-sm text-gray-700">
-              <span className="font-medium">{f.name}</span>
+      <div className="text-left">
+        {customFeatures.map((f, i) => (
+          <div key={i}>
+            <div className="flex items-center justify-between px-6 py-3 border-b border-gray-100">
+              <span className="text-sm text-gray-700">{f.name}</span>
               <div className="flex items-center gap-2">
-                <span className="text-gray-400 text-xs">₹{f.price}</span>
+                <span className="text-xs text-gray-400">₹{f.price}</span>
                 <button
                   onClick={() => toggle(f.name)}
-                  className={`w-7 h-7 rounded-full border flex items-center justify-center font-bold text-lg transition ${
+                  className={`w-7 h-7 rounded-full border-2 flex items-center justify-center text-sm font-bold transition ${
                     selected.includes(f.name)
                       ? "bg-teal-500 border-teal-500 text-white"
                       : "border-gray-300 text-gray-400 hover:border-teal-400"
-                  }`}>
+                  }`}
+                >
                   {selected.includes(f.name) ? "−" : "+"}
                 </button>
               </div>
             </div>
-            {f.name === "Hotel Management (PMS)" && complementaryVisible.length > 0 && (
-              <div className="mt-2 ml-3 space-y-1">
-                {complementaryVisible.map(c => (
-                  <div key={c} className="flex items-center gap-2 text-xs text-teal-600">
-                    <span>✓</span>
-                    <span>{c}</span>
-                    <span className="bg-teal-50 text-teal-600 px-2 py-0.5 rounded-full text-xs">Complementary</span>
-                  </div>
-                ))}
-              </div>
-            )}
+            {f.name === "Hotel Management (PMS)" && hotelAdded &&
+              complementaryFeatures.map((c, j) => (
+                <div key={j} className="flex items-center justify-between px-6 py-2 border-b border-gray-50 bg-teal-50">
+                  <span className="text-xs text-teal-700">✓ {c}</span>
+                  <span className="text-xs bg-teal-100 text-teal-600 px-2 py-0.5 rounded-full">Free</span>
+                </div>
+              ))
+            }
           </div>
         ))}
       </div>
-      <div className="px-6 pb-6">
-        <button onClick={onDemo}
-          className="w-full bg-teal-500 text-white py-3 rounded-xl font-semibold hover:bg-teal-600 transition">
+      <div className="p-6">
+        <button onClick={onDemo} className="w-full bg-teal-500 text-white py-3 rounded-xl font-semibold hover:bg-teal-600 transition">
           Get Custom Quote
         </button>
       </div>
@@ -150,8 +127,8 @@ function CustomPlanFeatures() {
 export default function Home() {
   const router = useRouter();
   const [softwareOpen, setSoftwareOpen] = useState(false);
- const [aboutOpen, setAboutOpen] = useState(false);
-const [featuresOpen, setFeaturesOpen] = useState(false);
+  const [aboutOpen, setAboutOpen] = useState(false);
+  const [featuresOpen, setFeaturesOpen] = useState(false);
   const [demoOpen, setDemoOpen] = useState(false);
   const [demoForm, setDemoForm] = useState({
     fullName: "",
@@ -164,7 +141,7 @@ const [featuresOpen, setFeaturesOpen] = useState(false);
   });
   const [submitted, setSubmitted] = useState(false);
 
- const closeAll = () => {
+  const closeAll = () => {
     setSoftwareOpen(false);
     setAboutOpen(false);
     setFeaturesOpen(false);
@@ -189,9 +166,8 @@ const [featuresOpen, setFeaturesOpen] = useState(false);
       {/* Demo Modal */}
       {demoOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg p-8 relative" onClick={(e) => e.stopPropagation()}>
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg p-8 relative max-h-screen overflow-y-auto" onClick={(e) => e.stopPropagation()}>
             <button onClick={() => setDemoOpen(false)} className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 text-2xl">✕</button>
-
             {submitted ? (
               <div className="text-center py-8">
                 <div className="text-5xl mb-4">🎉</div>
@@ -204,36 +180,31 @@ const [featuresOpen, setFeaturesOpen] = useState(false);
                 <div className="space-y-4">
                   <div>
                     <label className="text-sm font-medium text-gray-700 block mb-1">Full Name *</label>
-                    <input type="text" placeholder="Apna naam daalo"
-                      value={demoForm.fullName}
+                    <input type="text" placeholder="Apna naam daalo" value={demoForm.fullName}
                       onChange={(e) => setDemoForm(p => ({ ...p, fullName: e.target.value }))}
                       className="w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:border-blue-500" />
                   </div>
                   <div>
                     <label className="text-sm font-medium text-gray-700 block mb-1">Contact No *</label>
-                    <input type="tel" placeholder="10-digit mobile number"
-                      value={demoForm.contactNo}
+                    <input type="tel" placeholder="10-digit mobile number" value={demoForm.contactNo}
                       onChange={(e) => setDemoForm(p => ({ ...p, contactNo: e.target.value }))}
                       className="w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:border-blue-500" />
                   </div>
                   <div>
                     <label className="text-sm font-medium text-gray-700 block mb-1">Mail ID *</label>
-                    <input type="email" placeholder="apna@email.com"
-                      value={demoForm.mailId}
+                    <input type="email" placeholder="apna@email.com" value={demoForm.mailId}
                       onChange={(e) => setDemoForm(p => ({ ...p, mailId: e.target.value }))}
                       className="w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:border-blue-500" />
                   </div>
                   <div>
                     <label className="text-sm font-medium text-gray-700 block mb-1">Hotel Name</label>
-                    <input type="text" placeholder="Aapke hotel ka naam"
-                      value={demoForm.hotelName}
+                    <input type="text" placeholder="Aapke hotel ka naam" value={demoForm.hotelName}
                       onChange={(e) => setDemoForm(p => ({ ...p, hotelName: e.target.value }))}
                       className="w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:border-blue-500" />
                   </div>
                   <div>
                     <label className="text-sm font-medium text-gray-700 block mb-1">City</label>
-                    <input type="text" placeholder="Aapka shehar"
-                      value={demoForm.city}
+                    <input type="text" placeholder="Aapka shehar" value={demoForm.city}
                       onChange={(e) => setDemoForm(p => ({ ...p, city: e.target.value }))}
                       className="w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:border-blue-500" />
                   </div>
@@ -250,8 +221,7 @@ const [featuresOpen, setFeaturesOpen] = useState(false);
                   </div>
                   <div>
                     <label className="text-sm font-medium text-gray-700 block mb-1">Ask Your Query</label>
-                    <textarea placeholder="Aapka sawaal yahan likhein..." rows={3}
-                      value={demoForm.query}
+                    <textarea placeholder="Aapka sawaal yahan likhein..." rows={3} value={demoForm.query}
                       onChange={(e) => setDemoForm(p => ({ ...p, query: e.target.value }))}
                       className="w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:border-blue-500 resize-none" />
                   </div>
@@ -269,15 +239,11 @@ const [featuresOpen, setFeaturesOpen] = useState(false);
       {/* Navbar */}
       <nav className="flex items-center justify-between px-8 py-4 border-b border-gray-100 sticky top-0 bg-white z-40">
         <h1 className="text-2xl font-bold text-blue-600">HotelPro</h1>
-
         <div className="flex gap-1 text-gray-600 text-sm items-center">
-          {/* Home */}
           <a href="#" className="px-4 py-2 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition">Home</a>
 
-          {/* About Us Dropdown */}
           <div className="relative" onClick={(e) => e.stopPropagation()}>
-            <button
-              onClick={() => { setAboutOpen(!aboutOpen); setSoftwareOpen(false); }}
+            <button onClick={() => { setAboutOpen(!aboutOpen); setSoftwareOpen(false); setFeaturesOpen(false); }}
               className={`px-4 py-2 rounded-lg transition flex items-center gap-1 ${aboutOpen ? "text-blue-600 bg-blue-50" : "hover:text-blue-600 hover:bg-blue-50"}`}>
               About Us
               <svg className={`w-3 h-3 transition-transform ${aboutOpen ? "rotate-180" : ""}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -287,20 +253,16 @@ const [featuresOpen, setFeaturesOpen] = useState(false);
             {aboutOpen && (
               <div className="absolute top-10 left-0 bg-white border border-gray-100 rounded-xl shadow-lg z-50 w-52 py-2">
                 {aboutItems.map(item => (
-                  <a key={item.label} href="#"
-                    className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition">
-                    <span>{item.icon}</span>
-                    {item.label}
+                  <a key={item.label} href="#" className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition">
+                    <span>{item.icon}</span>{item.label}
                   </a>
                 ))}
               </div>
             )}
           </div>
 
-          {/* Software Dropdown */}
           <div className="relative" onClick={(e) => e.stopPropagation()}>
-            <button
-              onClick={() => { setSoftwareOpen(!softwareOpen); setAboutOpen(false); }}
+            <button onClick={() => { setSoftwareOpen(!softwareOpen); setAboutOpen(false); setFeaturesOpen(false); }}
               className={`px-4 py-2 rounded-lg transition flex items-center gap-1 ${softwareOpen ? "text-blue-600 bg-blue-50" : "hover:text-blue-600 hover:bg-blue-50"}`}>
               Softwares
               <svg className={`w-3 h-3 transition-transform ${softwareOpen ? "rotate-180" : ""}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -310,22 +272,18 @@ const [featuresOpen, setFeaturesOpen] = useState(false);
             {softwareOpen && (
               <div className="absolute top-10 left-0 bg-white border border-gray-100 rounded-xl shadow-lg z-50 w-72 py-2">
                 {softwareItems.map(item => (
-                  <a key={item.label} href="#"
-                    className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition">
-                    <span>{item.icon}</span>
-                    {item.label}
+                  <a key={item.label} href="#" className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition">
+                    <span>{item.icon}</span>{item.label}
                   </a>
                 ))}
               </div>
             )}
           </div>
 
-         <a href="#pricing" className="px-4 py-2 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition">Pricing</a>
+          <a href="#pricing" className="px-4 py-2 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition">Pricing</a>
 
-          {/* Features Dropdown */}
           <div className="relative" onClick={(e) => e.stopPropagation()}>
-            <button
-              onClick={() => { setFeaturesOpen(!featuresOpen); setSoftwareOpen(false); setAboutOpen(false); }}
+            <button onClick={() => { setFeaturesOpen(!featuresOpen); setSoftwareOpen(false); setAboutOpen(false); }}
               className={`px-4 py-2 rounded-lg transition flex items-center gap-1 ${featuresOpen ? "text-blue-600 bg-blue-50" : "hover:text-blue-600 hover:bg-blue-50"}`}>
               Features
               <svg className={`w-3 h-3 transition-transform ${featuresOpen ? "rotate-180" : ""}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -335,10 +293,8 @@ const [featuresOpen, setFeaturesOpen] = useState(false);
             {featuresOpen && (
               <div className="absolute top-10 left-0 bg-white border border-gray-100 rounded-xl shadow-lg z-50 w-64 py-2">
                 {featureItems.map(item => (
-                  <a key={item.label} href="#features"
-                    className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition">
-                    <span>{item.icon}</span>
-                    {item.label}
+                  <a key={item.label} href="#features" className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition">
+                    <span>{item.icon}</span>{item.label}
                   </a>
                 ))}
               </div>
@@ -347,13 +303,11 @@ const [featuresOpen, setFeaturesOpen] = useState(false);
         </div>
 
         <div className="flex gap-3">
-          <button
-            onClick={() => setDemoOpen(true)}
+          <button onClick={() => setDemoOpen(true)}
             className="border border-blue-600 text-blue-600 px-5 py-2 rounded-lg text-sm font-semibold hover:bg-blue-50 transition">
             Book Demo Now
           </button>
-          <button
-            onClick={() => router.push("/login")}
+          <button onClick={() => router.push("/login")}
             className="bg-blue-600 text-white px-5 py-2 rounded-lg text-sm font-semibold hover:bg-blue-700 transition">
             Login
           </button>
@@ -374,13 +328,11 @@ const [featuresOpen, setFeaturesOpen] = useState(false);
           sab kuch ek platform pe. Apne hotels ko aaj se smarter banao.
         </p>
         <div className="flex gap-4 justify-center">
-          <button
-            onClick={() => router.push("/login")}
+          <button onClick={() => router.push("/login")}
             className="bg-blue-600 text-white px-8 py-4 rounded-xl text-lg font-semibold hover:bg-blue-700 transition shadow-lg shadow-blue-200">
             Free Trial Shuru Karo
           </button>
-          <button
-            onClick={() => setDemoOpen(true)}
+          <button onClick={() => setDemoOpen(true)}
             className="border-2 border-blue-600 text-blue-600 px-8 py-4 rounded-xl text-lg font-semibold hover:bg-blue-50 transition">
             Book Demo Now
           </button>
@@ -393,7 +345,7 @@ const [featuresOpen, setFeaturesOpen] = useState(false);
       </section>
 
       {/* Software Section */}
-      <section id="features" className="py-20 px-8 bg-white">
+      <section className="py-20 px-8 bg-white">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-14">
             <h3 className="text-3xl font-bold text-gray-900 mb-3">Our Softwares</h3>
@@ -415,7 +367,7 @@ const [featuresOpen, setFeaturesOpen] = useState(false);
       </section>
 
       {/* Features Section */}
-      <section className="py-20 px-8 bg-gray-50">
+      <section id="features" className="py-20 px-8 bg-gray-50">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-14">
             <h3 className="text-3xl font-bold text-gray-900 mb-3">Features</h3>
@@ -443,20 +395,19 @@ const [featuresOpen, setFeaturesOpen] = useState(false);
         </div>
       </section>
 
-    {/* Pricing Section */}
+      {/* Pricing Section */}
       <section id="pricing" className="py-20 px-8 bg-white">
         <div className="max-w-6xl mx-auto text-center">
           <h3 className="text-3xl font-bold text-gray-900 mb-3">Simple Pricing</h3>
           <p className="text-gray-500 mb-16">Apni zaroorat ke hisaab se plan chuno</p>
-
           <div className="flex items-end justify-center gap-0">
 
             {/* Monthly Plan */}
-            <div className="bg-white rounded-2xl overflow-hidden flex-1 max-w-sm z-10" style={{boxShadow: "0 4px 24px rgba(0,0,0,0.10)"}}>
-              <div className="relative bg-gradient-to-b from-purple-500 to-purple-400 p-8 text-white text-center" style={{minHeight: "160px"}}>
+            <div className="bg-white rounded-2xl overflow-hidden flex-1 max-w-sm z-10" style={{ boxShadow: "0 4px 24px rgba(0,0,0,0.10)" }}>
+              <div className="relative p-8 text-white text-center" style={{ minHeight: "160px", background: "linear-gradient(to bottom, #a855f7, #9333ea)" }}>
                 <div className="absolute top-0 left-0 right-0 bottom-0 overflow-hidden pointer-events-none">
-                  <div className="absolute w-16 h-16 rounded-full bg-white opacity-10" style={{top: "10px", left: "20px"}}></div>
-                  <div className="absolute w-8 h-8 rounded-full bg-white opacity-10" style={{top: "40px", right: "30px"}}></div>
+                  <div className="absolute w-16 h-16 rounded-full bg-white opacity-10" style={{ top: "10px", left: "20px" }}></div>
+                  <div className="absolute w-8 h-8 rounded-full bg-white opacity-10" style={{ top: "40px", right: "30px" }}></div>
                 </div>
                 <div className="relative z-10">
                   <span className="inline-block border border-white border-opacity-60 text-white text-xs px-5 py-1.5 rounded-full mb-4">Monthly Plan</span>
@@ -465,7 +416,7 @@ const [featuresOpen, setFeaturesOpen] = useState(false);
                 </div>
               </div>
               <div className="text-left">
-                {["Hotel Management (PMS)", "Booking Engine", "Channel Manager", "Revenue Management", "Restaurant Software", "Reports & Analytics", "Housekeeping & Room Service", "Inventory & Maintenance", "Staff Login and Attendance"].map((f, i) => (
+                {allPlanFeatures.map((f, i) => (
                   <div key={i} className="flex items-center gap-3 px-6 py-3 text-sm text-gray-600 border-b border-gray-100">
                     <span className="text-green-500">✓</span>{f}
                   </div>
@@ -479,11 +430,11 @@ const [featuresOpen, setFeaturesOpen] = useState(false);
             </div>
 
             {/* 3 Months Plan - Middle Elevated */}
-            <div className="bg-white rounded-2xl overflow-hidden flex-1 max-w-sm relative z-20" style={{boxShadow: "0 8px 40px rgba(0,0,0,0.18)", marginBottom: "-24px", transform: "translateY(-24px)"}}>
-              <div className="relative bg-gradient-to-b from-blue-400 to-blue-300 p-8 text-white text-center" style={{minHeight: "160px"}}>
+            <div className="bg-white rounded-2xl overflow-hidden flex-1 max-w-sm relative z-20" style={{ boxShadow: "0 8px 40px rgba(0,0,0,0.18)", transform: "translateY(-24px)" }}>
+              <div className="relative p-8 text-white text-center" style={{ minHeight: "160px", background: "linear-gradient(to bottom, #60a5fa, #3b82f6)" }}>
                 <div className="absolute top-0 left-0 right-0 bottom-0 overflow-hidden pointer-events-none">
-                  <div className="absolute w-16 h-16 rounded-full bg-white opacity-10" style={{top: "10px", left: "20px"}}></div>
-                  <div className="absolute w-8 h-8 rounded-full bg-white opacity-10" style={{top: "40px", right: "30px"}}></div>
+                  <div className="absolute w-16 h-16 rounded-full bg-white opacity-10" style={{ top: "10px", left: "20px" }}></div>
+                  <div className="absolute w-8 h-8 rounded-full bg-white opacity-10" style={{ top: "40px", right: "30px" }}></div>
                 </div>
                 <div className="relative z-10">
                   <span className="inline-block border border-white border-opacity-60 text-white text-xs px-5 py-1.5 rounded-full mb-4">3 Months Plan</span>
@@ -492,7 +443,7 @@ const [featuresOpen, setFeaturesOpen] = useState(false);
                 </div>
               </div>
               <div className="text-left">
-                {["Hotel Management (PMS)", "Booking Engine", "Channel Manager", "Revenue Management", "Restaurant Software", "Reports & Analytics", "Housekeeping & Room Service", "Inventory & Maintenance", "Staff Login and Attendance"].map((f, i) => (
+                {allPlanFeatures.map((f, i) => (
                   <div key={i} className="flex items-center gap-3 px-6 py-3 text-sm text-gray-600 border-b border-gray-100">
                     <span className="text-green-500">✓</span>{f}
                   </div>
@@ -507,33 +458,11 @@ const [featuresOpen, setFeaturesOpen] = useState(false);
             </div>
 
             {/* Custom Plan */}
-            <div className="bg-white rounded-2xl overflow-hidden flex-1 max-w-sm z-10" style={{boxShadow: "0 4px 24px rgba(0,0,0,0.10)"}}>
-              <div className="relative bg-gradient-to-b from-teal-400 to-teal-300 p-8 text-white text-center" style={{minHeight: "160px"}}>
-                <div className="absolute top-0 left-0 right-0 bottom-0 overflow-hidden pointer-events-none">
-                  <div className="absolute w-16 h-16 rounded-full bg-white opacity-10" style={{top: "10px", left: "20px"}}></div>
-                  <div className="absolute w-8 h-8 rounded-full bg-white opacity-10" style={{top: "40px", right: "30px"}}></div>
-                </div>
-                <div className="relative z-10">
-                  <span className="inline-block border border-white border-opacity-60 text-white text-xs px-5 py-1.5 rounded-full mb-4">Custom Plan</span>
-                  <p className="text-5xl font-bold mb-1">₹<CustomTotal /></p>
-                  <p className="text-teal-100 text-sm">Customized for you</p>
-                </div>
-              </div>
-              <div className="text-left">
-                <CustomPlanFeatures />
-              </div>
-              <div className="p-6">
-                <button onClick={() => setDemoOpen(true)} className="w-full bg-teal-500 text-white py-3 rounded-xl font-semibold hover:bg-teal-600 transition">
-                  Get Custom Quote
-                </button>
-              </div>
-            </div>
+            <CustomPlanCard onDemo={() => setDemoOpen(true)} />
 
           </div>
         </div>
       </section>
-
-      {/* CTA Section */}
 
       {/* CTA Section */}
       <section className="py-20 px-8 bg-blue-600 text-center">
