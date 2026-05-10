@@ -45,6 +45,11 @@ const complementaryFeatures = [
   "Staff Login and Attendance",
 ];
 
+const channelManagerFeatures = [
+  "OTA",
+  "Metasearch - Aggregators",
+];
+
 const allPlanFeatures = [
   "Hotel Management (PMS)",
   "Booking Engine",
@@ -104,11 +109,18 @@ function CustomPlanCard({ onDemo }: { onDemo: () => void }) {
                 </button>
               </div>
             </div>
-           {f.name === "Hotel Management (PMS)" &&
+         {f.name === "Hotel Management (PMS)" &&
               complementaryFeatures.map((c, j) => (
                 <div key={j} className="flex items-center justify-between px-6 py-2 border-b border-gray-50 bg-teal-50">
                   <span className="text-xs text-teal-700">✓ {c}</span>
                   {hotelAdded && <span className="text-xs bg-teal-100 text-teal-600 px-2 py-0.5 rounded-full">Free</span>}
+                </div>
+              ))
+            }
+            {f.name === "Channel Manager" &&
+              ["OTA", "Metasearch - Aggregators"].map((c, j) => (
+                <div key={j} className="flex items-center px-6 py-2 border-b border-gray-50 bg-teal-50">
+                  <span className="text-xs text-teal-700">✓ {c}</span>
                 </div>
               ))
             }
