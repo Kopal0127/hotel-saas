@@ -18,6 +18,7 @@ const softwareItems = [
   { label: "Property Management System (PMS) Software", icon: "🏨" },
   { label: "Hotel Booking Engine Software", icon: "📅" },
   { label: "Revenue Management Software", icon: "📊" },
+  { label: "Restaurant Software", icon: "🍽️" },
 ];
 
 const aboutItems = [
