@@ -1,78 +1,363 @@
 "use client";
 import { useRouter } from "next/navigation";
+import { useState } from "react";
+
+const softwareItems = [
+  { label: "OTA Channel Manager Software", icon: "🌐" },
+  { label: "Property Management System (PMS) Software", icon: "🏨" },
+  { label: "Hotel Booking Engine Software", icon: "📅" },
+  { label: "Revenue Management Software", icon: "📊" },
+];
+
+const aboutItems = [
+  { label: "About Company", icon: "🏢" },
+  { label: "Why Choose Us", icon: "✅" },
+  { label: "Blogs", icon: "📝" },
+  { label: "Partner Program", icon: "🤝" },
+  { label: "Clients Reviews", icon: "⭐" },
+];
 
 export default function Home() {
   const router = useRouter();
+  const [softwareOpen, setSoftwareOpen] = useState(false);
+  const [aboutOpen, setAboutOpen] = useState(false);
+  const [demoOpen, setDemoOpen] = useState(false);
+  const [demoForm, setDemoForm] = useState({
+    fullName: "",
+    contactNo: "",
+    mailId: "",
+    hotelName: "",
+    city: "",
+    software: "",
+    query: "",
+  });
+  const [submitted, setSubmitted] = useState(false);
+
+  const closeAll = () => {
+    setSoftwareOpen(false);
+    setAboutOpen(false);
+  };
+
+  const handleDemoSubmit = () => {
+    if (!demoForm.fullName || !demoForm.contactNo || !demoForm.mailId) {
+      alert("Full Name, Contact No aur Mail ID required hai!");
+      return;
+    }
+    setSubmitted(true);
+    setTimeout(() => {
+      setDemoOpen(false);
+      setSubmitted(false);
+      setDemoForm({ fullName: "", contactNo: "", mailId: "", hotelName: "", city: "", software: "", query: "" });
+    }, 2500);
+  };
 
   return (
-    <div className="min-h-screen bg-white">
-      
-      {/* Navbar */}
-      <nav className="flex items-center justify-between px-8 py-5 border-b border-gray-100">
-        <h1 className="text-2xl font-bold text-blue-600">HotelPro</h1>
-        <div className="flex gap-6 text-gray-600 text-sm">
-          <a href="#features" className="hover:text-blue-600">Features</a>
-          <a href="#pricing" className="hover:text-blue-600">Pricing</a>
-          <a href="#contact" className="hover:text-blue-600">Contact</a>
+    <div className="min-h-screen bg-white" onClick={closeAll}>
+
+      {/* Demo Modal */}
+      {demoOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg p-8 relative" onClick={(e) => e.stopPropagation()}>
+            <button onClick={() => setDemoOpen(false)} className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 text-2xl">✕</button>
+
+            {submitted ? (
+              <div className="text-center py-8">
+                <div className="text-5xl mb-4">🎉</div>
+                <h3 className="text-2xl font-bold text-gray-800 mb-2">Demo Booked!</h3>
+                <p className="text-gray-500">Hum aapse jald hi contact karenge.</p>
+              </div>
+            ) : (
+              <>
+                <h2 className="text-2xl font-bold text-gray-900 mb-6">Book Free Demo</h2>
+                <div className="space-y-4">
+                  <div>
+                    <label className="text-sm font-medium text-gray-700 block mb-1">Full Name *</label>
+                    <input type="text" placeholder="Apna naam daalo"
+                      value={demoForm.fullName}
+                      onChange={(e) => setDemoForm(p => ({ ...p, fullName: e.target.value }))}
+                      className="w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:border-blue-500" />
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium text-gray-700 block mb-1">Contact No *</label>
+                    <input type="tel" placeholder="10-digit mobile number"
+                      value={demoForm.contactNo}
+                      onChange={(e) => setDemoForm(p => ({ ...p, contactNo: e.target.value }))}
+                      className="w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:border-blue-500" />
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium text-gray-700 block mb-1">Mail ID *</label>
+                    <input type="email" placeholder="apna@email.com"
+                      value={demoForm.mailId}
+                      onChange={(e) => setDemoForm(p => ({ ...p, mailId: e.target.value }))}
+                      className="w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:border-blue-500" />
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium text-gray-700 block mb-1">Hotel Name</label>
+                    <input type="text" placeholder="Aapke hotel ka naam"
+                      value={demoForm.hotelName}
+                      onChange={(e) => setDemoForm(p => ({ ...p, hotelName: e.target.value }))}
+                      className="w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:border-blue-500" />
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium text-gray-700 block mb-1">City</label>
+                    <input type="text" placeholder="Aapka shehar"
+                      value={demoForm.city}
+                      onChange={(e) => setDemoForm(p => ({ ...p, city: e.target.value }))}
+                      className="w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:border-blue-500" />
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium text-gray-700 block mb-1">Software</label>
+                    <select value={demoForm.software}
+                      onChange={(e) => setDemoForm(p => ({ ...p, software: e.target.value }))}
+                      className="w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:border-blue-500 bg-white">
+                      <option value="">Software select karo</option>
+                      {softwareItems.map(s => (
+                        <option key={s.label} value={s.label}>{s.label}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium text-gray-700 block mb-1">Ask Your Query</label>
+                    <textarea placeholder="Aapka sawaal yahan likhein..." rows={3}
+                      value={demoForm.query}
+                      onChange={(e) => setDemoForm(p => ({ ...p, query: e.target.value }))}
+                      className="w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:border-blue-500 resize-none" />
+                  </div>
+                  <button onClick={handleDemoSubmit}
+                    className="w-full bg-blue-600 text-white py-3 rounded-xl font-semibold hover:bg-blue-700 transition">
+                    Submit Demo Request
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
         </div>
-        <button
-          onClick={() => router.push("/login")}
-          className="bg-blue-600 text-white px-5 py-2 rounded-lg text-sm hover:bg-blue-700">
-          Get Started
-        </button>
+      )}
+
+      {/* Navbar */}
+      <nav className="flex items-center justify-between px-8 py-4 border-b border-gray-100 sticky top-0 bg-white z-40">
+        <h1 className="text-2xl font-bold text-blue-600">HotelPro</h1>
+
+        <div className="flex gap-1 text-gray-600 text-sm items-center">
+          {/* Home */}
+          <a href="#" className="px-4 py-2 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition">Home</a>
+
+          {/* About Us Dropdown */}
+          <div className="relative" onClick={(e) => e.stopPropagation()}>
+            <button
+              onClick={() => { setAboutOpen(!aboutOpen); setSoftwareOpen(false); }}
+              className={`px-4 py-2 rounded-lg transition flex items-center gap-1 ${aboutOpen ? "text-blue-600 bg-blue-50" : "hover:text-blue-600 hover:bg-blue-50"}`}>
+              About Us
+              <svg className={`w-3 h-3 transition-transform ${aboutOpen ? "rotate-180" : ""}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+              </svg>
+            </button>
+            {aboutOpen && (
+              <div className="absolute top-10 left-0 bg-white border border-gray-100 rounded-xl shadow-lg z-50 w-52 py-2">
+                {aboutItems.map(item => (
+                  <a key={item.label} href="#"
+                    className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition">
+                    <span>{item.icon}</span>
+                    {item.label}
+                  </a>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Software Dropdown */}
+          <div className="relative" onClick={(e) => e.stopPropagation()}>
+            <button
+              onClick={() => { setSoftwareOpen(!softwareOpen); setAboutOpen(false); }}
+              className={`px-4 py-2 rounded-lg transition flex items-center gap-1 ${softwareOpen ? "text-blue-600 bg-blue-50" : "hover:text-blue-600 hover:bg-blue-50"}`}>
+              Softwares
+              <svg className={`w-3 h-3 transition-transform ${softwareOpen ? "rotate-180" : ""}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+              </svg>
+            </button>
+            {softwareOpen && (
+              <div className="absolute top-10 left-0 bg-white border border-gray-100 rounded-xl shadow-lg z-50 w-72 py-2">
+                {softwareItems.map(item => (
+                  <a key={item.label} href="#"
+                    className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition">
+                    <span>{item.icon}</span>
+                    {item.label}
+                  </a>
+                ))}
+              </div>
+            )}
+          </div>
+
+          <a href="#pricing" className="px-4 py-2 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition">Pricing</a>
+          <a href="#features" className="px-4 py-2 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition">Features</a>
+        </div>
+
+        <div className="flex gap-3">
+          <button
+            onClick={() => setDemoOpen(true)}
+            className="border border-blue-600 text-blue-600 px-5 py-2 rounded-lg text-sm font-semibold hover:bg-blue-50 transition">
+            Book Demo Now
+          </button>
+          <button
+            onClick={() => router.push("/login")}
+            className="bg-blue-600 text-white px-5 py-2 rounded-lg text-sm font-semibold hover:bg-blue-700 transition">
+            Login
+          </button>
+        </div>
       </nav>
 
       {/* Hero Section */}
-      <section className="text-center py-24 px-8">
-        <h2 className="text-5xl font-bold text-gray-900 mb-6">
+      <section className="text-center py-24 px-8 bg-gradient-to-b from-blue-50 to-white">
+        <div className="inline-block bg-blue-100 text-blue-700 text-xs font-semibold px-4 py-1.5 rounded-full mb-6">
+          🚀 India ka #1 Hotel Management Software
+        </div>
+        <h2 className="text-5xl font-bold text-gray-900 mb-6 leading-tight">
           Manage Your Hotels<br />
           <span className="text-blue-600">All In One Place</span>
         </h2>
         <p className="text-xl text-gray-500 mb-10 max-w-2xl mx-auto">
-          Booking engine, channel manager, OTA sync, Google Hotel Centre — 
+          Booking engine, channel manager, OTA sync, Google Hotel Centre —
           sab kuch ek platform pe. Apne hotels ko aaj se smarter banao.
         </p>
         <div className="flex gap-4 justify-center">
           <button
             onClick={() => router.push("/login")}
-            className="bg-blue-600 text-white px-8 py-4 rounded-lg text-lg hover:bg-blue-700">
+            className="bg-blue-600 text-white px-8 py-4 rounded-xl text-lg font-semibold hover:bg-blue-700 transition shadow-lg shadow-blue-200">
             Free Trial Shuru Karo
           </button>
           <button
-            onClick={() => router.push("/login")}
-            className="border border-gray-300 text-gray-700 px-8 py-4 rounded-lg text-lg hover:bg-gray-50">
-            Demo Dekho
+            onClick={() => setDemoOpen(true)}
+            className="border-2 border-blue-600 text-blue-600 px-8 py-4 rounded-xl text-lg font-semibold hover:bg-blue-50 transition">
+            Book Demo Now
           </button>
+        </div>
+        <div className="flex gap-8 justify-center mt-12 text-sm text-gray-500">
+          <span>✅ No credit card required</span>
+          <span>✅ 14-day free trial</span>
+          <span>✅ Cancel anytime</span>
         </div>
       </section>
 
-      {/* Features */}
-      <section id="features" className="bg-gray-50 py-20 px-8">
-        <h3 className="text-3xl font-bold text-center text-gray-900 mb-14">
-          Kya Milega Aapko?
-        </h3>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto">
-          <div className="bg-white p-8 rounded-2xl shadow-sm">
-            <div className="text-4xl mb-4">🏨</div>
-            <h4 className="text-xl font-semibold text-gray-900 mb-2">Hotel Management</h4>
-            <p className="text-gray-500">Rooms, staff, housekeeping — sab ek jagah manage karo.</p>
+      {/* Software Section */}
+      <section id="features" className="py-20 px-8 bg-white">
+        <div className="max-w-6xl mx-auto">
+          <div className="text-center mb-14">
+            <h3 className="text-3xl font-bold text-gray-900 mb-3">Our Softwares</h3>
+            <p className="text-gray-500">Hotel management ke liye complete suite</p>
           </div>
-          <div className="bg-white p-8 rounded-2xl shadow-sm">
-            <div className="text-4xl mb-4">📅</div>
-            <h4 className="text-xl font-semibold text-gray-900 mb-2">Booking Engine</h4>
-            <p className="text-gray-500">Direct bookings lao, OTA commission bachao.</p>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {softwareItems.map((item, i) => (
+              <div key={i} className="flex items-start gap-4 bg-blue-50 rounded-2xl p-6 hover:bg-blue-100 transition cursor-pointer border border-blue-100">
+                <div className="text-3xl">{item.icon}</div>
+                <div>
+                  <h4 className="text-lg font-semibold text-gray-900 mb-1">{item.label}</h4>
+                  <p className="text-sm text-gray-500">Hotel operations ko streamline karo aur revenue badhao.</p>
+                </div>
+                <div className="ml-auto text-blue-400">→</div>
+              </div>
+            ))}
           </div>
-          <div className="bg-white p-8 rounded-2xl shadow-sm">
-            <div className="text-4xl mb-4">🌐</div>
-            <h4 className="text-xl font-semibold text-gray-900 mb-2">Channel Manager</h4>
-            <p className="text-gray-500">MakeMyTrip, Booking.com, Expedia — sab sync ek screen pe.</p>
+        </div>
+      </section>
+
+      {/* Features Section */}
+      <section className="py-20 px-8 bg-gray-50">
+        <div className="max-w-6xl mx-auto">
+          <div className="text-center mb-14">
+            <h3 className="text-3xl font-bold text-gray-900 mb-3">Kya Milega Aapko?</h3>
+            <p className="text-gray-500">HotelPro ke saath apna hotel professionally manage karo</p>
           </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {[
+              { icon: "🏨", title: "Hotel Management", desc: "Rooms, staff, housekeeping — sab ek jagah manage karo." },
+              { icon: "📅", title: "Booking Engine", desc: "Direct bookings lao, OTA commission bachao." },
+              { icon: "🌐", title: "Channel Manager", desc: "MakeMyTrip, Booking.com, Expedia — sab sync ek screen pe." },
+              { icon: "📊", title: "Revenue Management", desc: "Smart pricing se revenue maximize karo." },
+              { icon: "🍽️", title: "Restaurant Software", desc: "Hotel restaurant ko bhi ek jagah se manage karo." },
+              { icon: "📋", title: "Reports & Analytics", desc: "16+ reports — revenue, occupancy, aur bahut kuch." },
+            ].map((f, i) => (
+              <div key={i} className="bg-white p-8 rounded-2xl border border-gray-100 hover:border-blue-200 hover:shadow-md transition">
+                <div className="text-4xl mb-4">{f.icon}</div>
+                <h4 className="text-lg font-semibold text-gray-900 mb-2">{f.title}</h4>
+                <p className="text-gray-500 text-sm">{f.desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Pricing Section */}
+      <section id="pricing" className="py-20 px-8 bg-white">
+        <div className="max-w-4xl mx-auto text-center">
+          <h3 className="text-3xl font-bold text-gray-900 mb-3">Simple Pricing</h3>
+          <p className="text-gray-500 mb-12">Koi hidden charges nahi — jo dekho wahi pay karo</p>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div className="border border-gray-200 rounded-2xl p-8 text-left">
+              <p className="text-sm font-semibold text-gray-500 mb-2">FREE</p>
+              <p className="text-4xl font-bold text-gray-900 mb-1">₹0</p>
+              <p className="text-gray-500 text-sm mb-6">14 days trial</p>
+              <ul className="space-y-3 text-sm text-gray-600 mb-8">
+                <li>✅ Basic Hotel Management</li>
+                <li>✅ Upto 10 Rooms</li>
+                <li>✅ Booking Engine</li>
+                <li>✅ Email Support</li>
+              </ul>
+              <button onClick={() => router.push("/login")}
+                className="w-full border border-blue-600 text-blue-600 py-3 rounded-xl font-semibold hover:bg-blue-50 transition">
+                Start Free Trial
+              </button>
+            </div>
+            <div className="border-2 border-blue-600 rounded-2xl p-8 text-left relative">
+              <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-blue-600 text-white text-xs px-4 py-1 rounded-full">Most Popular</div>
+              <p className="text-sm font-semibold text-blue-600 mb-2">PRO</p>
+              <p className="text-4xl font-bold text-gray-900 mb-1">₹999<span className="text-lg font-normal text-gray-500">/mo</span></p>
+              <p className="text-gray-500 text-sm mb-6">Per property</p>
+              <ul className="space-y-3 text-sm text-gray-600 mb-8">
+                <li>✅ Everything in Free</li>
+                <li>✅ Unlimited Rooms</li>
+                <li>✅ Channel Manager</li>
+                <li>✅ Revenue Management</li>
+                <li>✅ Priority Support</li>
+              </ul>
+              <button onClick={() => router.push("/login")}
+                className="w-full bg-blue-600 text-white py-3 rounded-xl font-semibold hover:bg-blue-700 transition">
+                Get Started
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* CTA Section */}
+      <section className="py-20 px-8 bg-blue-600 text-center">
+        <h3 className="text-3xl font-bold text-white mb-4">Ready to grow your hotel business?</h3>
+        <p className="text-blue-100 mb-8 text-lg">Aaj hi free trial shuru karo — koi credit card nahi chahiye</p>
+        <div className="flex gap-4 justify-center">
+          <button onClick={() => router.push("/login")}
+            className="bg-white text-blue-600 px-8 py-4 rounded-xl font-bold text-lg hover:bg-blue-50 transition">
+            Free Trial Shuru Karo
+          </button>
+          <button onClick={() => setDemoOpen(true)}
+            className="border-2 border-white text-white px-8 py-4 rounded-xl font-bold text-lg hover:bg-blue-700 transition">
+            Book Demo Now
+          </button>
         </div>
       </section>
 
       {/* Footer */}
-      <footer id="contact" className="text-center py-8 text-gray-400 text-sm">
-        © 2026 HotelPro. All rights reserved.
+      <footer id="contact" className="bg-gray-900 text-gray-400 py-10 px-8">
+        <div className="max-w-6xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
+          <div>
+            <h1 className="text-xl font-bold text-white mb-1">HotelPro</h1>
+            <p className="text-sm">India ka #1 Hotel Management Software</p>
+          </div>
+          <div className="flex gap-6 text-sm">
+            <a href="#" className="hover:text-white transition">Privacy Policy</a>
+            <a href="#" className="hover:text-white transition">Terms of Service</a>
+            <a href="#" className="hover:text-white transition">Contact Us</a>
+          </div>
+          <p className="text-sm">© 2026 HotelPro. All rights reserved.</p>
+        </div>
       </footer>
 
     </div>

@@ -700,8 +700,25 @@ const calculateRoomsNeeded = () => {
                         email: guestForm.email,
                         contact: guestForm.phone,
                       },
-                     handler: async (response: any) => {
+                    handler: async (response: any) => {
                         try {
+                          // Pehle payment verify karo
+                          const verifyRes = await fetch("/api/public/verify-payment", {
+                            method: "POST",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({
+                              hotelId,
+                              razorpay_order_id: response.razorpay_order_id,
+                              razorpay_payment_id: response.razorpay_payment_id,
+                              razorpay_signature: response.razorpay_signature,
+                            }),
+                          });
+                          const verifyData = await verifyRes.json();
+                          if (!verifyRes.ok || !verifyData.verified) {
+                            alert("❌ Payment verify nahi hua! Fake payment detect ki gayi.");
+                            return;
+                          }
+
                           const bookingRes = await fetch("/api/public/booking", {
                             method: "POST",
                             headers: { "Content-Type": "application/json" },

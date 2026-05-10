@@ -1,7 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { PrismaClient } from "@prisma/client";
+import { Resend } from "resend";
 
 const prisma = new PrismaClient();
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 export async function POST(req: NextRequest) {
   try {
@@ -59,6 +61,30 @@ export async function POST(req: NextRequest) {
           })),
         },
       },
+    });
+
+   // Guest ko confirmation email bhejo
+    await resend.emails.send({
+      from: "HotelPro <bookings@nightstays.in>",
+      to: guestEmail,
+      subject: `Booking Confirmed! #${booking.id.slice(0, 8).toUpperCase()}`,
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+          <h2 style="color: #2563eb;">✅ Booking Confirmed!</h2>
+          <p>Dear <strong>${guestName}</strong>,</p>
+          <p>Aapki booking confirm ho gayi hai. Details neeche hain:</p>
+          <div style="background: #f3f4f6; padding: 16px; border-radius: 8px; margin: 16px 0;">
+            <p><strong>Booking ID:</strong> #${booking.id.slice(0, 8).toUpperCase()}</p>
+            <p><strong>Check-in:</strong> ${new Date(checkIn).toLocaleDateString("en-IN")}</p>
+            <p><strong>Check-out:</strong> ${new Date(checkOut).toLocaleDateString("en-IN")}</p>
+            <p><strong>Rooms:</strong> ${rooms.length}</p>
+            <p><strong>Total Amount:</strong> ₹${amount}</p>
+            ${specialRequests ? `<p><strong>Special Requests:</strong> ${specialRequests}</p>` : ""}
+          </div>
+          <p>Koi sawaal ho toh humse contact karein.</p>
+          <p style="color: #6b7280; font-size: 12px;">Powered by HotelPro</p>
+        </div>
+      `,
     });
 
     return NextResponse.json({ message: "Booking confirmed!", bookingId: booking.id });
