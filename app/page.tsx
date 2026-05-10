@@ -1,6 +1,17 @@
 "use client";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+const featureItems = [
+  { label: "Hotel Management", icon: "🏨" },
+  { label: "Booking Engine", icon: "📅" },
+  { label: "Channel Manager", icon: "🌐" },
+  { label: "Revenue Management", icon: "📊" },
+  { label: "Restaurant Software", icon: "🍽️" },
+  { label: "Reports & Analytics", icon: "📋" },
+  { label: "Housekeeping & Room Service", icon: "🧹" },
+  { label: "Inventory & Maintenance", icon: "🔧" },
+  { label: "Staff Login and Attendance", icon: "👥" },
+];
 
 const softwareItems = [
   { label: "OTA Channel Manager Software", icon: "🌐" },
@@ -20,7 +31,8 @@ const aboutItems = [
 export default function Home() {
   const router = useRouter();
   const [softwareOpen, setSoftwareOpen] = useState(false);
-  const [aboutOpen, setAboutOpen] = useState(false);
+ const [aboutOpen, setAboutOpen] = useState(false);
+const [featuresOpen, setFeaturesOpen] = useState(false);
   const [demoOpen, setDemoOpen] = useState(false);
   const [demoForm, setDemoForm] = useState({
     fullName: "",
@@ -33,9 +45,10 @@ export default function Home() {
   });
   const [submitted, setSubmitted] = useState(false);
 
-  const closeAll = () => {
+ const closeAll = () => {
     setSoftwareOpen(false);
     setAboutOpen(false);
+    setFeaturesOpen(false);
   };
 
   const handleDemoSubmit = () => {
@@ -188,8 +201,30 @@ export default function Home() {
             )}
           </div>
 
-          <a href="#pricing" className="px-4 py-2 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition">Pricing</a>
-          <a href="#features" className="px-4 py-2 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition">Features</a>
+         <a href="#pricing" className="px-4 py-2 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition">Pricing</a>
+
+          {/* Features Dropdown */}
+          <div className="relative" onClick={(e) => e.stopPropagation()}>
+            <button
+              onClick={() => { setFeaturesOpen(!featuresOpen); setSoftwareOpen(false); setAboutOpen(false); }}
+              className={`px-4 py-2 rounded-lg transition flex items-center gap-1 ${featuresOpen ? "text-blue-600 bg-blue-50" : "hover:text-blue-600 hover:bg-blue-50"}`}>
+              Features
+              <svg className={`w-3 h-3 transition-transform ${featuresOpen ? "rotate-180" : ""}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+              </svg>
+            </button>
+            {featuresOpen && (
+              <div className="absolute top-10 left-0 bg-white border border-gray-100 rounded-xl shadow-lg z-50 w-64 py-2">
+                {featureItems.map(item => (
+                  <a key={item.label} href="#features"
+                    className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition">
+                    <span>{item.icon}</span>
+                    {item.label}
+                  </a>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
 
         <div className="flex gap-3">
@@ -264,7 +299,7 @@ export default function Home() {
       <section className="py-20 px-8 bg-gray-50">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-14">
-            <h3 className="text-3xl font-bold text-gray-900 mb-3">Kya Milega Aapko?</h3>
+            <h3 className="text-3xl font-bold text-gray-900 mb-3">Features</h3>
             <p className="text-gray-500">HotelPro ke saath apna hotel professionally manage karo</p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
