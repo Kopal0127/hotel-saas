@@ -29,13 +29,62 @@ const aboutItems = [
   { label: "Clients Reviews", icon: "⭐" },
 ];
 const customFeatures = [
-  { name: "Hotel Management (PMS)", price: 999, complementary: ["Revenue Management", "Restaurant Software", "Reports & Analytics", "Housekeeping & Room Service", "Inventory & Maintenance", "Staff Login and Attendance"] },
-  { name: "Booking Engine", price: 499, complementary: [] },
-  { name: "Channel Manager", price: 999, complementary: [] },
+  { name: "Hotel Management (PMS)", price: 999 },
+  { name: "Booking Engine", price: 499 },
+  { name: "Channel Manager", price: 999 },
 ];
 
-function CustomPlan({ onDemo }: { onDemo: () => void }) {
+const complementaryFeatures = [
+  "Revenue Management",
+  "Restaurant Software",
+  "Reports & Analytics",
+  "Housekeeping & Room Service",
+  "Inventory & Maintenance",
+  "Staff Login and Attendance",
+];
+
+function useCustomPlan() {
   const [selected, setSelected] = useState<string[]>([]);
+  const toggle = (name: string) => setSelected(prev => prev.includes(name) ? prev.filter(f => f !== name) : [...prev, name]);
+  const total = customFeatures.filter(f => selected.includes(f.name)).reduce((sum, f) => sum + f.price, 0);
+  const hotelAdded = selected.includes("Hotel Management (PMS)");
+  return { selected, toggle, total, hotelAdded };
+}
+
+const customPlanState = { selected: [] as string[], toggle: (_: string) => {}, total: 0, hotelAdded: false };
+
+function CustomTotal() {
+  const { total } = useCustomPlan();
+  return <span>{total.toLocaleString("en-IN")}</span>;
+}
+
+function CustomPlanFeatures() {
+  const { selected, toggle, hotelAdded } = useCustomPlan();
+  return (
+    <>
+      {customFeatures.map((f, i) => (
+        <div key={i}>
+          <div className="flex items-center justify-between px-6 py-3 border-b border-gray-100">
+            <span className="text-sm text-gray-700">{f.name}</span>
+            <div className="flex items-center gap-2">
+              <span className="text-xs text-gray-400">₹{f.price}</span>
+              <button onClick={() => toggle(f.name)}
+                className={`w-7 h-7 rounded-full border-2 flex items-center justify-center text-sm font-bold transition ${selected.includes(f.name) ? "bg-teal-500 border-teal-500 text-white" : "border-gray-300 text-gray-400 hover:border-teal-400"}`}>
+                {selected.includes(f.name) ? "−" : "+"}
+              </button>
+            </div>
+          </div>
+          {f.name === "Hotel Management (PMS)" && hotelAdded && complementaryFeatures.map((c, j) => (
+            <div key={j} className="flex items-center justify-between px-6 py-2 border-b border-gray-50 bg-teal-50">
+              <span className="text-xs text-teal-700">✓ {c}</span>
+              <span className="text-xs bg-teal-100 text-teal-600 px-2 py-0.5 rounded-full">Free</span>
+            </div>
+          ))}
+        </div>
+      ))}
+    </>
+  );
+}
 
   const toggle = (name: string) => {
     setSelected(prev => prev.includes(name) ? prev.filter(f => f !== name) : [...prev, name]);
@@ -394,85 +443,91 @@ const [featuresOpen, setFeaturesOpen] = useState(false);
         </div>
       </section>
 
-     {/* Pricing Section */}
+    {/* Pricing Section */}
       <section id="pricing" className="py-20 px-8 bg-white">
         <div className="max-w-6xl mx-auto text-center">
           <h3 className="text-3xl font-bold text-gray-900 mb-3">Simple Pricing</h3>
-          <p className="text-gray-500 mb-12">Apni zaroorat ke hisaab se plan chuno</p>
+          <p className="text-gray-500 mb-16">Apni zaroorat ke hisaab se plan chuno</p>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-start">
+          <div className="flex items-end justify-center gap-0">
 
             {/* Monthly Plan */}
-            <div className="border border-gray-200 rounded-2xl overflow-hidden">
-              <div className="bg-gradient-to-b from-purple-500 to-purple-400 p-8 text-white text-center">
-                <p className="text-sm font-semibold bg-white bg-opacity-20 inline-block px-4 py-1 rounded-full mb-4">Monthly Plan</p>
-                <p className="text-5xl font-bold mb-1">₹2,500</p>
-                <p className="text-purple-100 text-sm">Per Month</p>
+            <div className="bg-white rounded-2xl overflow-hidden flex-1 max-w-sm z-10" style={{boxShadow: "0 4px 24px rgba(0,0,0,0.10)"}}>
+              <div className="relative bg-gradient-to-b from-purple-500 to-purple-400 p-8 text-white text-center" style={{minHeight: "160px"}}>
+                <div className="absolute top-0 left-0 right-0 bottom-0 overflow-hidden pointer-events-none">
+                  <div className="absolute w-16 h-16 rounded-full bg-white opacity-10" style={{top: "10px", left: "20px"}}></div>
+                  <div className="absolute w-8 h-8 rounded-full bg-white opacity-10" style={{top: "40px", right: "30px"}}></div>
+                </div>
+                <div className="relative z-10">
+                  <span className="inline-block border border-white border-opacity-60 text-white text-xs px-5 py-1.5 rounded-full mb-4">Monthly Plan</span>
+                  <p className="text-5xl font-bold mb-1">₹2,500</p>
+                  <p className="text-purple-100 text-sm">Per Month</p>
+                </div>
               </div>
-              <div className="p-6 text-left space-y-3">
-                {[
-                  "Hotel Management (PMS)",
-                  "Booking Engine",
-                  "Channel Manager",
-                  "Revenue Management",
-                  "Restaurant Software",
-                  "Reports & Analytics",
-                  "Housekeeping & Room Service",
-                  "Inventory & Maintenance",
-                  "Staff Login and Attendance",
-                ].map((f, i) => (
-                  <div key={i} className="flex items-center gap-3 text-sm text-gray-700">
-                    <span className="text-green-500 font-bold">✓</span>
-                    {f}
+              <div className="text-left">
+                {["Hotel Management (PMS)", "Booking Engine", "Channel Manager", "Revenue Management", "Restaurant Software", "Reports & Analytics", "Housekeeping & Room Service", "Inventory & Maintenance", "Staff Login and Attendance"].map((f, i) => (
+                  <div key={i} className="flex items-center gap-3 px-6 py-3 text-sm text-gray-600 border-b border-gray-100">
+                    <span className="text-green-500">✓</span>{f}
                   </div>
                 ))}
               </div>
-              <div className="px-6 pb-6">
-                <button onClick={() => setDemoOpen(true)}
-                  className="w-full bg-purple-600 text-white py-3 rounded-xl font-semibold hover:bg-purple-700 transition">
+              <div className="p-6">
+                <button onClick={() => setDemoOpen(true)} className="w-full bg-purple-600 text-white py-3 rounded-xl font-semibold hover:bg-purple-700 transition">
                   Choose Monthly
                 </button>
               </div>
             </div>
 
-            {/* 3 Months Plan */}
-            <div className="border-2 border-blue-500 rounded-2xl overflow-hidden relative">
-              <div className="absolute top-0 left-0 right-0 flex justify-center -mt-3 z-10">
-                <span className="bg-blue-500 text-white text-xs px-4 py-1 rounded-full">⭐ Most Popular</span>
+            {/* 3 Months Plan - Middle Elevated */}
+            <div className="bg-white rounded-2xl overflow-hidden flex-1 max-w-sm relative z-20" style={{boxShadow: "0 8px 40px rgba(0,0,0,0.18)", marginBottom: "-24px", transform: "translateY(-24px)"}}>
+              <div className="relative bg-gradient-to-b from-blue-400 to-blue-300 p-8 text-white text-center" style={{minHeight: "160px"}}>
+                <div className="absolute top-0 left-0 right-0 bottom-0 overflow-hidden pointer-events-none">
+                  <div className="absolute w-16 h-16 rounded-full bg-white opacity-10" style={{top: "10px", left: "20px"}}></div>
+                  <div className="absolute w-8 h-8 rounded-full bg-white opacity-10" style={{top: "40px", right: "30px"}}></div>
+                </div>
+                <div className="relative z-10">
+                  <span className="inline-block border border-white border-opacity-60 text-white text-xs px-5 py-1.5 rounded-full mb-4">3 Months Plan</span>
+                  <p className="text-5xl font-bold mb-1">₹4,999</p>
+                  <p className="text-blue-100 text-sm">Per 3 Months</p>
+                </div>
               </div>
-              <div className="bg-gradient-to-b from-blue-400 to-blue-300 p-8 text-white text-center">
-                <p className="text-sm font-semibold bg-white bg-opacity-20 inline-block px-4 py-1 rounded-full mb-4">3 Months Plan</p>
-                <p className="text-5xl font-bold mb-1">₹4,999</p>
-                <p className="text-blue-100 text-sm">Per 3 Months</p>
-              </div>
-              <div className="p-6 text-left space-y-3">
-                {[
-                  "Hotel Management (PMS)",
-                  "Booking Engine",
-                  "Channel Manager",
-                  "Revenue Management",
-                  "Restaurant Software",
-                  "Reports & Analytics",
-                  "Housekeeping & Room Service",
-                  "Inventory & Maintenance",
-                  "Staff Login and Attendance",
-                ].map((f, i) => (
-                  <div key={i} className="flex items-center gap-3 text-sm text-gray-700">
-                    <span className="text-green-500 font-bold">✓</span>
-                    {f}
+              <div className="text-left">
+                {["Hotel Management (PMS)", "Booking Engine", "Channel Manager", "Revenue Management", "Restaurant Software", "Reports & Analytics", "Housekeeping & Room Service", "Inventory & Maintenance", "Staff Login and Attendance"].map((f, i) => (
+                  <div key={i} className="flex items-center gap-3 px-6 py-3 text-sm text-gray-600 border-b border-gray-100">
+                    <span className="text-green-500">✓</span>{f}
                   </div>
                 ))}
               </div>
-              <div className="px-6 pb-6">
-                <button onClick={() => setDemoOpen(true)}
-                  className="w-full bg-blue-500 text-white py-3 rounded-xl font-semibold hover:bg-blue-600 transition">
+              <div className="p-6">
+                <button onClick={() => setDemoOpen(true)} className="w-full bg-blue-500 text-white py-3 rounded-xl font-semibold hover:bg-blue-600 transition">
                   Choose 3 Months
                 </button>
+                <p className="text-center text-xs text-gray-400 mt-3">⭐ Most Popular</p>
               </div>
             </div>
 
             {/* Custom Plan */}
-            <CustomPlan onDemo={() => setDemoOpen(true)} />
+            <div className="bg-white rounded-2xl overflow-hidden flex-1 max-w-sm z-10" style={{boxShadow: "0 4px 24px rgba(0,0,0,0.10)"}}>
+              <div className="relative bg-gradient-to-b from-teal-400 to-teal-300 p-8 text-white text-center" style={{minHeight: "160px"}}>
+                <div className="absolute top-0 left-0 right-0 bottom-0 overflow-hidden pointer-events-none">
+                  <div className="absolute w-16 h-16 rounded-full bg-white opacity-10" style={{top: "10px", left: "20px"}}></div>
+                  <div className="absolute w-8 h-8 rounded-full bg-white opacity-10" style={{top: "40px", right: "30px"}}></div>
+                </div>
+                <div className="relative z-10">
+                  <span className="inline-block border border-white border-opacity-60 text-white text-xs px-5 py-1.5 rounded-full mb-4">Custom Plan</span>
+                  <p className="text-5xl font-bold mb-1">₹<CustomTotal /></p>
+                  <p className="text-teal-100 text-sm">Customized for you</p>
+                </div>
+              </div>
+              <div className="text-left">
+                <CustomPlanFeatures />
+              </div>
+              <div className="p-6">
+                <button onClick={() => setDemoOpen(true)} className="w-full bg-teal-500 text-white py-3 rounded-xl font-semibold hover:bg-teal-600 transition">
+                  Get Custom Quote
+                </button>
+              </div>
+            </div>
 
           </div>
         </div>
