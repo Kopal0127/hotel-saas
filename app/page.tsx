@@ -311,6 +311,9 @@ const [featuresOpen, setFeaturesOpen] = useState(false);
               { icon: "📊", title: "Revenue Management", desc: "Smart pricing se revenue maximize karo." },
               { icon: "🍽️", title: "Restaurant Software", desc: "Hotel restaurant ko bhi ek jagah se manage karo." },
               { icon: "📋", title: "Reports & Analytics", desc: "16+ reports — revenue, occupancy, aur bahut kuch." },
+              { icon: "🧹", title: "Housekeeping & Room Service", desc: "Housekeeping tasks aur room service ek jagah manage karo." },
+              { icon: "🔧", title: "Inventory & Maintenance", desc: "Stock aur maintenance requests track karo easily." },
+              { icon: "👥", title: "Staff Login and Attendance", desc: "Staff attendance, roles aur login ek platform pe." },
             ].map((f, i) => (
               <div key={i} className="bg-white p-8 rounded-2xl border border-gray-100 hover:border-blue-200 hover:shadow-md transition">
                 <div className="text-4xl mb-4">{f.icon}</div>
