@@ -492,19 +492,31 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Footer */}
-      <footer id="contact" className="bg-gray-900 text-gray-400 py-10 px-8">
-        <div className="max-w-6xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
+     {/* Footer */}
+      <footer id="contact" className="bg-gray-900 text-gray-400 py-12 px-8">
+        <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-10">
           <div>
-            <h1 className="text-xl font-bold text-white mb-1">HotelPro</h1>
+            <h1 className="text-xl font-bold text-white mb-2">HotelPro</h1>
             <p className="text-sm">India ka #1 Hotel Management Software</p>
           </div>
-          <div className="flex gap-6 text-sm">
-            <a href="#" className="hover:text-white transition">Privacy Policy</a>
-            <a href="#" className="hover:text-white transition">Terms of Service</a>
-            <a href="#" className="hover:text-white transition">Contact Us</a>
+          <div>
+            <h4 className="text-white font-semibold mb-3 text-sm">Quick Links</h4>
+            <div className="flex flex-col gap-2 text-sm">
+              <a href="#" className="hover:text-white transition">Privacy Policy</a>
+              <a href="#" className="hover:text-white transition">Terms of Service</a>
+              <a href="#" className="hover:text-white transition">Refund Policy</a>
+            </div>
           </div>
-          <p className="text-sm">© 2026 HotelPro. All rights reserved.</p>
+          <div>
+            <h4 className="text-white font-semibold mb-3 text-sm">Contact Details</h4>
+            <div className="flex flex-col gap-2 text-sm">
+              <p>📞 8855936467</p>
+              <p>📍 Shivaji Maharaj Nagar Mo:2, Manmad, Nashik, India - 423104</p>
+            </div>
+          </div>
+        </div>
+        <div className="max-w-6xl mx-auto border-t border-gray-800 mt-10 pt-6 text-center text-xs text-gray-500">
+          © 2026 HotelPro. All rights reserved.
         </div>
       </footer>
 
