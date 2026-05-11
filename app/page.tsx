@@ -266,7 +266,7 @@ export default function Home() {
             {aboutOpen && (
               <div className="absolute top-10 left-0 bg-white border border-gray-100 rounded-xl shadow-lg z-50 w-52 py-2">
                {aboutItems.map(item => (
-                <a key={item.label} href="#" className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition border-b border-gray-100 last:border-0">
+                <a key={item.label} href="#" className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition border-b border-gray-200 last:border-0">
                     <span>{item.icon}</span>{item.label}
                   </a>
                 ))}
@@ -286,7 +286,7 @@ export default function Home() {
             {softwareOpen && (
               <div className="absolute top-10 left-0 bg-white border border-gray-100 rounded-xl shadow-lg z-50 w-72 py-2">
                 {softwareItems.map(item => (
-                <a key={item.label} href="#" className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition border-b border-gray-100 last:border-0">
+                <a key={item.label} href="#" className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition border-b border-gray-200 last:border-0">
                     <span>{item.icon}</span>{item.label}
                   </a>
                 ))}
@@ -309,7 +309,7 @@ export default function Home() {
             {featuresOpen && (
               <div className="absolute top-10 left-0 bg-white border border-gray-100 rounded-xl shadow-lg z-50 w-64 py-2">
                 {featureItems.map(item => (
-                 <a key={item.label} href="#features" className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition border-b border-gray-100 last:border-0">
+                 <a key={item.label} href="#features" className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition border-b border-gray-200 last:border-0">
                     <span>{item.icon}</span>{item.label}
                   </a>
                 ))}
