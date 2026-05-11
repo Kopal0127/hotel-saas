@@ -20,6 +20,7 @@ const softwareItems = [
   { label: "Hotel Booking Engine Software", icon: "📅" },
   { label: "Revenue Management Software", icon: "📊" },
   { label: "Restaurant Software", icon: "🍽️" },
+  { label: "Google Hotel Center", icon: "🏨" },
 ];
 
 const aboutItems = [
@@ -415,6 +416,10 @@ export default function Home() {
               {
                 icon: "🍽️", label: "Restaurant Software",
                 features: ["Room Food Order System", "Auto Orders Assigning", "Order Tracking", "Rooms Billing System"]
+              },
+              {
+                icon: "🏨", label: "Google Hotel Center",
+                features: ["Google Hotel Ads", "Free Booking Links", "Live Price & Inventory Feed", "Hotel Search Results Optimization", "Performance & Demand Analytics", "Book on Google"]
               },
             ].map((item, i) => (
               <SoftwareCard key={i} item={item} />
