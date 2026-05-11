@@ -254,8 +254,9 @@ export default function Home() {
         <div className="flex gap-1 text-gray-600 text-sm items-center">
           <a href="#" className="px-4 py-2 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition">Home</a>
 
-          <div className="relative" onClick={(e) => e.stopPropagation()}>
-            <button onClick={() => { setAboutOpen(!aboutOpen); setSoftwareOpen(false); setFeaturesOpen(false); }}
+          <div className="relative" onMouseEnter={() => { setAboutOpen(true); setSoftwareOpen(false); setFeaturesOpen(false); }} onMouseLeave={() => setAboutOpen(false)}>
+            <button
+              onClick={() => { setAboutOpen(!aboutOpen); setSoftwareOpen(false); setFeaturesOpen(false); }}
               className={`px-4 py-2 rounded-lg transition flex items-center gap-1 ${aboutOpen ? "text-blue-600 bg-blue-50" : "hover:text-blue-600 hover:bg-blue-50"}`}>
               About Us
               <svg className={`w-3 h-3 transition-transform ${aboutOpen ? "rotate-180" : ""}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -273,8 +274,9 @@ export default function Home() {
             )}
           </div>
 
-          <div className="relative" onClick={(e) => e.stopPropagation()}>
-            <button onClick={() => { setSoftwareOpen(!softwareOpen); setAboutOpen(false); setFeaturesOpen(false); }}
+          <div className="relative" onMouseEnter={() => { setSoftwareOpen(true); setAboutOpen(false); setFeaturesOpen(false); }} onMouseLeave={() => setSoftwareOpen(false)}>
+            <button
+              onClick={() => { setSoftwareOpen(!softwareOpen); setAboutOpen(false); setFeaturesOpen(false); }}
               className={`px-4 py-2 rounded-lg transition flex items-center gap-1 ${softwareOpen ? "text-blue-600 bg-blue-50" : "hover:text-blue-600 hover:bg-blue-50"}`}>
               Softwares
               <svg className={`w-3 h-3 transition-transform ${softwareOpen ? "rotate-180" : ""}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -294,8 +296,9 @@ export default function Home() {
 
           <a href="#pricing" className="px-4 py-2 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition">Pricing</a>
 
-          <div className="relative" onClick={(e) => e.stopPropagation()}>
-            <button onClick={() => { setFeaturesOpen(!featuresOpen); setSoftwareOpen(false); setAboutOpen(false); }}
+          <div className="relative" onMouseEnter={() => { setFeaturesOpen(true); setSoftwareOpen(false); setAboutOpen(false); }} onMouseLeave={() => setFeaturesOpen(false)}>
+            <button
+              onClick={() => { setFeaturesOpen(!featuresOpen); setSoftwareOpen(false); setAboutOpen(false); }}
               className={`px-4 py-2 rounded-lg transition flex items-center gap-1 ${featuresOpen ? "text-blue-600 bg-blue-50" : "hover:text-blue-600 hover:bg-blue-50"}`}>
               Features
               <svg className={`w-3 h-3 transition-transform ${featuresOpen ? "rotate-180" : ""}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
