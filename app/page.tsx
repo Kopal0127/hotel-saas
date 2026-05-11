@@ -140,7 +140,7 @@ function SoftwareCard({ item }: { item: { icon: string; label: string; features:
   const [open, setOpen] = useState(false);
   return (
     <div className={`rounded-2xl border transition cursor-pointer ${open ? "border-blue-300 bg-blue-50" : "border-blue-100 bg-blue-50 hover:bg-blue-100"}`}
-      onClick={() => setOpen(!open)}>
+      onClick={(e) => { e.stopPropagation(); setOpen(!open); }}>
       <div className="flex items-center gap-4 p-6">
         <div className="text-3xl">{item.icon}</div>
         <div className="flex-1">
@@ -201,7 +201,7 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen bg-white" onClick={closeAll}>
+    <div className="min-h-screen bg-white" onClick={closeAll} onClickCapture={closeAll}>
 
       {/* Demo Modal */}
       {demoOpen && (
