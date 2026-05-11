@@ -265,8 +265,8 @@ export default function Home() {
             </button>
             {aboutOpen && (
               <div className="absolute top-10 left-0 bg-white border border-gray-100 rounded-xl shadow-lg z-50 w-52 py-2">
-                {aboutItems.map(item => (
-                <a key={item.label} href="#features" className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition">
+               {aboutItems.map(item => (
+                <a key={item.label} href="#" className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition border-b border-gray-100 last:border-0">
                     <span>{item.icon}</span>{item.label}
                   </a>
                 ))}
@@ -292,6 +292,7 @@ export default function Home() {
                 ))}
               </div>
             )}
+
           </div>
 
           <a href="#pricing" className="px-4 py-2 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition">Pricing</a>
