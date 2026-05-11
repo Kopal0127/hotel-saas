@@ -135,6 +135,33 @@ function CustomPlanCard({ onDemo }: { onDemo: () => void }) {
     </div>
   );
 }
+function SoftwareCard({ item }: { item: { icon: string; label: string; features: string[] } }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <div className={`rounded-2xl border transition cursor-pointer ${open ? "border-blue-300 bg-blue-50" : "border-blue-100 bg-blue-50 hover:bg-blue-100"}`}
+      onClick={() => setOpen(!open)}>
+      <div className="flex items-center gap-4 p-6">
+        <div className="text-3xl">{item.icon}</div>
+        <div className="flex-1">
+          <h4 className="text-lg font-semibold text-gray-900">{item.label}</h4>
+          <p className="text-sm text-gray-500">Hotel operations ko streamline karo aur revenue badhao.</p>
+        </div>
+        <div className={`text-blue-400 text-xl transition-transform ${open ? "rotate-90" : ""}`}>→</div>
+      </div>
+      {open && item.features.length > 0 && (
+        <div className="px-6 pb-6 border-t border-blue-200 pt-4">
+          <ul className="space-y-2">
+            {item.features.map((f, i) => (
+              <li key={i} className="flex items-center gap-2 text-sm text-gray-700">
+                <span className="text-blue-500">✓</span>{f}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+    </div>
+  );
+}
 
 export default function Home() {
   const router = useRouter();
@@ -368,15 +395,29 @@ export default function Home() {
             <p className="text-gray-500">Hotel management ke liye complete suite</p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {softwareItems.map((item, i) => (
-              <div key={i} className="flex items-start gap-4 bg-blue-50 rounded-2xl p-6 hover:bg-blue-100 transition cursor-pointer border border-blue-100">
-                <div className="text-3xl">{item.icon}</div>
-                <div>
-                  <h4 className="text-lg font-semibold text-gray-900 mb-1">{item.label}</h4>
-                  <p className="text-sm text-gray-500">Hotel operations ko streamline karo aur revenue badhao.</p>
-                </div>
-                <div className="ml-auto text-blue-400">→</div>
-              </div>
+            {[
+              {
+                icon: "🌐", label: "OTA Channel Manager Software",
+                features: ["Connect with all OTA & Metasearch", "All Booking at one Place", "On Click Update Rates & Availability", "Bulk Edit Mode", "Reports & Analytics", "OTA Ranking Tracking", "OTA Advertisement", "Discount and Promotions", "Customer Request Tab", "Policy Details"]
+              },
+              {
+                icon: "🏨", label: "Property Management System (PMS) Software",
+                features: ["Front Desk & Reservation Engine", "Housekeeping & Maintenance Tracking", "Guest Profile & CRM", "Billing, Invoicing & POS Integration", "Analytics & Reports", "Daily Sales Summary", "Rooms Management"]
+              },
+              {
+                icon: "📅", label: "Hotel Booking Engine Software",
+                features: ["Frictionless Direct Booking Flow", "Dynamic Pricing & Social Proof", "Integrated Upselling Engine", "Advanced Promo & Voucher Management"]
+              },
+              {
+                icon: "📊", label: "Revenue Management Software",
+                features: []
+              },
+              {
+                icon: "🍽️", label: "Restaurant Software",
+                features: ["Room Food Order System", "Auto Orders Assigning", "Order Tracking", "Rooms Billing System"]
+              },
+            ].map((item, i) => (
+              <SoftwareCard key={i} item={item} />
             ))}
           </div>
         </div>
