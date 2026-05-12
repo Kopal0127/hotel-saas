@@ -140,7 +140,7 @@ function SoftwareCard({ item }: { item: { icon: string; label: string; features:
   const [open, setOpen] = useState(false);
   return (
     <div className={`rounded-2xl border transition cursor-pointer ${open ? "border-blue-300 bg-blue-50" : "border-blue-100 bg-blue-50 hover:bg-blue-100"}`}
-      onClick={(e) => { e.stopPropagation(); setOpen(!open); }}>
+      onClick={(e) => { e.stopPropagation(); e.preventDefault(); setOpen(!open); }}>
       <div className="flex items-center gap-4 p-6">
         <div className="text-3xl">{item.icon}</div>
         <div className="flex-1">
@@ -395,7 +395,7 @@ export default function Home() {
             <h3 className="text-3xl font-bold text-gray-900 mb-3">Our Softwares</h3>
             <p className="text-gray-500">Hotel management ke liye complete suite</p>
           </div>
-         <div className="grid grid-cols-1 gap-6" onClick={(e) => e.stopPropagation()}>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6" onClick={(e) => e.stopPropagation()}>
             {[
               {
                 icon: "🌐", label: "OTA Channel Manager Software",
