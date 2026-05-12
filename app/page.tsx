@@ -395,7 +395,7 @@ export default function Home() {
             <h3 className="text-3xl font-bold text-gray-900 mb-3">Our Softwares</h3>
             <p className="text-gray-500">Hotel management ke liye complete suite</p>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6" onClick={(e) => e.stopPropagation()}>
             {[
               {
                 icon: "🌐", label: "OTA Channel Manager Software",
