@@ -136,33 +136,7 @@ function CustomPlanCard({ onDemo }: { onDemo: () => void }) {
     </div>
   );
 }
-function SoftwareCard({ item }: { item: { icon: string; label: string; features: string[] } }) {
-  const [open, setOpen] = useState(false);
-  return (
-    <div className={`rounded-2xl border transition cursor-pointer ${open ? "border-blue-300 bg-blue-50" : "border-blue-100 bg-blue-50 hover:bg-blue-100"}`}
-      onClick={(e) => { e.stopPropagation(); e.preventDefault(); setOpen(!open); }}>
-      <div className="flex items-center gap-4 p-6">
-        <div className="text-3xl">{item.icon}</div>
-        <div className="flex-1">
-          <h4 className="text-lg font-semibold text-gray-900">{item.label}</h4>
-          <p className="text-sm text-gray-500">Hotel operations ko streamline karo aur revenue badhao.</p>
-        </div>
-        <div className={`text-blue-400 text-xl transition-transform ${open ? "rotate-90" : ""}`}>→</div>
-      </div>
-      {open && item.features.length > 0 && (
-        <div className="px-6 pb-6 border-t border-blue-200 pt-4">
-          <ul className="space-y-2">
-            {item.features.map((f, i) => (
-              <li key={i} className="flex items-center gap-2 text-sm text-gray-700">
-                <span className="text-blue-500">✓</span>{f}
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
-    </div>
-  );
-}
+
 
 export default function Home() {
   const router = useRouter();
@@ -180,6 +154,7 @@ export default function Home() {
     query: "",
   });
   const [submitted, setSubmitted] = useState(false);
+  const [openSoftware, setOpenSoftware] = useState<number | null>(null);
 
   const closeAll = () => {
     setSoftwareOpen(false);
@@ -422,7 +397,29 @@ export default function Home() {
                 features: ["Google Hotel Ads", "Free Booking Links", "Live Price & Inventory Feed", "Hotel Search Results Optimization", "Performance & Demand Analytics", "Book on Google"]
               },
             ].map((item, i) => (
-              <SoftwareCard key={i} item={item} />
+              <div key={i}
+                className={`rounded-2xl border transition cursor-pointer ${openSoftware === i ? "border-blue-300 bg-blue-50" : "border-blue-100 bg-blue-50 hover:bg-blue-100"}`}
+                onClick={(e) => { e.stopPropagation(); setOpenSoftware(openSoftware === i ? null : i); }}>
+                <div className="flex items-center gap-4 p-6">
+                  <div className="text-3xl">{item.icon}</div>
+                  <div className="flex-1">
+                    <h4 className="text-lg font-semibold text-gray-900">{item.label}</h4>
+                    <p className="text-sm text-gray-500">Hotel operations ko streamline karo aur revenue badhao.</p>
+                  </div>
+                  <div className={`text-blue-400 text-xl transition-transform ${openSoftware === i ? "rotate-90" : ""}`}>→</div>
+                </div>
+                {openSoftware === i && item.features.length > 0 && (
+                  <div className="px-6 pb-6 border-t border-blue-200 pt-4">
+                    <ul className="space-y-2">
+                      {item.features.map((f, j) => (
+                        <li key={j} className="flex items-center gap-2 text-sm text-gray-700">
+                          <span className="text-blue-500">✓</span>{f}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+              </div>
             ))}
           </div>
         </div>
