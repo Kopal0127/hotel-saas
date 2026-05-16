@@ -102,13 +102,15 @@ export default function RatesPage() {
   const connectedChannels = channels.filter(c => c.isConnected);
 
   // Sabhi OTAs pe ek saath update
-  async function updateAllOTAs(day: number, updates: { price?: number; available?: number; isBlocked?: boolean }) {
+ async function updateAllOTAs(day: number, updates: { price?: number; available?: number; isBlocked?: boolean }) {
     const token = localStorage.getItem("token");
     const ds = dateStr(day);
     const combined = getCombinedRatePlan(day);
 
+    const targetChannels = connectedChannels.length > 0 ? connectedChannels : channels;
+
     await Promise.all(
-      connectedChannels.map(channel =>
+      targetChannels.map(channel =>
         fetch("/api/rates", {
           method: "POST",
           headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
