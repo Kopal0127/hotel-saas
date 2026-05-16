@@ -130,24 +130,23 @@ export default function RatesPage() {
   async function toggleBlock(day: number) {
     const combined = getCombinedRatePlan(day);
     const isCurrentlyBlocked = combined?.isBlocked;
+    const token = localStorage.getItem("token");
+    const ds = dateStr(day);
 
-    if (isCurrentlyBlocked) {
-      // Unblock — original price aur availability restore
-      await updateAllOTAs(day, {
-        isBlocked: false,
-        price: getDefaultPrice(),
-        available: 1,
-      });
-      showToast("Sabhi OTAs pe room khol diya! 🟢", "success");
-    } else {
-      // Block — price aur availability zero
-      await updateAllOTAs(day, {
-        isBlocked: true,
-        price: 0,
-        available: 0,
-      });
-      showToast("Sabhi OTAs pe room band kar diya! 🔴", "success");
-    }
+    await fetch("/api/rates", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+      body: JSON.stringify({
+        channelId: "NO_OTA",
+        roomId: selectedRoom,
+        date: ds,
+        price: isCurrentlyBlocked ? getDefaultPrice() : 0,
+        available: isCurrentlyBlocked ? 1 : 0,
+        isBlocked: !isCurrentlyBlocked,
+      }),
+    });
+
+    showToast(isCurrentlyBlocked ? "Room khol diya! 🟢" : "Room band kar diya! 🔴", "success");
     fetchRates();
   }
 

@@ -56,8 +56,8 @@ export async function POST(req: NextRequest) {
   const body = await req.json();
   const { channelId, roomId, date, price, available, isBlocked } = body;
 
-  if (!channelId || !roomId || !date) {
-    return NextResponse.json({ error: "channelId, roomId, date required" }, { status: 400 });
+  if (!roomId || !date) {
+    return NextResponse.json({ error: "roomId, date required" }, { status: 400 });
   }
 
   const ratePlan = await prisma.ratePlan.upsert({

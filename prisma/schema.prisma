@@ -126,9 +126,9 @@ model OtaChannel {
 }
 
 model RatePlan {
-  id        String     @id @default(cuid())
-  channelId String
-  channel   OtaChannel @relation(fields: [channelId], references: [id])
+  id        String      @id @default(cuid())
+  channelId String?
+  channel   OtaChannel? @relation(fields: [channelId], references: [id])
   roomId    String
   room      Room       @relation(fields: [roomId], references: [id])
   date      DateTime
