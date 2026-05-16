@@ -34,6 +34,11 @@ function PromotionsTab({ otaList }: { otaList: typeof OTA_LIST }) {
   const [importedIds, setImportedIds] = useState<Set<string>>(new Set())
   const [showForm, setShowForm] = useState(false)
   const [pushingId, setPushingId] = useState<string | null>(null)
+  const [editingId, setEditingId] = useState<string | null>(null)
+  const [editForm, setEditForm] = useState({
+    title: '', discountType: 'PERCENTAGE', discountValue: '',
+    minStay: '1', startDate: '', endDate: '', targetOta: '', status: 'ACTIVE'
+  })
   const [form, setForm] = useState({
     title: '', discountType: 'PERCENTAGE', discountValue: '',
     minStay: '1', startDate: '', endDate: '', targetOta: '', status: 'ACTIVE'
@@ -89,9 +94,47 @@ function PromotionsTab({ otaList }: { otaList: typeof OTA_LIST }) {
     }, 1200)
   }
 
-  function handleDelete(id: string) {
+ function handleDelete(id: string) {
     if (!confirm('Yeh promotion delete karna chahte ho?')) return
     setMyPromos(prev => prev.filter(p => p.id !== id))
+  }
+
+  function handleEditOpen(promo: any) {
+    if (editingId === promo.id) {
+      setEditingId(null)
+      return
+    }
+    setEditingId(promo.id)
+    setEditForm({
+      title: promo.title,
+      discountType: promo.discountType,
+      discountValue: String(promo.discountValue),
+      minStay: String(promo.minStay),
+      startDate: promo.startDate,
+      endDate: promo.endDate,
+      targetOta: promo.otaSource,
+      status: promo.status,
+    })
+  }
+
+  function handleEditSave(id: string) {
+    if (!editForm.title || !editForm.discountValue || !editForm.startDate || !editForm.endDate || !editForm.targetOta) {
+      alert('Saare * fields fill karo.')
+      return
+    }
+    setMyPromos(prev => prev.map(p => p.id === id ? {
+      ...p,
+      title: editForm.title,
+      discountType: editForm.discountType,
+      discountValue: parseFloat(editForm.discountValue),
+      minStay: parseInt(editForm.minStay),
+      startDate: editForm.startDate,
+      endDate: editForm.endDate,
+      otaSource: editForm.targetOta,
+      status: editForm.status,
+      isPushed: false,
+    } : p))
+    setEditingId(null)
   }
 
   const selectedOtaLabel = otaList.find(o => o.name === selectedOta)?.label || ''
@@ -285,37 +328,119 @@ function PromotionsTab({ otaList }: { otaList: typeof OTA_LIST }) {
               {myPromos.map(promo => {
                 const otaInfo = otaList.find(o => o.name === promo.otaSource)
                 return (
-                  <div key={promo.id} className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 bg-gray-50 rounded-xl border border-gray-200">
-                    <div>
-                      <div className="flex items-center gap-2 mb-1 flex-wrap">
-                        <span className="text-sm font-semibold text-gray-800">{promo.title}</span>
-                        <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${promo.status === 'ACTIVE' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}`}>
-                          {promo.status}
-                        </span>
-                        {promo.isPushed && (
-                          <span className="text-xs px-2 py-0.5 rounded-full font-medium bg-green-100 text-green-700">✓ Pushed</span>
-                        )}
+                  <div key={promo.id} className="bg-gray-50 rounded-xl border border-gray-200 overflow-hidden">
+                    {/* Card Top Row */}
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4">
+                      <div>
+                        <div className="flex items-center gap-2 mb-1 flex-wrap">
+                          <span className="text-sm font-semibold text-gray-800">{promo.title}</span>
+                          <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${promo.status === 'ACTIVE' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}`}>
+                            {promo.status}
+                          </span>
+                          {promo.isPushed && (
+                            <span className="text-xs px-2 py-0.5 rounded-full font-medium bg-green-100 text-green-700">✓ Pushed</span>
+                          )}
+                        </div>
+                        <p className="text-xs text-gray-500">
+                          💰 {promo.discountType === 'PERCENTAGE' ? `${promo.discountValue}% off` : `₹${promo.discountValue} off`}
+                          &nbsp;·&nbsp; 🌙 Min {promo.minStay} night
+                          &nbsp;·&nbsp; 📅 {promo.startDate} → {promo.endDate}
+                          &nbsp;·&nbsp; {otaInfo?.logo} {otaInfo?.label}
+                        </p>
                       </div>
-                      <p className="text-xs text-gray-500">
-                        💰 {promo.discountType === 'PERCENTAGE' ? `${promo.discountValue}% off` : `₹${promo.discountValue} off`}
-                        &nbsp;·&nbsp; 🌙 Min {promo.minStay} night
-                        &nbsp;·&nbsp; 📅 {promo.startDate} → {promo.endDate}
-                        &nbsp;·&nbsp; {otaInfo?.logo} {otaInfo?.label}
-                      </p>
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => handlePush(promo.id)}
+                          disabled={pushingId === promo.id}
+                          className={`px-4 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap ${promo.isPushed ? 'bg-green-50 text-green-700 border border-green-200 hover:bg-green-100' : 'bg-blue-600 text-white hover:bg-blue-700'} disabled:opacity-50`}
+                        >
+                          {pushingId === promo.id ? '⏳ Pushing...' : promo.isPushed ? '🔄 Re-Push' : '📤 OTA par Push'}
+                        </button>
+                        <button
+                          onClick={() => handleEditOpen(promo)}
+                          className={`px-3 py-1.5 rounded-lg text-xs font-medium border ${editingId === promo.id ? 'bg-yellow-50 border-yellow-300 text-yellow-700' : 'border-gray-300 text-gray-600 hover:bg-gray-100'}`}
+                        >
+                          ✏️
+                        </button>
+                        <button onClick={() => handleDelete(promo.id)}
+                          className="px-3 py-1.5 rounded-lg text-xs font-medium border border-red-200 text-red-500 hover:bg-red-50">
+                          🗑
+                        </button>
+                      </div>
                     </div>
-                    <div className="flex gap-2">
-                      <button
-                        onClick={() => handlePush(promo.id)}
-                        disabled={pushingId === promo.id}
-                        className={`px-4 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap ${promo.isPushed ? 'bg-green-50 text-green-700 border border-green-200 hover:bg-green-100' : 'bg-blue-600 text-white hover:bg-blue-700'} disabled:opacity-50`}
-                      >
-                        {pushingId === promo.id ? '⏳ Pushing...' : promo.isPushed ? '🔄 Re-Push' : '📤 OTA par Push'}
-                      </button>
-                      <button onClick={() => handleDelete(promo.id)}
-                        className="px-3 py-1.5 rounded-lg text-xs font-medium border border-red-200 text-red-500 hover:bg-red-50">
-                        🗑
-                      </button>
-                    </div>
+
+                    {/* Inline Edit Form — expand hoga */}
+                    {editingId === promo.id && (
+                      <div className="border-t border-yellow-200 bg-yellow-50 p-5">
+                        <p className="text-xs font-semibold text-yellow-800 mb-3">✏️ Promotion Edit Karo</p>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                          <div className="sm:col-span-2">
+                            <label className="text-xs font-medium text-gray-600 block mb-1">Promotion Title *</label>
+                            <input type="text" placeholder="e.g. Early Bird Special"
+                              value={editForm.title} onChange={e => setEditForm({ ...editForm, title: e.target.value })}
+                              className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-yellow-400" />
+                          </div>
+                          <div>
+                            <label className="text-xs font-medium text-gray-600 block mb-1">Discount Type *</label>
+                            <select value={editForm.discountType} onChange={e => setEditForm({ ...editForm, discountType: e.target.value })}
+                              className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-yellow-400">
+                              <option value="PERCENTAGE">Percentage (%)</option>
+                              <option value="FIXED">Fixed Amount (₹)</option>
+                            </select>
+                          </div>
+                          <div>
+                            <label className="text-xs font-medium text-gray-600 block mb-1">Value * {editForm.discountType === 'PERCENTAGE' ? '(%)' : '(₹)'}</label>
+                            <input type="number" min="0"
+                              value={editForm.discountValue} onChange={e => setEditForm({ ...editForm, discountValue: e.target.value })}
+                              className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-yellow-400" />
+                          </div>
+                          <div>
+                            <label className="text-xs font-medium text-gray-600 block mb-1">Min Stay (Nights)</label>
+                            <input type="number" min="1"
+                              value={editForm.minStay} onChange={e => setEditForm({ ...editForm, minStay: e.target.value })}
+                              className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-yellow-400" />
+                          </div>
+                          <div>
+                            <label className="text-xs font-medium text-gray-600 block mb-1">Status</label>
+                            <select value={editForm.status} onChange={e => setEditForm({ ...editForm, status: e.target.value })}
+                              className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-yellow-400">
+                              <option value="ACTIVE">Active</option>
+                              <option value="INACTIVE">Inactive</option>
+                            </select>
+                          </div>
+                          <div>
+                            <label className="text-xs font-medium text-gray-600 block mb-1">Start Date *</label>
+                            <input type="date" value={editForm.startDate} onChange={e => setEditForm({ ...editForm, startDate: e.target.value })}
+                              className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-yellow-400" />
+                          </div>
+                          <div>
+                            <label className="text-xs font-medium text-gray-600 block mb-1">End Date *</label>
+                            <input type="date" value={editForm.endDate} onChange={e => setEditForm({ ...editForm, endDate: e.target.value })}
+                              className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-yellow-400" />
+                          </div>
+                          <div className="sm:col-span-2">
+                            <label className="text-xs font-medium text-gray-600 block mb-1">OTA *</label>
+                            <select value={editForm.targetOta} onChange={e => setEditForm({ ...editForm, targetOta: e.target.value })}
+                              className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-yellow-400">
+                              <option value="">-- OTA Select Karo --</option>
+                              {otaList.map(o => (
+                                <option key={o.name} value={o.name}>{o.logo} {o.label}</option>
+                              ))}
+                            </select>
+                          </div>
+                        </div>
+                        <div className="flex gap-3 mt-4">
+                          <button onClick={() => handleEditSave(promo.id)}
+                            className="px-5 py-2 bg-yellow-500 text-white rounded-lg text-sm font-medium hover:bg-yellow-600">
+                            ✓ Save Karo
+                          </button>
+                          <button onClick={() => setEditingId(null)}
+                            className="px-4 py-2 border border-gray-200 rounded-lg text-sm text-gray-600 hover:bg-gray-50">
+                            Cancel
+                          </button>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 )
               })}
