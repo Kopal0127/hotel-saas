@@ -60,25 +60,31 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "roomId, date required" }, { status: 400 });
   }
 
-  const ratePlan = await prisma.ratePlan.upsert({
-    where: {
-      // Composite unique check via findFirst then upsert workaround
-      id: (await prisma.ratePlan.findFirst({ where: { channelId, roomId, date: new Date(date) } }))?.id || "new",
-    },
-    update: {
-      price: price ?? undefined,
-      available: available ?? undefined,
-      isBlocked: isBlocked ?? undefined,
-    },
-    create: {
-      channelId,
-      roomId,
-      date: new Date(date),
-      price: price || 0,
-      available: available ?? 1,
-      isBlocked: isBlocked || false,
-    },
+  const resolvedChannelId = (!channelId || channelId === "NO_OTA") ? null : channelId;
+
+  const existing = await prisma.ratePlan.findFirst({
+    where: { channelId: resolvedChannelId, roomId, date: new Date(date) }
   });
+
+  const ratePlan = existing
+    ? await prisma.ratePlan.update({
+        where: { id: existing.id },
+        data: {
+          price: price ?? existing.price,
+          available: available ?? existing.available,
+          isBlocked: isBlocked ?? existing.isBlocked,
+        },
+      })
+    : await prisma.ratePlan.create({
+        data: {
+          channelId: resolvedChannelId,
+          roomId,
+          date: new Date(date),
+          price: price || 0,
+          available: available ?? 1,
+          isBlocked: isBlocked || false,
+        },
+      });
 
   return NextResponse.json({ success: true, ratePlan });
 }
