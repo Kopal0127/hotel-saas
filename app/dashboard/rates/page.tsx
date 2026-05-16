@@ -127,8 +127,25 @@ export default function RatesPage() {
 
   async function toggleBlock(day: number) {
     const combined = getCombinedRatePlan(day);
-    await updateAllOTAs(day, { isBlocked: !combined?.isBlocked });
-    showToast(combined?.isBlocked ? "Sabhi OTAs pe room khol diya! 🟢" : "Sabhi OTAs pe room band kar diya! 🔴", "success");
+    const isCurrentlyBlocked = combined?.isBlocked;
+
+    if (isCurrentlyBlocked) {
+      // Unblock — original price aur availability restore
+      await updateAllOTAs(day, {
+        isBlocked: false,
+        price: getDefaultPrice(),
+        available: 1,
+      });
+      showToast("Sabhi OTAs pe room khol diya! 🟢", "success");
+    } else {
+      // Block — price aur availability zero
+      await updateAllOTAs(day, {
+        isBlocked: true,
+        price: 0,
+        available: 0,
+      });
+      showToast("Sabhi OTAs pe room band kar diya! 🔴", "success");
+    }
     fetchRates();
   }
 
