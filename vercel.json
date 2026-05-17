@@ -3,6 +3,22 @@
     {
       "path": "/api/cron",
       "schedule": "0 0 * * *"
+    },
+    {
+      "path": "/api/cron/revenue?slot=nextDay",
+      "schedule": "0 0 * * *"
+    },
+    {
+      "path": "/api/cron/revenue?slot=first12",
+      "schedule": "1 0 * * *"
+    },
+    {
+      "path": "/api/cron/revenue?slot=middle",
+      "schedule": "1 12 * * *"
+    },
+    {
+      "path": "/api/cron/revenue?slot=last",
+      "schedule": "31 18 * * *"
     }
   ]
 }

@@ -378,7 +378,11 @@ model RevenueSettings {
   id               String   @id @default(cuid())
   hotelId          String   @unique
   isActive         Boolean  @default(false)
-  
+
+  // Next Day Booking (12:01 AM — kal ke liye)
+  nextDayDiscount  Float    @default(0)
+  nextDayOccupancy Float    @default(80)
+
   // First 12 hours (12:01 AM - 11:59 AM)
   first12Discount  Float    @default(0)
   first12Occupancy Float    @default(60)

@@ -14,6 +14,8 @@ export default function RevenuePage() {
   const [saving, setSaving] = useState(false)
   const [settings, setSettings] = useState({
     isActive: false,
+    nextDayDiscount: 0,
+    nextDayOccupancy: 80,
     first12Discount: 0,
     first12Occupancy: 60,
     middleDiscount: 0,
@@ -79,7 +81,18 @@ export default function RevenuePage() {
     showToast(newActive ? '✅ Revenue Manager Activate ho gaya!' : '⏸ Revenue Manager Deactivate ho gaya!', newActive ? 'success' : 'info')
   }
 
-  const slotData = [
+ const slotData = [
+    {
+      key: 'nextDay',
+      label: 'Next Day Booking',
+      time: '12:01 AM — Kal ki date ke liye',
+      emoji: '📅',
+      color: 'green',
+      discount: settings.nextDayDiscount,
+      occupancy: settings.nextDayOccupancy,
+      discountKey: 'nextDayDiscount',
+      occupancyKey: 'nextDayOccupancy',
+    },
     {
       key: 'first12',
       label: 'First 12 Hours Booking',
@@ -115,7 +128,11 @@ export default function RevenuePage() {
     },
   ]
 
-  const colorMap: any = {
+ const colorMap: any = {
+    green: {
+      bg: 'bg-green-50', border: 'border-green-200', header: 'bg-green-600',
+      badge: 'bg-green-100 text-green-700', input: 'focus:border-green-400'
+    },
     blue: {
       bg: 'bg-blue-50', border: 'border-blue-200', header: 'bg-blue-600',
       badge: 'bg-blue-100 text-blue-700', input: 'focus:border-blue-400'

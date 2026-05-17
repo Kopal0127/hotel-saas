@@ -52,6 +52,7 @@ export async function POST(req: NextRequest) {
   const body = await req.json();
   const {
     hotelId, isActive,
+    nextDayDiscount, nextDayOccupancy,
     first12Discount, first12Occupancy,
     middleDiscount, middleOccupancy,
     lastDiscount, lastOccupancy,
@@ -61,13 +62,16 @@ export async function POST(req: NextRequest) {
 
   const settings = await prisma.revenueSettings.upsert({
     where: { hotelId },
-    update: {
-      isActive, first12Discount, first12Occupancy,
+   update: {
+      isActive,
+      nextDayDiscount, nextDayOccupancy,
+      first12Discount, first12Occupancy,
       middleDiscount, middleOccupancy,
       lastDiscount, lastOccupancy,
     },
     create: {
       hotelId, isActive,
+      nextDayDiscount, nextDayOccupancy,
       first12Discount, first12Occupancy,
       middleDiscount, middleOccupancy,
       lastDiscount, lastOccupancy,

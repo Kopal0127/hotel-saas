@@ -96,10 +96,14 @@ export async function POST(req: NextRequest) {
     const tomorrow = new Date(today);
     tomorrow.setDate(tomorrow.getDate() + 1);
 
-    // Aaj ki bookings fetch karo
+   // Next Day ya Today ki bookings fetch karo
+    const targetDate = timeSlot === "nextDay" ? tomorrow : today;
+    const targetDateEnd = new Date(targetDate);
+    targetDateEnd.setDate(targetDateEnd.getDate() + 1);
+
     const todayBookings = await prisma.booking.findMany({
       where: {
-        checkIn: { gte: today, lt: tomorrow },
+        checkIn: { gte: targetDate, lt: targetDateEnd },
         status: { in: ["CONFIRMED", "CHECKED_IN"] },
       },
       include: { bookingRooms: true }
@@ -130,7 +134,10 @@ export async function POST(req: NextRequest) {
       let discount = 0;
       let threshold = 0;
 
-      if (timeSlot === "first12") {
+     if (timeSlot === "nextDay") {
+        discount = settings.nextDayDiscount;
+        threshold = settings.nextDayOccupancy;
+      } else if (timeSlot === "first12") {
         discount = settings.first12Discount;
         threshold = settings.first12Occupancy;
       } else if (timeSlot === "middle") {
