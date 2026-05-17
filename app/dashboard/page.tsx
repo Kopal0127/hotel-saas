@@ -577,6 +577,11 @@ const handleHousekeepingRequest = async (bookingId: string) => {
                 <span className="text-2xl">🌐</span>
                 <span className="text-sm font-medium text-indigo-700">Booking Engine</span>
               </button>
+              <button onClick={() => router.push("/dashboard/revenue")}
+                className="flex flex-col items-center gap-2 p-4 rounded-xl bg-emerald-50 hover:bg-emerald-100 transition-colors border border-emerald-100">
+                <span className="text-2xl">📈</span>
+                <span className="text-sm font-medium text-emerald-700">Revenue</span>
+              </button>
             </div>
           </div>
         </div>
