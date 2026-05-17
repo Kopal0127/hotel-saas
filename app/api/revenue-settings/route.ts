@@ -26,17 +26,15 @@ export async function GET(req: NextRequest) {
   let settings = await prisma.revenueSettings.findUnique({ where: { hotelId } });
 
   // Agar settings nahi hain toh default create karo
-  if (!settings) {
+ if (!settings) {
     settings = await prisma.revenueSettings.create({
       data: {
         hotelId,
         isActive: false,
-        first12Discount: 0,
-        first12Occupancy: 60,
-        middleDiscount: 0,
-        middleOccupancy: 40,
-        lastDiscount: 0,
-        lastOccupancy: 40,
+        nextDayDiscount: 0, nextDayUnsold: 80, nextDayMarkup: 0, nextDayBooked: 40,
+        first12Discount: 0, first12Unsold: 60, first12Markup: 0, first12Booked: 40,
+        middleDiscount: 0, middleUnsold: 40, middleMarkup: 0, middleBooked: 40,
+        lastDiscount: 0, lastUnsold: 40, lastMarkup: 0, lastBooked: 40,
       }
     });
   }
@@ -75,4 +73,7 @@ export async function POST(req: NextRequest) {
       first12Discount, first12Unsold, first12Markup, first12Booked,
       middleDiscount, middleUnsold, middleMarkup, middleBooked,
       lastDiscount, lastUnsold, lastMarkup, lastBooked,
-    }
+    }});
+
+  return NextResponse.json({ success: true, settings });
+}
