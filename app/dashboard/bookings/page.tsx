@@ -440,7 +440,7 @@ const validate = () => {
 
            {/* Summary Bar */}
             {bookingRooms.some(br => br.roomId) && (
-              <div className="bg-blue-50 border border-blue-200 rounded-xl px-4 py-3 mb-3 flex flex-wrap gap-3 items-center">
+              <div className="bg-blue-50 border border-blue-200 rounded-xl px-4 py-3 mb-3 flex flex-wrap gap-2 items-center justify-center">
                 <span className="text-xs font-semibold text-blue-700">
                   {bookingRooms.filter(br => br.roomId).length} Room{bookingRooms.filter(br => br.roomId).length > 1 ? 's' : ''} for:
                 </span>
