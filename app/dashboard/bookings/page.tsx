@@ -448,8 +448,8 @@ const validate = () => {
                 <span className="text-xs text-blue-600">
                   Mattress-{bookingRooms.reduce((s, br) => s + (parseInt(br.extraMattress) || 0), 0)}
                 </span>
-                <span className="text-xs font-semibold text-blue-800 ml-auto">
-                  Total = {bookingRooms.reduce((s, br) => s + (parseInt(br.adults) || 0) + (parseInt(br.children) || 0) + (parseInt(br.infants) || 0), 0)}
+               <span className="text-xs font-semibold text-blue-800 ml-auto">
+                  Total = {bookingRooms.reduce((s, br) => s + (parseInt(br.adults) || 0) + (parseInt(br.children) || 0) + (parseInt(br.infants) || 0) + (parseInt(br.extraMattress) || 0), 0)}
                 </span>
               </div>
             )}
