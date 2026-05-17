@@ -552,11 +552,6 @@ const handleHousekeepingRequest = async (bookingId: string) => {
                 <span className="text-2xl">🌐</span>
                 <span className="text-sm font-medium text-purple-700">OTA Sync</span>
               </button>
-              <button onClick={() => router.push("/dashboard/payments")}
-                className="flex flex-col items-center gap-2 p-4 rounded-xl bg-cyan-50 hover:bg-cyan-100 transition-colors border border-cyan-100">
-                <span className="text-2xl">💳</span>
-                <span className="text-sm font-medium text-cyan-700">Payments</span>
-              </button>
               <button onClick={() => router.push("/dashboard/reports")}
                 className="flex flex-col items-center gap-2 p-4 rounded-xl bg-orange-50 hover:bg-orange-100 transition-colors border border-orange-100">
                 <span className="text-2xl">📊</span>

@@ -350,6 +350,7 @@ export default function BookingsPage() {
           <div className="flex gap-2">
             <button onClick={handleExportCSV} className="bg-green-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-green-700">📥 CSV</button>
             <button onClick={() => setShowForm(!showForm)} className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-blue-700">+ Booking</button>
+            <button onClick={() => router.push("/dashboard/payments")} className="bg-cyan-500 text-white px-4 py-2 rounded-lg text-sm hover:bg-cyan-600">💳 Payments</button>
           </div>
         </div>
 
