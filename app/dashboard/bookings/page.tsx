@@ -163,7 +163,7 @@ export default function BookingsPage() {
     setBookingRooms(prev => prev.filter((_, i) => i !== idx));
   };
 
-  const validate = () => {
+const validate = () => {
     if (!form.checkIn) { showToast("Check-in date daalo!", "error"); return false; }
     if (!form.checkOut) { showToast("Check-out date daalo!", "error"); return false; }
     if (new Date(form.checkOut) <= new Date(form.checkIn)) { showToast("Check-out, check-in ke baad honi chahiye!", "error"); return false; }
@@ -173,6 +173,45 @@ export default function BookingsPage() {
         return false;
       }
     }
+
+    // Combined max calculate karo — sabhi selected rooms ke basis pe
+    const selectedRooms = bookingRooms.map(br => rooms.find(r => r.id === br.roomId)).filter(Boolean);
+    const combinedMaxAdults = selectedRooms.reduce((sum, r: any) => sum + (r.maxAdults || 2), 0);
+    const combinedMaxChildren = selectedRooms.reduce((sum, r: any) => sum + (r.maxChildren || 0), 0);
+    const combinedMaxInfants = selectedRooms.reduce((sum, r: any) => sum + (r.maxInfants || 0), 0);
+    const combinedMaxMattress = selectedRooms.reduce((sum, r: any) => sum + (r.extraMattressLimit || 0), 0);
+
+    const totalAdults = parseInt(bookingRooms[0]?.adults || "1");
+    const totalChildren = parseInt(bookingRooms[0]?.children || "0");
+    const totalInfants = parseInt(bookingRooms[0]?.infants || "0");
+    const totalMattress = parseInt(bookingRooms[0]?.extraMattress || "0");
+
+    // Extra persons calculate karo
+    const extraAdults = Math.max(0, totalAdults - combinedMaxAdults);
+    const extraChildren = Math.max(0, totalChildren - combinedMaxChildren);
+    const extraInfants = Math.max(0, totalInfants - combinedMaxInfants);
+    const totalExtraPersons = extraAdults + extraChildren + extraInfants;
+
+    if (totalExtraPersons > 0) {
+      if (totalMattress < totalExtraPersons) {
+        if (combinedMaxMattress === 0) {
+          showToast(`Guests zyada hain! Ek aur room add karo.`, "error");
+          return false;
+        }
+        if (totalMattress < Math.min(totalExtraPersons, combinedMaxMattress)) {
+          showToast(
+            `${totalExtraPersons} extra persons hain! Extra Beds mein ${Math.min(totalExtraPersons, combinedMaxMattress)} mattress add karo ya ek aur room add karo.`,
+            "error"
+          );
+          return false;
+        }
+      }
+      if (totalMattress > combinedMaxMattress) {
+        showToast(`Max ${combinedMaxMattress} mattress allowed hain sabhi rooms mein combined!`, "error");
+        return false;
+      }
+    }
+
     if (!form.guestName.trim()) { showToast("Guest naam daalo!", "error"); return false; }
     if (!form.guestEmail.trim()) { showToast("Guest email daalo!", "error"); return false; }
     if (form.guestPhone && form.guestPhone.length !== 10) { showToast("Phone number 10 digits ka hona chahiye!", "error"); return false; }
