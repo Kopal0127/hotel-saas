@@ -32,9 +32,12 @@ export async function GET(req: NextRequest) {
   const startDate = new Date(year, month - 1, 1);
   const endDate = new Date(year, month, 0, 23, 59, 59);
 
-  const ratePlans = await prisma.ratePlan.findMany({
+ const ratePlans = await prisma.ratePlan.findMany({
     where: {
-      channel: { hotelId },
+      OR: [
+        { channel: { hotelId } },
+        { channelId: null, roomId: { in: (await prisma.room.findMany({ where: { hotelId }, select: { id: true } })).map(r => r.id) } }
+      ],
       date: { gte: startDate, lte: endDate },
       ...(roomId ? { roomId } : {}),
     },
