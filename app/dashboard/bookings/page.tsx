@@ -371,7 +371,12 @@ export default function BookingsPage() {
                 endDate={form.checkOut ? new Date(form.checkOut) : null}
                 onChange={(dates: [Date | null, Date | null]) => {
                   const [start, end] = dates;
-                  setForm({ ...form, checkIn: start ? start.toISOString().split("T")[0] : "", checkOut: end ? end.toISOString().split("T")[0] : "" });
+                 const toLocalDate = (d: Date) => {
+    const offset = d.getTimezoneOffset();
+    const local = new Date(d.getTime() - offset * 60000);
+    return local.toISOString().split("T")[0];
+  };
+  setForm({ ...form, checkIn: start ? toLocalDate(start) : "", checkOut: end ? toLocalDate(end) : "" });
                 }}
                 minDate={new Date()}
                 placeholderText="Check-in → Check-out"
