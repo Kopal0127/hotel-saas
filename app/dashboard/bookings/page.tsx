@@ -334,11 +334,8 @@ const validate = () => {
     UPGRADED: "bg-purple-100 text-purple-700",
   };
 
-  const extraItems = [
+ const extraItems = [
     { key: "extraMattress", label: "🛏️ Mattress" },
-    { key: "extraPillow", label: "🪆 Pillow" },
-    { key: "extraBedsheet", label: "🏳️ Bedsheet" },
-    { key: "blanket", label: "🧣 Blanket" },
   ];
 
   const calculateNights = () => {
