@@ -87,54 +87,45 @@ export async function POST(req: NextRequest) {
     const checkInDate = new Date(checkIn);
     const checkOutDate = new Date(checkOut);
 
-   // ✅ Combined max calculate karo — sabhi rooms ke basis pe
-    const allRoomData = await Promise.all(
-      roomsList.map((r: any) => prisma.room.findUnique({ where: { id: r.roomId } }))
-    );
-
-    if (allRoomData.some(r => !r)) {
-      return NextResponse.json({ error: "Koi room nahi mila!" }, { status: 400 });
-    }
-
-    const combinedMaxAdults = allRoomData.reduce((sum, r: any) => sum + (r.maxAdults || 2), 0);
-    const combinedMaxChildren = allRoomData.reduce((sum, r: any) => sum + (r.maxChildren || 0), 0);
-    const combinedMaxInfants = allRoomData.reduce((sum, r: any) => sum + (r.maxInfants || 0), 0);
-    const combinedMaxMattress = allRoomData.reduce((sum, r: any) => sum + (r.extraMattressLimit || 0), 0);
-
-    // Room 1 ke guests se compare karo
-   const firstRoomData = roomsList[0];
-    const totalAdults = parseInt(firstRoomData.adults) || 1;
-    const totalChildren = parseInt(firstRoomData.children) || 0;
-    const totalInfants = parseInt(firstRoomData.infants) || 0;
-    const totalMattress = parseInt(firstRoomData.extraMattress) || 0;
-
-    const extraAdults = Math.max(0, totalAdults - combinedMaxAdults);
-    const extraChildren = Math.max(0, totalChildren - combinedMaxChildren);
-    const extraInfants = Math.max(0, totalInfants - combinedMaxInfants);
-    const totalExtraPersons = extraAdults + extraChildren + extraInfants;
-
-    if (totalExtraPersons > 0) {
-      if (combinedMaxMattress === 0) {
-        return NextResponse.json({
-          error: `Guests zyada hain! Ek aur room add karo.`
-        }, { status: 400 });
-      }
-      if (totalMattress < Math.min(totalExtraPersons, combinedMaxMattress)) {
-        return NextResponse.json({
-          error: `${totalExtraPersons} extra persons hain! Extra Beds mein ${Math.min(totalExtraPersons, combinedMaxMattress)} mattress add karo ya ek aur room add karo.`
-        }, { status: 400 });
-      }
-      if (totalMattress > combinedMaxMattress) {
-        return NextResponse.json({
-          error: `Max ${combinedMaxMattress} mattress allowed hain sabhi rooms mein combined!`
-        }, { status: 400 });
-      }
-    }
-
-    // ✅ Har room ka booking conflict check karo
+  // ✅ Har room individually validate karo
     for (const r of roomsList) {
-     const roomData = allRoomData.find((rd: any) => rd?.id === r.roomId);
-      if (!roomData) continue;
+      const roomData = await prisma.room.findUnique({ where: { id: r.roomId } });
+
+      if (!roomData) {
+        return NextResponse.json({ error: "Room nahi mila!" }, { status: 400 });
+      }
+
+      const adultsCount = parseInt(r.adults) || 1;
+      const childrenCount = parseInt(r.children) || 0;
+      const infantsCount = parseInt(r.infants) || 0;
+      const maxAdults = roomData.maxAdults || 2;
+      const maxChildren = roomData.maxChildren || 0;
+      const maxInfants = roomData.maxInfants || 0;
+      const maxMattress = roomData.extraMattressLimit || 0;
+      const extraMattress = parseInt(r.extraMattress) || 0;
+
+      const extraAdults = Math.max(0, adultsCount - maxAdults);
+      const extraChildren = Math.max(0, childrenCount - maxChildren);
+      const extraInfants = Math.max(0, infantsCount - maxInfants);
+      const totalExtraPeople = extraAdults + extraChildren + extraInfants;
+
+      if (totalExtraPeople > 0) {
+        if (maxMattress === 0) {
+          return NextResponse.json({
+            error: `Room #${roomData.number} mein max ${maxAdults} Adult/${maxChildren} Child/${maxInfants} Infant allowed hai! Ek aur room add karo.`
+          }, { status: 400 });
+        }
+        if (extraMattress < totalExtraPeople) {
+          return NextResponse.json({
+            error: `Room #${roomData.number} mein ${totalExtraPeople} extra persons hain! Extra Beds mein ${Math.min(totalExtraPeople, maxMattress)} mattress add karo.`
+          }, { status: 400 });
+        }
+        if (extraMattress > maxMattress) {
+          return NextResponse.json({
+            error: `Room #${roomData.number} mein max ${maxMattress} mattress allowed hai!`
+          }, { status: 400 });
+        }
+      }
 
       // Room already booked check
       const existingBooking = await prisma.booking.findFirst({
@@ -159,6 +150,7 @@ export async function POST(req: NextRequest) {
     }
 
    // ✅ Booking create
+    const firstRoomData = roomsList[0];
     const booking = await prisma.booking.create({
       data: {
         roomId: primaryRoomId,
