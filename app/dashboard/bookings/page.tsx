@@ -112,17 +112,25 @@ export default function BookingsPage() {
 
   const roomTypes = [...new Set(rooms.map(r => r.type))];
 
-  const getUnavailableRoomIds = () => {
+ const getUnavailableRoomIds = () => {
     if (!form.checkIn || !form.checkOut) return [];
     const checkIn = new Date(form.checkIn);
     const checkOut = new Date(form.checkOut);
-    const bookedIds = bookings
+    const bookedIds: string[] = [];
+    bookings
       .filter(b =>
         (b.status === "CONFIRMED" || b.status === "PENDING" || b.status === "CHECKED_IN") &&
         new Date(b.checkIn) < checkOut &&
         new Date(b.checkOut) > checkIn
       )
-      .map(b => b.roomId);
+      .forEach(b => {
+        // Primary room
+        if (b.roomId) bookedIds.push(b.roomId);
+        // BookingRooms se bhi
+        if (b.rooms && b.rooms.length > 0) {
+          b.rooms.forEach((r: any) => bookedIds.push(r.roomId));
+        }
+      });
     const alreadySelected = bookingRooms.map(br => br.roomId).filter(Boolean);
     return [...bookedIds, ...alreadySelected];
   };
