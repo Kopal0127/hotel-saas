@@ -374,3 +374,23 @@ enum StockStatus {
   NORMAL
   LOW
 }
+model RevenueSettings {
+  id               String   @id @default(cuid())
+  hotelId          String   @unique
+  isActive         Boolean  @default(false)
+  
+  // First 12 hours (12:01 AM - 11:59 AM)
+  first12Discount  Float    @default(0)
+  first12Occupancy Float    @default(60)
+  
+  // Middle hours (12:01 PM - 6:00 PM)
+  middleDiscount   Float    @default(0)
+  middleOccupancy  Float    @default(40)
+  
+  // Last Minute (6:01 PM - 11:30 PM)
+  lastDiscount     Float    @default(0)
+  lastOccupancy    Float    @default(40)
+  
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+}

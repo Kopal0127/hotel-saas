@@ -74,3 +74,115 @@ async function mockPullFromOTA(channelName: string, hotelId: string): Promise<nu
   console.log(`Daily update: ${channelName} for hotel ${hotelId}...`);
   return 0;
 }
+export async function POST(req: NextRequest) {
+  try {
+    const body = await req.json();
+    const { hotelId, timeSlot } = body;
+
+    if (!hotelId || !timeSlot) {
+      return NextResponse.json({ error: "hotelId, timeSlot required" }, { status: 400 });
+    }
+
+    // Revenue settings fetch karo
+    const settings = await prisma.revenueSettings.findUnique({ where: { hotelId } });
+    if (!settings || !settings.isActive) {
+      return NextResponse.json({ message: "Revenue Manager inactive hai" });
+    }
+
+    // Rooms fetch karo
+    const rooms = await prisma.room.findMany({ where: { hotelId } });
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+
+    // Aaj ki bookings fetch karo
+    const todayBookings = await prisma.booking.findMany({
+      where: {
+        checkIn: { gte: today, lt: tomorrow },
+        status: { in: ["CONFIRMED", "CHECKED_IN"] },
+      },
+      include: { bookingRooms: true }
+    });
+
+    // Room type wise group karo
+    const roomTypes = [...new Set(rooms.map(r => r.type))];
+
+    for (const roomType of roomTypes) {
+      const typeRooms = rooms.filter(r => r.type === roomType);
+      const totalRooms = typeRooms.length;
+
+      // Booked rooms count karo
+      const bookedRoomIds = new Set<string>();
+      todayBookings.forEach(b => {
+        b.bookingRooms.forEach((br: any) => {
+          if (typeRooms.find(r => r.id === br.roomId)) {
+            bookedRoomIds.add(br.roomId);
+          }
+        });
+      });
+
+      const bookedCount = bookedRoomIds.size;
+      const unsoldCount = totalRooms - bookedCount;
+      const unsoldPercent = (unsoldCount / totalRooms) * 100;
+
+      // Time slot ke hisaab se discount aur occupancy threshold lo
+      let discount = 0;
+      let threshold = 0;
+
+      if (timeSlot === "first12") {
+        discount = settings.first12Discount;
+        threshold = settings.first12Occupancy;
+      } else if (timeSlot === "middle") {
+        discount = settings.middleDiscount;
+        threshold = settings.middleOccupancy;
+      } else if (timeSlot === "last") {
+        discount = settings.lastDiscount;
+        threshold = settings.lastOccupancy;
+      }
+
+      // Check karo condition match hoti hai ya nahi
+      if (unsoldPercent < threshold) {
+        console.log(`${roomType}: ${unsoldPercent.toFixed(1)}% unsold — threshold ${threshold}% se kam, skip`);
+        continue;
+      }
+
+      // Discount apply karo — har room pe
+      for (const room of typeRooms) {
+        const discountedPrice = room.price - (room.price * discount) / 100;
+        const dateStr = today.toISOString().split("T")[0];
+
+        // Existing rate plan check karo
+        const existing = await prisma.ratePlan.findFirst({
+          where: { channelId: null, roomId: room.id, date: today }
+        });
+
+        if (existing) {
+          await prisma.ratePlan.update({
+            where: { id: existing.id },
+            data: { price: discountedPrice, available: unsoldCount, isBlocked: false }
+          });
+        } else {
+          await prisma.ratePlan.create({
+            data: {
+              channelId: null,
+              roomId: room.id,
+              date: today,
+              price: discountedPrice,
+              available: unsoldCount,
+              isBlocked: false,
+            }
+          });
+        }
+      }
+
+      console.log(`✅ ${roomType}: ${discount}% discount apply kiya — price updated`);
+    }
+
+    return NextResponse.json({ success: true, message: `${timeSlot} slot processed!` });
+
+  } catch (error) {
+    console.error("Revenue cron error:", error);
+    return NextResponse.json({ error: "Revenue cron failed!" }, { status: 500 });
+  }
+}
