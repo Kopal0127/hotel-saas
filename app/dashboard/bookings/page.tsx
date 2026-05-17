@@ -402,37 +402,66 @@ const validate = () => {
           <div className="bg-white rounded-2xl p-4 md:p-6 shadow-sm border border-gray-100 mb-6">
             <h3 className="text-lg font-semibold text-gray-900 mb-4">Naya Booking Add Karo</h3>
 
-            <div className="mb-4">
-              <label className="text-sm font-medium text-gray-700 mb-2 block">
-                Check-in → Check-out Date
+           <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4">
+              {/* Check-in Check-out */}
+              <div>
+                <label className="text-sm font-medium text-gray-700 mb-2 block">
+                  Check-in → Check-out Date
+                  {form.checkIn && form.checkOut && (
+                    <span className="ml-2 text-xs text-blue-500 font-normal">{calculateNights()} night{calculateNights() > 1 ? "s" : ""}</span>
+                  )}
+                </label>
+                <DatePicker
+                  selectsRange
+                  startDate={form.checkIn ? new Date(form.checkIn) : null}
+                  endDate={form.checkOut ? new Date(form.checkOut) : null}
+                  onChange={(dates: [Date | null, Date | null]) => {
+                    const [start, end] = dates;
+                    const toLocalDate = (d: Date) => {
+                      const offset = d.getTimezoneOffset();
+                      const local = new Date(d.getTime() - offset * 60000);
+                      return local.toISOString().split("T")[0];
+                    };
+                    setForm({ ...form, checkIn: start ? toLocalDate(start) : "", checkOut: end ? toLocalDate(end) : "" });
+                  }}
+                  minDate={new Date()}
+                  placeholderText="Check-in → Check-out"
+                  className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-blue-500 cursor-pointer"
+                  wrapperClassName="w-full"
+                  monthsShown={2}
+                  dateFormat="dd/MM/yyyy"
+                  isClearable
+                />
                 {form.checkIn && form.checkOut && (
-                  <span className="ml-2 text-xs text-blue-500 font-normal">{calculateNights()} night{calculateNights() > 1 ? "s" : ""}</span>
+                  <p className="text-xs text-blue-600 mt-1">📅 {new Date(form.checkIn).toLocaleDateString("en-IN")} → {new Date(form.checkOut).toLocaleDateString("en-IN")}</p>
                 )}
-              </label>
-              <DatePicker
-                selectsRange
-                startDate={form.checkIn ? new Date(form.checkIn) : null}
-                endDate={form.checkOut ? new Date(form.checkOut) : null}
-                onChange={(dates: [Date | null, Date | null]) => {
-                  const [start, end] = dates;
-                 const toLocalDate = (d: Date) => {
-    const offset = d.getTimezoneOffset();
-    const local = new Date(d.getTime() - offset * 60000);
-    return local.toISOString().split("T")[0];
-  };
-  setForm({ ...form, checkIn: start ? toLocalDate(start) : "", checkOut: end ? toLocalDate(end) : "" });
-                }}
-                minDate={new Date()}
-                placeholderText="Check-in → Check-out"
-                className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-blue-500 cursor-pointer"
-                wrapperClassName="w-full"
-                monthsShown={2}
-                dateFormat="dd/MM/yyyy"
-                isClearable
-              />
-              {form.checkIn && form.checkOut && (
-                <p className="text-xs text-blue-600 mt-1">📅 {new Date(form.checkIn).toLocaleDateString("en-IN")} → {new Date(form.checkOut).toLocaleDateString("en-IN")}</p>
-              )}
+              </div>
+
+              {/* Room Type — Room 1 */}
+              <div>
+                <label className="text-sm font-medium text-gray-700 mb-2 block">Room Type</label>
+                <select value={bookingRooms[0].selectedType}
+                  onChange={(e) => updateRoom(0, "selectedType", e.target.value)}
+                  disabled={!form.checkIn || !form.checkOut}
+                  className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-blue-500 disabled:bg-gray-100 bg-white">
+                  <option value="">-- Room Type chuno --</option>
+                  {roomTypes.map(type => <option key={type} value={type}>{type}</option>)}
+                </select>
+              </div>
+
+              {/* Room Number — Room 1 */}
+              <div>
+                <label className="text-sm font-medium text-gray-700 mb-2 block">Room Number</label>
+                <select value={bookingRooms[0].roomId}
+                  onChange={(e) => updateRoom(0, "roomId", e.target.value)}
+                  disabled={!bookingRooms[0].selectedType || getAvailableRoomsForType(bookingRooms[0].selectedType, 0).length === 0}
+                  className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-blue-500 disabled:bg-gray-100 bg-white">
+                  <option value="">-- Room Number chuno --</option>
+                  {getAvailableRoomsForType(bookingRooms[0].selectedType, 0).map(room => (
+                    <option key={room.id} value={room.id}>Room #{room.number} — ₹{room.price}/night</option>
+                  ))}
+                </select>
+              </div>
             </div>
 
            {/* Summary Bar */}
@@ -469,30 +498,32 @@ const validate = () => {
                   )}
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
-                  <div>
-                    <label className="text-xs font-medium text-gray-700 mb-1 block">Room Type</label>
-                    <select value={br.selectedType}
-                      onChange={(e) => updateRoom(idx, "selectedType", e.target.value)}
-                      disabled={!form.checkIn || !form.checkOut}
-                      className="w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:border-blue-500 disabled:bg-gray-100 bg-white">
-                      <option value="">-- Room Type chuno --</option>
-                      {roomTypes.map(type => <option key={type} value={type}>{type}</option>)}
-                    </select>
+               {idx > 0 && (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
+                    <div>
+                      <label className="text-xs font-medium text-gray-700 mb-1 block">Room Type</label>
+                      <select value={br.selectedType}
+                        onChange={(e) => updateRoom(idx, "selectedType", e.target.value)}
+                        disabled={!form.checkIn || !form.checkOut}
+                        className="w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:border-blue-500 disabled:bg-gray-100 bg-white">
+                        <option value="">-- Room Type chuno --</option>
+                        {roomTypes.map(type => <option key={type} value={type}>{type}</option>)}
+                      </select>
+                    </div>
+                    <div>
+                      <label className="text-xs font-medium text-gray-700 mb-1 block">Room Number</label>
+                      <select value={br.roomId}
+                        onChange={(e) => updateRoom(idx, "roomId", e.target.value)}
+                        disabled={!br.selectedType || getAvailableRoomsForType(br.selectedType, idx).length === 0}
+                        className="w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:border-blue-500 disabled:bg-gray-100 bg-white">
+                        <option value="">-- Room Number chuno --</option>
+                        {getAvailableRoomsForType(br.selectedType, idx).map(room => (
+                          <option key={room.id} value={room.id}>Room #{room.number} — ₹{room.price}/night</option>
+                        ))}
+                      </select>
+                    </div>
                   </div>
-                  <div>
-                    <label className="text-xs font-medium text-gray-700 mb-1 block">Room Number</label>
-                    <select value={br.roomId}
-                      onChange={(e) => updateRoom(idx, "roomId", e.target.value)}
-                      disabled={!br.selectedType || getAvailableRoomsForType(br.selectedType, idx).length === 0}
-                      className="w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:border-blue-500 disabled:bg-gray-100 bg-white">
-                      <option value="">-- Room Number chuno --</option>
-                      {getAvailableRoomsForType(br.selectedType, idx).map(room => (
-                        <option key={room.id} value={room.id}>Room #{room.number} — ₹{room.price}/night</option>
-                      ))}
-                    </select>
-                  </div>
-                </div>
+                )}
 
               <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                   <div>
