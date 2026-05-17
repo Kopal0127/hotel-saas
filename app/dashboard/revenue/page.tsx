@@ -14,14 +14,10 @@ export default function RevenuePage() {
   const [saving, setSaving] = useState(false)
   const [settings, setSettings] = useState({
     isActive: false,
-    nextDayDiscount: 0,
-    nextDayOccupancy: 80,
-    first12Discount: 0,
-    first12Occupancy: 60,
-    middleDiscount: 0,
-    middleOccupancy: 40,
-    lastDiscount: 0,
-    lastOccupancy: 40,
+    nextDayDiscount: 0, nextDayUnsold: 80, nextDayMarkup: 0, nextDayBooked: 40,
+    first12Discount: 0, first12Unsold: 60, first12Markup: 0, first12Booked: 40,
+    middleDiscount: 0, middleUnsold: 40, middleMarkup: 0, middleBooked: 40,
+    lastDiscount: 0, lastUnsold: 40, lastMarkup: 0, lastBooked: 40,
   })
 
   useEffect(() => {
@@ -81,17 +77,16 @@ export default function RevenuePage() {
     showToast(newActive ? '✅ Revenue Manager Activate ho gaya!' : '⏸ Revenue Manager Deactivate ho gaya!', newActive ? 'success' : 'info')
   }
 
- const slotData = [
+const slotData = [
     {
       key: 'nextDay',
       label: 'Next Day Booking',
       time: '12:01 AM — Kal ki date ke liye',
       emoji: '📅',
       color: 'green',
-      discount: settings.nextDayDiscount,
-      occupancy: settings.nextDayOccupancy,
-      discountKey: 'nextDayDiscount',
-      occupancyKey: 'nextDayOccupancy',
+      discount: settings.nextDayDiscount, unsoldKey: 'nextDayUnsold', unsold: settings.nextDayUnsold,
+      markup: settings.nextDayMarkup, bookedKey: 'nextDayBooked', booked: settings.nextDayBooked,
+      discountKey: 'nextDayDiscount', markupKey: 'nextDayMarkup',
     },
     {
       key: 'first12',
@@ -99,10 +94,9 @@ export default function RevenuePage() {
       time: '12:01 AM – 11:59 AM',
       emoji: '🌅',
       color: 'blue',
-      discount: settings.first12Discount,
-      occupancy: settings.first12Occupancy,
-      discountKey: 'first12Discount',
-      occupancyKey: 'first12Occupancy',
+      discount: settings.first12Discount, unsoldKey: 'first12Unsold', unsold: settings.first12Unsold,
+      markup: settings.first12Markup, bookedKey: 'first12Booked', booked: settings.first12Booked,
+      discountKey: 'first12Discount', markupKey: 'first12Markup',
     },
     {
       key: 'middle',
@@ -110,10 +104,9 @@ export default function RevenuePage() {
       time: '12:01 PM – 6:00 PM',
       emoji: '☀️',
       color: 'orange',
-      discount: settings.middleDiscount,
-      occupancy: settings.middleOccupancy,
-      discountKey: 'middleDiscount',
-      occupancyKey: 'middleOccupancy',
+      discount: settings.middleDiscount, unsoldKey: 'middleUnsold', unsold: settings.middleUnsold,
+      markup: settings.middleMarkup, bookedKey: 'middleBooked', booked: settings.middleBooked,
+      discountKey: 'middleDiscount', markupKey: 'middleMarkup',
     },
     {
       key: 'last',
@@ -121,10 +114,9 @@ export default function RevenuePage() {
       time: '6:01 PM – 11:30 PM',
       emoji: '🌙',
       color: 'purple',
-      discount: settings.lastDiscount,
-      occupancy: settings.lastOccupancy,
-      discountKey: 'lastDiscount',
-      occupancyKey: 'lastOccupancy',
+      discount: settings.lastDiscount, unsoldKey: 'lastUnsold', unsold: settings.lastUnsold,
+      markup: settings.lastMarkup, bookedKey: 'lastBooked', booked: settings.lastBooked,
+      discountKey: 'lastDiscount', markupKey: 'lastMarkup',
     },
   ]
 
@@ -228,49 +220,97 @@ export default function RevenuePage() {
                       </span>
                     </div>
 
-                    {/* Card Body */}
+                   {/* Card Body */}
                     <div className={`${c.bg} px-6 py-5`}>
-                      <div className="grid grid-cols-2 gap-6">
-                        {/* Discount % */}
-                        <div>
-                          <label className="text-xs font-semibold text-gray-600 block mb-2">
-                            💰 Discount %
-                            <span className="ml-1 font-normal text-gray-400">(base price pe lagega)</span>
-                          </label>
-                          <div className="flex items-center gap-2">
-                            <input
-                              type="number" min="0" max="100"
-                              value={slot.discount}
-                              onChange={e => setSettings(prev => ({ ...prev, [slot.discountKey]: parseFloat(e.target.value) || 0 }))}
-                              className={`w-24 border border-gray-200 rounded-lg px-3 py-2 text-sm font-semibold focus:outline-none ${c.input} bg-white`}
-                            />
-                            <span className="text-gray-500 text-sm font-medium">%</span>
+                      {/* Discount Section */}
+                      <div className="mb-5">
+                        <p className="text-xs font-bold text-red-600 mb-3">📉 Discount Settings</p>
+                        <div className="grid grid-cols-2 gap-6">
+                          <div>
+                            <label className="text-xs font-semibold text-gray-600 block mb-2">
+                              💰 Discount %
+                              <span className="ml-1 font-normal text-gray-400">(base price pe lagega)</span>
+                            </label>
+                            <div className="flex items-center gap-2">
+                              <input
+                                type="number" min="0" max="100"
+                                value={slot.discount}
+                                onChange={e => setSettings(prev => ({ ...prev, [slot.discountKey]: parseFloat(e.target.value) || 0 }))}
+                                className={`w-24 border border-gray-200 rounded-lg px-3 py-2 text-sm font-semibold focus:outline-none ${c.input} bg-white`}
+                              />
+                              <span className="text-gray-500 text-sm font-medium">%</span>
+                            </div>
+                            {slot.discount > 0 && (
+                              <p className="text-xs text-gray-400 mt-1">
+                                e.g. ₹1000 → ₹{(1000 - (1000 * slot.discount) / 100).toFixed(0)}
+                              </p>
+                            )}
                           </div>
-                          {slot.discount > 0 && (
+                          <div>
+                            <label className="text-xs font-semibold text-gray-600 block mb-2">
+                              🏨 Unsold Threshold %
+                              <span className="ml-1 font-normal text-gray-400">(itne % unsold hone par)</span>
+                            </label>
+                            <div className="flex items-center gap-2">
+                              <input
+                                type="number" min="0" max="100"
+                                value={slot.unsold}
+                                onChange={e => setSettings(prev => ({ ...prev, [slot.unsoldKey]: parseFloat(e.target.value) || 0 }))}
+                                className={`w-24 border border-gray-200 rounded-lg px-3 py-2 text-sm font-semibold focus:outline-none ${c.input} bg-white`}
+                              />
+                              <span className="text-gray-500 text-sm font-medium">%</span>
+                            </div>
                             <p className="text-xs text-gray-400 mt-1">
-                              e.g. ₹1000 → ₹{(1000 - (1000 * slot.discount) / 100).toFixed(0)}
+                              Agar {slot.unsold}%+ rooms unsold hain toh discount lagega
                             </p>
-                          )}
-                        </div>
-
-                        {/* Occupancy Threshold */}
-                        <div>
-                          <label className="text-xs font-semibold text-gray-600 block mb-2">
-                            🏨 Occupancy Threshold %
-                            <span className="ml-1 font-normal text-gray-400">(itne % unsold hone par)</span>
-                          </label>
-                          <div className="flex items-center gap-2">
-                            <input
-                              type="number" min="0" max="100"
-                              value={slot.occupancy}
-                              onChange={e => setSettings(prev => ({ ...prev, [slot.occupancyKey]: parseFloat(e.target.value) || 0 }))}
-                              className={`w-24 border border-gray-200 rounded-lg px-3 py-2 text-sm font-semibold focus:outline-none ${c.input} bg-white`}
-                            />
-                            <span className="text-gray-500 text-sm font-medium">%</span>
                           </div>
-                          <p className="text-xs text-gray-400 mt-1">
-                            Agar {slot.occupancy}%+ rooms unsold hain toh discount lagega
-                          </p>
+                        </div>
+                      </div>
+
+                      <div className="border-t border-gray-200 my-4"></div>
+
+                      {/* Markup Section */}
+                      <div>
+                        <p className="text-xs font-bold text-green-600 mb-3">📈 Markup Settings</p>
+                        <div className="grid grid-cols-2 gap-6">
+                          <div>
+                            <label className="text-xs font-semibold text-gray-600 block mb-2">
+                              💹 Markup %
+                              <span className="ml-1 font-normal text-gray-400">(base price pe badhega)</span>
+                            </label>
+                            <div className="flex items-center gap-2">
+                              <input
+                                type="number" min="0" max="100"
+                                value={slot.markup}
+                                onChange={e => setSettings(prev => ({ ...prev, [slot.markupKey]: parseFloat(e.target.value) || 0 }))}
+                                className={`w-24 border border-gray-200 rounded-lg px-3 py-2 text-sm font-semibold focus:outline-none ${c.input} bg-white`}
+                              />
+                              <span className="text-gray-500 text-sm font-medium">%</span>
+                            </div>
+                            {slot.markup > 0 && (
+                              <p className="text-xs text-gray-400 mt-1">
+                                e.g. ₹1000 → ₹{(1000 + (1000 * slot.markup) / 100).toFixed(0)}
+                              </p>
+                            )}
+                          </div>
+                          <div>
+                            <label className="text-xs font-semibold text-gray-600 block mb-2">
+                              🎯 Booked Threshold %
+                              <span className="ml-1 font-normal text-gray-400">(itne % booked hone par)</span>
+                            </label>
+                            <div className="flex items-center gap-2">
+                              <input
+                                type="number" min="0" max="100"
+                                value={slot.booked}
+                                onChange={e => setSettings(prev => ({ ...prev, [slot.bookedKey]: parseFloat(e.target.value) || 0 }))}
+                                className={`w-24 border border-gray-200 rounded-lg px-3 py-2 text-sm font-semibold focus:outline-none ${c.input} bg-white`}
+                              />
+                              <span className="text-gray-500 text-sm font-medium">%</span>
+                            </div>
+                            <p className="text-xs text-gray-400 mt-1">
+                              Agar {slot.booked}%+ rooms booked hain toh markup lagega
+                            </p>
+                          </div>
                         </div>
                       </div>
                     </div>

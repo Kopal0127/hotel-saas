@@ -134,48 +134,75 @@ export async function POST(req: NextRequest) {
       let discount = 0;
       let threshold = 0;
 
-     if (timeSlot === "nextDay") {
+    let markup = 0;
+      let bookedThreshold = 0;
+
+      if (timeSlot === "nextDay") {
         discount = settings.nextDayDiscount;
-        threshold = settings.nextDayOccupancy;
+        threshold = settings.nextDayUnsold;
+        markup = settings.nextDayMarkup;
+        bookedThreshold = settings.nextDayBooked;
       } else if (timeSlot === "first12") {
         discount = settings.first12Discount;
-        threshold = settings.first12Occupancy;
+        threshold = settings.first12Unsold;
+        markup = settings.first12Markup;
+        bookedThreshold = settings.first12Booked;
       } else if (timeSlot === "middle") {
         discount = settings.middleDiscount;
-        threshold = settings.middleOccupancy;
+        threshold = settings.middleUnsold;
+        markup = settings.middleMarkup;
+        bookedThreshold = settings.middleBooked;
       } else if (timeSlot === "last") {
         discount = settings.lastDiscount;
-        threshold = settings.lastOccupancy;
+        threshold = settings.lastUnsold;
+        markup = settings.lastMarkup;
+        bookedThreshold = settings.lastBooked;
       }
 
-      // Check karo condition match hoti hai ya nahi
-      if (unsoldPercent < threshold) {
-        console.log(`${roomType}: ${unsoldPercent.toFixed(1)}% unsold — threshold ${threshold}% se kam, skip`);
-        continue;
+     const bookedPercent = (bookedCount / totalRooms) * 100;
+
+      // Final price decide karo
+      let finalPrice: number | null = null;
+      let action = "none";
+
+      if (unsoldPercent >= threshold && discount > 0) {
+        // Discount apply
+        action = "discount";
+      } else if (bookedPercent >= bookedThreshold && markup > 0) {
+        // Markup apply
+        action = "markup";
+      } else {
+        // Neutral zone — base price restore
+        action = "base";
       }
 
-      // Discount apply karo — har room pe
+      // Har room pe apply karo
       for (const room of typeRooms) {
-        const discountedPrice = room.price - (room.price * discount) / 100;
-        const dateStr = today.toISOString().split("T")[0];
+        if (action === "discount") {
+          finalPrice = room.price - (room.price * discount) / 100;
+        } else if (action === "markup") {
+          finalPrice = room.price + (room.price * markup) / 100;
+        } else {
+          finalPrice = room.price; // Base price restore
+        }
 
-        // Existing rate plan check karo
+        const targetDateStr = targetDate.toISOString().split("T")[0];
         const existing = await prisma.ratePlan.findFirst({
-          where: { channelId: null, roomId: room.id, date: today }
+          where: { channelId: null, roomId: room.id, date: targetDate }
         });
 
         if (existing) {
           await prisma.ratePlan.update({
             where: { id: existing.id },
-            data: { price: discountedPrice, available: unsoldCount, isBlocked: false }
+            data: { price: finalPrice, available: unsoldCount, isBlocked: false }
           });
         } else {
           await prisma.ratePlan.create({
             data: {
               channelId: null,
               roomId: room.id,
-              date: today,
-              price: discountedPrice,
+              date: targetDate,
+              price: finalPrice,
               available: unsoldCount,
               isBlocked: false,
             }
@@ -183,7 +210,7 @@ export async function POST(req: NextRequest) {
         }
       }
 
-      console.log(`✅ ${roomType}: ${discount}% discount apply kiya — price updated`);
+      console.log(`✅ ${roomType}: ${action} apply kiya — price updated`);
     }
 
     return NextResponse.json({ success: true, message: `${timeSlot} slot processed!` });

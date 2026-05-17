@@ -380,21 +380,29 @@ model RevenueSettings {
   isActive         Boolean  @default(false)
 
   // Next Day Booking (12:01 AM — kal ke liye)
-  nextDayDiscount  Float    @default(0)
-  nextDayOccupancy Float    @default(80)
+  nextDayDiscount   Float    @default(0)
+  nextDayUnsold     Float    @default(80)
+  nextDayMarkup     Float    @default(0)
+  nextDayBooked     Float    @default(40)
 
   // First 12 hours (12:01 AM - 11:59 AM)
-  first12Discount  Float    @default(0)
-  first12Occupancy Float    @default(60)
-  
+  first12Discount   Float    @default(0)
+  first12Unsold     Float    @default(60)
+  first12Markup     Float    @default(0)
+  first12Booked     Float    @default(40)
+
   // Middle hours (12:01 PM - 6:00 PM)
-  middleDiscount   Float    @default(0)
-  middleOccupancy  Float    @default(40)
-  
+  middleDiscount    Float    @default(0)
+  middleUnsold      Float    @default(40)
+  middleMarkup      Float    @default(0)
+  middleBooked      Float    @default(40)
+
   // Last Minute (6:01 PM - 11:30 PM)
-  lastDiscount     Float    @default(0)
-  lastOccupancy    Float    @default(40)
-  
-  createdAt        DateTime @default(now())
-  updatedAt        DateTime @updatedAt
+  lastDiscount      Float    @default(0)
+  lastUnsold        Float    @default(40)
+  lastMarkup        Float    @default(0)
+  lastBooked        Float    @default(40)
+
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
 }

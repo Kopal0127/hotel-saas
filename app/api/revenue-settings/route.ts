@@ -52,31 +52,27 @@ export async function POST(req: NextRequest) {
   const body = await req.json();
   const {
     hotelId, isActive,
-    nextDayDiscount, nextDayOccupancy,
-    first12Discount, first12Occupancy,
-    middleDiscount, middleOccupancy,
-    lastDiscount, lastOccupancy,
+    nextDayDiscount, nextDayUnsold, nextDayMarkup, nextDayBooked,
+    first12Discount, first12Unsold, first12Markup, first12Booked,
+    middleDiscount, middleUnsold, middleMarkup, middleBooked,
+    lastDiscount, lastUnsold, lastMarkup, lastBooked,
   } = body;
 
   if (!hotelId) return NextResponse.json({ error: "hotelId required" }, { status: 400 });
 
   const settings = await prisma.revenueSettings.upsert({
     where: { hotelId },
-   update: {
+  update: {
       isActive,
-      nextDayDiscount, nextDayOccupancy,
-      first12Discount, first12Occupancy,
-      middleDiscount, middleOccupancy,
-      lastDiscount, lastOccupancy,
+      nextDayDiscount, nextDayUnsold, nextDayMarkup, nextDayBooked,
+      first12Discount, first12Unsold, first12Markup, first12Booked,
+      middleDiscount, middleUnsold, middleMarkup, middleBooked,
+      lastDiscount, lastUnsold, lastMarkup, lastBooked,
     },
     create: {
       hotelId, isActive,
-      nextDayDiscount, nextDayOccupancy,
-      first12Discount, first12Occupancy,
-      middleDiscount, middleOccupancy,
-      lastDiscount, lastOccupancy,
+      nextDayDiscount, nextDayUnsold, nextDayMarkup, nextDayBooked,
+      first12Discount, first12Unsold, first12Markup, first12Booked,
+      middleDiscount, middleUnsold, middleMarkup, middleBooked,
+      lastDiscount, lastUnsold, lastMarkup, lastBooked,
     }
-  });
-
-  return NextResponse.json({ success: true, settings });
-}
