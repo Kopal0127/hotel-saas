@@ -430,6 +430,30 @@ const validate = () => {
               )}
             </div>
 
+           {/* Summary Bar */}
+            {bookingRooms.some(br => br.roomId) && (
+              <div className="bg-blue-50 border border-blue-200 rounded-xl px-4 py-3 mb-3 flex flex-wrap gap-3 items-center">
+                <span className="text-xs font-semibold text-blue-700">
+                  {bookingRooms.filter(br => br.roomId).length} Room{bookingRooms.filter(br => br.roomId).length > 1 ? 's' : ''} for:
+                </span>
+                <span className="text-xs text-blue-600">
+                  Adult-{bookingRooms.reduce((s, br) => s + (parseInt(br.adults) || 0), 0)}
+                </span>
+                <span className="text-xs text-blue-600">
+                  Child-{bookingRooms.reduce((s, br) => s + (parseInt(br.children) || 0), 0)}
+                </span>
+                <span className="text-xs text-blue-600">
+                  Infant-{bookingRooms.reduce((s, br) => s + (parseInt(br.infants) || 0), 0)}
+                </span>
+                <span className="text-xs text-blue-600">
+                  Mattress-{bookingRooms.reduce((s, br) => s + (parseInt(br.extraMattress) || 0), 0)}
+                </span>
+                <span className="text-xs font-semibold text-blue-800 ml-auto">
+                  Total = {bookingRooms.reduce((s, br) => s + (parseInt(br.adults) || 0) + (parseInt(br.children) || 0) + (parseInt(br.infants) || 0), 0)}
+                </span>
+              </div>
+            )}
+
             {bookingRooms.map((br, idx) => (
               <div key={idx} className="bg-blue-50 rounded-xl p-4 mb-4 border border-blue-100">
                 <div className="flex items-center justify-between mb-3">
@@ -440,7 +464,7 @@ const validate = () => {
                   )}
                 </div>
 
-                <div className={`grid grid-cols-1 md:grid-cols-2 gap-3 ${idx === 0 ? 'mb-3' : ''}`}>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
                   <div>
                     <label className="text-xs font-medium text-gray-700 mb-1 block">Room Type</label>
                     <select value={br.selectedType}
@@ -465,57 +489,61 @@ const validate = () => {
                   </div>
                 </div>
 
-               {idx === 0 && (
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                    <div>
-                      <label className="text-xs font-medium text-gray-700 mb-1 block">Adults</label>
-                      <input type="number" min="1" value={br.adults}
-                        onChange={(e) => updateRoom(idx, "adults", e.target.value)}
-                        className="w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:border-blue-500 bg-white" />
-                    </div>
-                    <div>
-                      <label className="text-xs font-medium text-gray-700 mb-1 block">Children</label>
-                      <input type="number" min="0" value={br.children}
-                        onChange={(e) => updateRoom(idx, "children", e.target.value)}
-                        className="w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:border-blue-500 bg-white" />
-                    </div>
-                    <div>
-                      <label className="text-xs font-medium text-gray-700 mb-1 block">Infants</label>
-                      <input type="number" min="0" value={br.infants}
-                        onChange={(e) => updateRoom(idx, "infants", e.target.value)}
-                        className="w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:border-blue-500 bg-white" />
-                    </div>
-                    <div className="relative">
-                      <label className="text-xs font-medium text-gray-700 mb-1 block">Extra Beds</label>
-                      <button type="button"
-                        onClick={() => setOpenExtraIdx(openExtraIdx === idx ? null : idx)}
-                        className="w-full flex items-center justify-between border border-gray-200 rounded-lg px-3 py-2.5 text-sm text-gray-600 bg-white hover:bg-gray-50 transition-colors">
-                        <span className="truncate">{getExtraSummary(br) || "Select ▾"}</span>
-                        <span className="ml-2">{openExtraIdx === idx ? "▲" : "▾"}</span>
-                      </button>
-                      {openExtraIdx === idx && (
-                        <div className="absolute top-full left-0 right-0 z-50 mt-1 bg-white border border-gray-200 rounded-xl shadow-lg p-3">
-                          {extraItems.map((item) => (
-                            <div key={item.key} className="flex items-center justify-between py-2 border-b border-gray-50 last:border-0">
-                              <span className="text-sm text-gray-700">{item.label}</span>
-                              <div className="flex items-center gap-2">
-                                <button type="button"
-                                  onClick={() => updateRoom(idx, item.key, Math.max(0, (parseInt(br[item.key]) || 0) - 1).toString())}
-                                  className="w-7 h-7 bg-red-100 text-red-600 rounded-full font-bold hover:bg-red-200 flex items-center justify-center text-sm">−</button>
-                                <span className="text-sm font-semibold text-gray-900 w-6 text-center">{br[item.key] || "0"}</span>
-                                <button type="button"
-                                  onClick={() => updateRoom(idx, item.key, ((parseInt(br[item.key]) || 0) + 1).toString())}
-                                  className="w-7 h-7 bg-green-100 text-green-600 rounded-full font-bold hover:bg-green-200 flex items-center justify-center text-sm">+</button>
-                              </div>
-                            </div>
-                          ))}
-                          <button type="button" onClick={() => setOpenExtraIdx(null)}
-                            className="w-full mt-2 text-xs text-center text-blue-600 hover:underline">Done ✓</button>
-                        </div>
-                      )}
-                    </div>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                  <div>
+                    <label className="text-xs font-medium text-gray-700 mb-1 block">Adults</label>
+                    <input type="number" min="1"
+                      max={rooms.find(r => r.id === br.roomId)?.maxAdults || 99}
+                      value={br.adults}
+                      onChange={(e) => updateRoom(idx, "adults", e.target.value)}
+                      className="w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:border-blue-500 bg-white" />
                   </div>
-                )}
+                  <div>
+                    <label className="text-xs font-medium text-gray-700 mb-1 block">Children</label>
+                    <input type="number" min="0"
+                      max={rooms.find(r => r.id === br.roomId)?.maxChildren || 99}
+                      value={br.children}
+                      onChange={(e) => updateRoom(idx, "children", e.target.value)}
+                      className="w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:border-blue-500 bg-white" />
+                  </div>
+                  <div>
+                    <label className="text-xs font-medium text-gray-700 mb-1 block">Infants</label>
+                    <input type="number" min="0"
+                      max={rooms.find(r => r.id === br.roomId)?.maxInfants || 99}
+                      value={br.infants}
+                      onChange={(e) => updateRoom(idx, "infants", e.target.value)}
+                      className="w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:border-blue-500 bg-white" />
+                  </div>
+                  <div className="relative">
+                    <label className="text-xs font-medium text-gray-700 mb-1 block">Extra Beds</label>
+                    <button type="button"
+                      onClick={() => setOpenExtraIdx(openExtraIdx === idx ? null : idx)}
+                      className="w-full flex items-center justify-between border border-gray-200 rounded-lg px-3 py-2.5 text-sm text-gray-600 bg-white hover:bg-gray-50 transition-colors">
+                      <span className="truncate">{getExtraSummary(br) || "Select ▾"}</span>
+                      <span className="ml-2">{openExtraIdx === idx ? "▲" : "▾"}</span>
+                    </button>
+                    {openExtraIdx === idx && (
+                      <div className="absolute top-full left-0 right-0 z-50 mt-1 bg-white border border-gray-200 rounded-xl shadow-lg p-3">
+                        {extraItems.map((item) => (
+                          <div key={item.key} className="flex items-center justify-between py-2 border-b border-gray-50 last:border-0">
+                            <span className="text-sm text-gray-700">{item.label}</span>
+                            <div className="flex items-center gap-2">
+                              <button type="button"
+                                onClick={() => updateRoom(idx, item.key, Math.max(0, (parseInt(br[item.key]) || 0) - 1).toString())}
+                                className="w-7 h-7 bg-red-100 text-red-600 rounded-full font-bold hover:bg-red-200 flex items-center justify-center text-sm">−</button>
+                              <span className="text-sm font-semibold text-gray-900 w-6 text-center">{br[item.key] || "0"}</span>
+                              <button type="button"
+                                onClick={() => updateRoom(idx, item.key, ((parseInt(br[item.key]) || 0) + 1).toString())}
+                                className="w-7 h-7 bg-green-100 text-green-600 rounded-full font-bold hover:bg-green-200 flex items-center justify-center text-sm">+</button>
+                            </div>
+                          </div>
+                        ))}
+                        <button type="button" onClick={() => setOpenExtraIdx(null)}
+                          className="w-full mt-2 text-xs text-center text-blue-600 hover:underline">Done ✓</button>
+                      </div>
+                    )}
+                  </div>
+                </div>
               </div>
             ))}
 
