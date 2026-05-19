@@ -5,19 +5,19 @@
       "schedule": "0 0 * * *"
     },
     {
-      "path": "/api/cron/revenue?slot=nextDay",
+      "path": "/api/cron/revenue/nextday",
       "schedule": "0 0 * * *"
     },
     {
-      "path": "/api/cron/revenue?slot=first12",
+      "path": "/api/cron/revenue/first12",
       "schedule": "1 0 * * *"
     },
     {
-      "path": "/api/cron/revenue?slot=middle",
+      "path": "/api/cron/revenue/middle",
       "schedule": "1 12 * * *"
     },
     {
-      "path": "/api/cron/revenue?slot=last",
+      "path": "/api/cron/revenue/last",
       "schedule": "31 18 * * *"
     }
   ]
