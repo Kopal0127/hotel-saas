@@ -402,7 +402,27 @@ const validate = () => {
           <div className="bg-white rounded-2xl p-4 md:p-6 shadow-sm border border-gray-100 mb-6">
             <h3 className="text-lg font-semibold text-gray-900 mb-4">Naya Booking Add Karo</h3>
 
-           <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4">
+           {/* Summary Bar */}
+            {bookingRooms.some(br => br.roomId) && (
+              <div className="bg-blue-50 border border-blue-200 rounded-xl px-4 py-3 mb-3 flex flex-wrap gap-2 items-center justify-center">
+                <span className="text-xs font-semibold text-blue-700">
+                  {bookingRooms.filter(br => br.roomId).length} Room{bookingRooms.filter(br => br.roomId).length > 1 ? 's' : ''} for:
+                </span>
+                <span className="text-xs text-blue-600">Adult-{bookingRooms.reduce((s, br) => s + (parseInt(br.adults) || 0), 0)}</span>
+                <span className="text-xs text-gray-400">·</span>
+                <span className="text-xs text-blue-600">Child-{bookingRooms.reduce((s, br) => s + (parseInt(br.children) || 0), 0)}</span>
+                <span className="text-xs text-gray-400">·</span>
+                <span className="text-xs text-blue-600">Infant-{bookingRooms.reduce((s, br) => s + (parseInt(br.infants) || 0), 0)}</span>
+                <span className="text-xs text-gray-400">·</span>
+                <span className="text-xs text-blue-600">Mattress-{bookingRooms.reduce((s, br) => s + (parseInt(br.extraMattress) || 0), 0)}</span>
+                <span className="text-xs text-gray-400">·</span>
+                <span className="text-xs font-semibold text-blue-800">Total = {bookingRooms.reduce((s, br) => s + (parseInt(br.adults) || 0) + (parseInt(br.children) || 0) + (parseInt(br.infants) || 0) + (parseInt(br.extraMattress) || 0), 0)}</span>
+              </div>
+            )}
+
+            {/* Summary Bar */}
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4">
               {/* Check-in Check-out */}
               <div>
                 <label className="text-sm font-medium text-gray-700 mb-2 block">
@@ -463,30 +483,6 @@ const validate = () => {
                 </select>
               </div>
             </div>
-
-           {/* Summary Bar */}
-            {bookingRooms.some(br => br.roomId) && (
-              <div className="bg-blue-50 border border-blue-200 rounded-xl px-4 py-3 mb-3 flex flex-wrap gap-2 items-center justify-center">
-                <span className="text-xs font-semibold text-blue-700">
-                  {bookingRooms.filter(br => br.roomId).length} Room{bookingRooms.filter(br => br.roomId).length > 1 ? 's' : ''} for:
-                </span>
-                <span className="text-xs text-blue-600">
-                  Adult-{bookingRooms.reduce((s, br) => s + (parseInt(br.adults) || 0), 0)}
-                </span>
-                <span className="text-xs text-blue-600">
-                  Child-{bookingRooms.reduce((s, br) => s + (parseInt(br.children) || 0), 0)}
-                </span>
-                <span className="text-xs text-blue-600">
-                  Infant-{bookingRooms.reduce((s, br) => s + (parseInt(br.infants) || 0), 0)}
-                </span>
-                <span className="text-xs text-blue-600">
-                  Mattress-{bookingRooms.reduce((s, br) => s + (parseInt(br.extraMattress) || 0), 0)}
-                </span>
-               <span className="text-xs font-semibold text-blue-800">
-                  Total = {bookingRooms.reduce((s, br) => s + (parseInt(br.adults) || 0) + (parseInt(br.children) || 0) + (parseInt(br.infants) || 0) + (parseInt(br.extraMattress) || 0), 0)}
-                </span>
-              </div>
-            )}
 
             {bookingRooms.map((br, idx) => (
               <div key={idx} className="bg-blue-50 rounded-xl p-4 mb-4 border border-blue-100">
