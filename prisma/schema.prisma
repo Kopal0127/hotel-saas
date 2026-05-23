@@ -32,6 +32,8 @@ model Hotel {
   serviceCategories ServiceCategory[]
   razorpayKeyId     String?
   razorpayKeySecret String?
+  serpApiKey        String?
+  competitors       Competitor[]
 }
 
 model Room {
@@ -405,4 +407,24 @@ model RevenueSettings {
 
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
+}
+model Competitor {
+  id        String          @id @default(cuid())
+  hotelId   String
+  hotel     Hotel           @relation(fields: [hotelId], references: [id])
+  name      String
+  location  String
+  createdAt DateTime        @default(now())
+  rates     CompetitorRate[]
+}
+
+model CompetitorRate {
+  id           String     @id @default(cuid())
+  competitorId String     @unique
+  competitor   Competitor @relation(fields: [competitorId], references: [id], onDelete: Cascade)
+  price        Float?
+  source       String?
+  rating       Float?
+  reviewCount  Int?
+  fetchedAt    DateTime   @default(now())
 }
