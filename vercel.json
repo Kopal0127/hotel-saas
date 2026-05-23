@@ -1,4 +1,3 @@
-Set-Content -Path "vercel.json" -Value @'
 {
   "crons": [
     { "path": "/api/cron", "schedule": "0 18 * * *" },
@@ -9,4 +8,3 @@ Set-Content -Path "vercel.json" -Value @'
     { "path": "/api/cron/rate-tracker", "schedule": "0 1 * * *" }
   ]
 }
-'@
