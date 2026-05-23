@@ -3,7 +3,6 @@ import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
-// GET — competitors fetch karo
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const hotelId = searchParams.get("hotelId");
@@ -18,7 +17,6 @@ export async function GET(req: NextRequest) {
   return NextResponse.json(competitors);
 }
 
-// POST — competitor add karo
 export async function POST(req: NextRequest) {
   const body = await req.json();
   const { hotelId, name, location } = body;
@@ -36,7 +34,6 @@ export async function POST(req: NextRequest) {
   return NextResponse.json(competitor);
 }
 
-// DELETE — competitor delete karo
 export async function DELETE(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const id = searchParams.get("id");
