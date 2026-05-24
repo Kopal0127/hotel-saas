@@ -151,7 +151,9 @@ useEffect(() => {
     setOrderItems([]);
   }, [activeTab]);
 
-  useEffect(() => { fetchData(); }, [fetchData]);
+ useEffect(() => { 
+  if (activeTab !== "TRACKER") fetchData(); 
+}, [fetchData]);
 
   // Order logic
   const addToOrder = (item: Item) => {
