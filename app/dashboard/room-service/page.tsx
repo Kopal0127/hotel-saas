@@ -173,29 +173,39 @@ useEffect(() => {
   // Save Order to Database
   const saveOrder = async (isEBill: boolean = false, isKOT: boolean = false) => {
     try {
-      const res = await fetch("/api/service-orders", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          bookingId: selectedRoom,
-          hotelId,
-          roomNumber: selectedRoomData?.roomNumber,
-          guestName: selectedRoomData?.guestName,
-          serviceType: activeTab,
-          paymentMethod,
-          discount,
-          notes,
-          items: orderItems.map(o => ({
-            itemId: o.item.id,
-            itemName: o.item.name,
-            itemCategory: o.item.itemCategory,
-            price: o.item.price,
-            quantity: o.qty,
-          })),
-        }),
-      });
-      const data = await res.json();
-      if (res.ok) {
+     const foodDrinkItems = orderItems.filter(o => o.item.itemCategory !== "OTHER");
+      const otherItems = orderItems.filter(o => o.item.itemCategory === "OTHER");
+
+      const saveGroup = async (items: OrderItem[], serviceType: string) => {
+        if (items.length === 0) return true;
+        const res = await fetch("/api/service-orders", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            bookingId: selectedRoom,
+            hotelId,
+            roomNumber: selectedRoomData?.roomNumber,
+            guestName: selectedRoomData?.guestName,
+            serviceType,
+            paymentMethod,
+            discount,
+            notes,
+            items: items.map(o => ({
+              itemId: o.item.id,
+              itemName: o.item.name,
+              itemCategory: o.item.itemCategory,
+              price: o.item.price,
+              quantity: o.qty,
+            })),
+          }),
+        });
+        return res.ok;
+      };
+
+      const foodOk = await saveGroup(foodDrinkItems, "FOOD");
+      const otherOk = await saveGroup(otherItems, "OTHER");
+
+      if (foodOk && otherOk) {
         if (isKOT) {
           alert(`✅ KOT sent to Kitchen!\nRoom: #${selectedRoomData?.roomNumber}\n${orderItems.map(o => `${o.item.name} x${o.qty}`).join('\n')}\nTotal: ₹${total}`);
         } else if (isEBill) {
@@ -207,7 +217,7 @@ useEffect(() => {
         setDiscount(0);
         setNotes("");
       } else {
-        alert("Order save nahi ho saka: " + (data.error || ""));
+        alert("Order save nahi ho saka!");
       }
     } catch (e) {
       alert("Kuch galat hua!");
