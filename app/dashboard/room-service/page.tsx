@@ -26,6 +26,7 @@ interface Item {
 interface OrderItem {
   item: Item;
   qty: number;
+  serviceType: ServiceType;
 }
 
 interface OccupiedRoom {
@@ -155,7 +156,7 @@ useEffect(() => {
       if (existing) {
         return prev.map(o => o.item.id === item.id ? { ...o, qty: o.qty + 1 } : o);
       }
-      return [...prev, { item, qty: 1 }];
+      return [...prev, { item, qty: 1, serviceType: activeTab as ServiceType }];
     });
   };
 
