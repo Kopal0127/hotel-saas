@@ -49,7 +49,7 @@ function RoomServiceContent() {
   const [paymentMethod, setPaymentMethod] = useState<"Cash" | "Online" | "Due">("Cash");
   const [notes, setNotes] = useState("");
   const [discount, setDiscount] = useState(0);
-  const [activeView, setActiveView] = useState<"pos" | "manage">("pos");
+  const [activeView, setActiveView] = useState<"pos" | "manage" | "tracker">("pos");
 
   // Occupied rooms
   const [occupiedRooms, setOccupiedRooms] = useState<OccupiedRoom[]>([]);
@@ -324,12 +324,18 @@ useEffect(() => {
             >
               🛒 POS View
             </button>
-            <button
-              onClick={() => setActiveView("manage")}
-              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${activeView === "manage" ? "bg-blue-600 text-white" : "bg-white border text-gray-600 hover:bg-gray-50"}`}
-            >
-              ⚙️ Manage
-            </button>
+           <button
+  onClick={() => setActiveView("tracker")}
+  className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${activeView === "tracker" ? "bg-blue-600 text-white" : "bg-white border text-gray-600 hover:bg-gray-50"}`}
+>
+  📋 Order Tracker
+</button>
+<button
+  onClick={() => setActiveView("manage")}
+  className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${activeView === "manage" ? "bg-blue-600 text-white" : "bg-white border text-gray-600 hover:bg-gray-50"}`}
+>
+  ⚙️ Manage
+</button>
           </div>
         </div>
 
