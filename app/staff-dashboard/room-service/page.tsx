@@ -58,21 +58,25 @@ export default function RoomServiceDashboard() {
       const staffData = JSON.parse(staff);
       const hotelId = staffData.hotelId;
 
-      let url = "";
       if (activeTab === "KITCHEN") {
-        url = `/api/service-orders?hotelId=${hotelId}&kitchenStatus=PREPARED&serviceType=FOOD`;
-      } else {
-        url = `/api/service-orders?hotelId=${hotelId}&serviceType=OTHER`;
-      }
-
-      const res = await fetch(url, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-
-      if (res.ok) {
-        const data = await res.json();
-        setOrders(data.orders || []);
-      }
+  const [foodRes, drinksRes] = await Promise.all([
+    fetch(`/api/service-orders?hotelId=${hotelId}&kitchenStatus=PREPARED&serviceType=FOOD`, { headers: { Authorization: `Bearer ${token}` } }),
+    fetch(`/api/service-orders?hotelId=${hotelId}&kitchenStatus=PREPARED&serviceType=DRINKS`, { headers: { Authorization: `Bearer ${token}` } }),
+  ]);
+  const foodData = foodRes.ok ? await foodRes.json() : { orders: [] };
+  const drinksData = drinksRes.ok ? await drinksRes.json() : { orders: [] };
+  const combined = [...(foodData.orders || []), ...(drinksData.orders || [])];
+  combined.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+  setOrders(combined);
+} else {
+  const res = await fetch(`/api/service-orders?hotelId=${hotelId}&serviceType=OTHER`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  if (res.ok) {
+    const data = await res.json();
+    setOrders(data.orders || []);
+  }
+}
     } catch (error) {
       console.error("Error fetching orders:", error);
     } finally {
