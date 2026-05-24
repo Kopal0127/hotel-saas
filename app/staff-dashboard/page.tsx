@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 const ROLE_CONFIG: Record<string, { emoji: string; label: string; path: string; color: string }> = {
   "Housekeeping":       { emoji: "🧹", label: "Housekeeping",       path: "/staff-dashboard/housekeeping",       color: "bg-purple-50 border-purple-200 hover:bg-purple-100" },
   "Kitchen":            { emoji: "👨‍🍳", label: "Kitchen",            path: "/staff-dashboard/kitchen",            color: "bg-orange-50 border-orange-200 hover:bg-orange-100" },
-  "Room Service":       { emoji: "🛎️", label: "Room Service",       path: "/staff-dashboard/room-service",       color: "bg-blue-50 border-blue-200 hover:bg-blue-100" },
+  "ROOM_SERVICE":       { emoji: "🛎️", label: "ROOM_SERVICE",       path: "/staff-dashboard/room-service",       color: "bg-blue-50 border-blue-200 hover:bg-blue-100" },
   "Front Desk":         { emoji: "🏨", label: "Front Desk",         path: "/staff-dashboard/front-desk",         color: "bg-green-50 border-green-200 hover:bg-green-100" },
   "Waiter":             { emoji: "🍽️", label: "Waiter",             path: "/staff-dashboard/waiter",             color: "bg-yellow-50 border-yellow-200 hover:bg-yellow-100" },
   "Property Manager":   { emoji: "🏢", label: "Property Manager",   path: "/staff-dashboard/property-manager",   color: "bg-red-50 border-red-200 hover:bg-red-100" },
@@ -77,9 +77,9 @@ const config = roleKey ? ROLE_CONFIG[roleKey] : undefined;
           <div className="grid grid-cols-2 gap-4">
             {roles.map((role) => {
              const roleKey = Object.keys(ROLE_CONFIG).find(
-  key => key.toLowerCase() === role.toLowerCase()
-);
-const config = roleKey ? ROLE_CONFIG[roleKey] : undefined;
+             key => key.toLowerCase() === role.toLowerCase()
+             );
+             const config = roleKey ? ROLE_CONFIG[roleKey] : undefined;
               if (!config) return null;
               return (
                 <button key={role}
