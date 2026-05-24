@@ -22,6 +22,8 @@ const ROLE_OPTIONS = [
   { value: "ROOM_SERVICE", label: "🛎️ Room Service", color: "bg-orange-100 text-orange-700 border-orange-200" },
   { value: "KITCHEN", label: "👨‍🍳 Kitchen", color: "bg-red-100 text-red-700 border-red-200" },
   { value: "HOUSEKEEPING", label: "🧹 Housekeeping", color: "bg-teal-100 text-teal-700 border-teal-200" },
+  { value: "PROPERTY_MANAGER", label: "🏢 Property Manager", color: "bg-purple-100 text-purple-700 border-purple-200" },
+{ value: "SUPPORT_STAFF", label: "🙋 Support Staff", color: "bg-gray-100 text-gray-700 border-gray-200" },
 ];
 
 export default function StaffPage() {
