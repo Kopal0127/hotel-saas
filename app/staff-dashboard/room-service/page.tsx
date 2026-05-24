@@ -70,7 +70,7 @@ export default function RoomServiceDashboard() {
         combined.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
         setOrders(combined);
       } else {
-        const res = await fetch(`/api/service-orders?hotelId=${hotelId}&serviceType=OTHER`, {
+       const res = await fetch(`/api/service-orders?hotelId=${hotelId}&serviceType=OTHER&kitchenStatus=PENDING`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         if (res.ok) {
