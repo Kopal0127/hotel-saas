@@ -49,7 +49,7 @@ export async function POST(req: NextRequest) {
 
   const { name, email, password, phone, hotelId, roles } = await req.json();
 
-  if (!name || !email || !password || !hotelId) {
+ if (!name || !email || !hotelId) {
     return NextResponse.json({ error: "Sab fields bharo!" }, { status: 400 });
   }
 
