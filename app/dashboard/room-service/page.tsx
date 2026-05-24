@@ -293,7 +293,6 @@ useEffect(() => {
     { key: "FOOD", label: "🍽️ Foods", color: "bg-orange-500" },
     { key: "DRINKS", label: "🥤 Drinks", color: "bg-blue-500" },
     { key: "OTHER", label: "🛎️ Other Service", color: "bg-purple-500" },
-    { key: "TRACKER", label: "📋 Order Tracker", color: "bg-gray-700" },
   ];
 
   const selectedCategory = categories.find(c => c.id === selectedCategoryId);
