@@ -157,7 +157,9 @@ export default function StaffPage() {
   };
 
   async function handleAddStaff() {
-    if (!form.name || !form.email || !form.password) { showToast("Naam, email aur password zaroori hai!", "error"); return; }
+   if (!form.name) { showToast("Naam zaroori hai!", "error"); return; }
+   if (!form.phone) { showToast("Mobile number zaroori hai!", "error"); return; }
+   if (!form.email) { showToast("Email zaroori hai!", "error"); return; }
     if (form.roles.length === 0) { showToast("Kam se kam ek Role select karo!", "error"); return; }
     setLoading(true);
     const token = localStorage.getItem("token");
