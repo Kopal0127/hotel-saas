@@ -144,13 +144,6 @@ useEffect(() => {
     setLoading(false);
   }, [activeTab, fetchOccupiedRooms]);
 
- useEffect(() => {
-    if (activeTab === "TRACKER") return;
-    fetchData();
-    setSelectedCategoryId("");
-    setOrderItems([]);
-  }, [activeTab]);
-
  useEffect(() => { 
   if (activeTab !== "TRACKER") fetchData(); 
 }, [fetchData]);
