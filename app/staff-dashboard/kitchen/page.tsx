@@ -26,6 +26,7 @@ interface ServiceOrder {
 export default function KitchenDashboard() {
   const router = useRouter();
   const [orders, setOrders] = useState<ServiceOrder[]>([]);
+  const [recentOrders, setRecentOrders] = useState<ServiceOrder[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<"PENDING" | "PREPARING">("PENDING");
   const [staffName, setStaffName] = useState("");
@@ -53,17 +54,14 @@ export default function KitchenDashboard() {
     try {
       const token = localStorage.getItem("staffToken");
       const staff = localStorage.getItem("staff");
-      
       if (!staff) return;
-      
+
       const staffData = JSON.parse(staff);
       const hotelId = staffData.hotelId;
 
       const res = await fetch(
         `/api/service-orders?hotelId=${hotelId}&kitchenStatus=${activeTab}&serviceType=FOOD`,
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
+        { headers: { Authorization: `Bearer ${token}` } }
       );
 
       if (res.ok) {
@@ -77,9 +75,41 @@ export default function KitchenDashboard() {
     }
   };
 
+  const fetchRecentOrders = async () => {
+    try {
+      const token = localStorage.getItem("staffToken");
+      const staff = localStorage.getItem("staff");
+      if (!staff) return;
+
+      const staffData = JSON.parse(staff);
+      const hotelId = staffData.hotelId;
+
+      const res = await fetch(
+        `/api/service-orders?hotelId=${hotelId}&serviceType=FOOD`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      if (res.ok) {
+        const data = await res.json();
+        const sevenDaysAgo = new Date();
+        sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+        const filtered = (data.orders || []).filter((o: ServiceOrder) =>
+          new Date(o.createdAt) >= sevenDaysAgo
+        );
+        setRecentOrders(filtered);
+      }
+    } catch (error) {
+      console.error("Error fetching recent orders:", error);
+    }
+  };
+
   useEffect(() => {
     fetchOrders();
-    const interval = setInterval(fetchOrders, 30000);
+    fetchRecentOrders();
+    const interval = setInterval(() => {
+      fetchOrders();
+      fetchRecentOrders();
+    }, 30000);
     return () => clearInterval(interval);
   }, [activeTab]);
 
@@ -93,14 +123,12 @@ export default function KitchenDashboard() {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({
-          id: orderId,
-          kitchenStatus: newStatus,
-        }),
+        body: JSON.stringify({ id: orderId, kitchenStatus: newStatus }),
       });
 
       if (res.ok) {
         fetchOrders();
+        fetchRecentOrders();
       } else {
         const errData = await res.json();
         alert("❌ Update failed: " + (errData.error || "Unknown error"));
@@ -131,6 +159,7 @@ export default function KitchenDashboard() {
       </div>
 
       <div className="max-w-7xl mx-auto px-4 py-6">
+        {/* Tabs */}
         <div className="flex gap-2 mb-6">
           <button
             onClick={() => setActiveTab("PENDING")}
@@ -150,6 +179,7 @@ export default function KitchenDashboard() {
           </button>
         </div>
 
+        {/* Active Orders */}
         {loading ? (
           <div className="text-center py-12">
             <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-orange-500 border-t-transparent"></div>
@@ -209,6 +239,56 @@ export default function KitchenDashboard() {
             ))}
           </div>
         )}
+
+        {/* Recent Orders */}
+        <div className="mt-10">
+          <h2 className="text-lg font-semibold text-gray-700 mb-4">📋 Recent Orders (Last 7 Days)</h2>
+          {recentOrders.length === 0 ? (
+            <div className="bg-white rounded-lg shadow-sm p-8 text-center">
+              <p className="text-gray-400">Koi recent orders nahi hain.</p>
+            </div>
+          ) : (
+            <div className="bg-white rounded-lg shadow-sm border border-gray-100 overflow-x-auto">
+              <table className="w-full min-w-[600px]">
+                <thead className="bg-gray-50 border-b border-gray-100">
+                  <tr>
+                    <th className="text-left px-4 py-3 text-xs font-medium text-gray-600">Room</th>
+                    <th className="text-left px-4 py-3 text-xs font-medium text-gray-600">Guest</th>
+                    <th className="text-left px-4 py-3 text-xs font-medium text-gray-600">Items</th>
+                    <th className="text-left px-4 py-3 text-xs font-medium text-gray-600">Amount</th>
+                    <th className="text-left px-4 py-3 text-xs font-medium text-gray-600">Status</th>
+                    <th className="text-left px-4 py-3 text-xs font-medium text-gray-600">Time</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {recentOrders.map((order) => (
+                    <tr key={order.id} className="border-b border-gray-50 hover:bg-gray-50">
+                      <td className="px-4 py-3 text-sm font-medium text-gray-800">#{order.roomNumber}</td>
+                      <td className="px-4 py-3 text-sm text-gray-600">{order.guestName}</td>
+                      <td className="px-4 py-3 text-xs text-gray-600">
+                        {order.items.map(i => `${i.quantity}x ${i.itemName}`).join(", ")}
+                      </td>
+                      <td className="px-4 py-3 text-sm font-medium text-green-600">₹{order.totalAmount}</td>
+                      <td className="px-4 py-3">
+                        <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${
+                          order.kitchenStatus === "PREPARED" ? "bg-green-100 text-green-700" :
+                          order.kitchenStatus === "PREPARING" ? "bg-blue-100 text-blue-700" :
+                          order.kitchenStatus === "DELIVERED" ? "bg-gray-100 text-gray-600" :
+                          "bg-orange-100 text-orange-700"
+                        }`}>
+                          {order.kitchenStatus}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3 text-xs text-gray-400">
+                        {new Date(order.createdAt).toLocaleDateString()} {new Date(order.createdAt).toLocaleTimeString()}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
