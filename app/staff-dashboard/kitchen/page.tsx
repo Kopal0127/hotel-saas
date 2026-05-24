@@ -27,10 +27,9 @@ export default function KitchenDashboard() {
   const router = useRouter();
   const [orders, setOrders] = useState<ServiceOrder[]>([]);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<"PENDING" | "PREPARING" | "DELIVERED">("PENDING");
+  const [activeTab, setActiveTab] = useState<"PENDING" | "PREPARING">("PENDING");
   const [staffName, setStaffName] = useState("");
 
-  // Auth check
   useEffect(() => {
     const token = localStorage.getItem("staffToken");
     const staff = localStorage.getItem("staff");
@@ -43,7 +42,6 @@ export default function KitchenDashboard() {
     const staffData = JSON.parse(staff);
     setStaffName(staffData.name);
 
-    // Check if KITCHEN role hai
     if (!staffData.roles || !staffData.roles.map((r: string) => r.toLowerCase()).includes("kitchen")) {
       alert("❌ Access Denied! Kitchen role nahi hai.");
       router.push("/staff-dashboard");
@@ -51,7 +49,6 @@ export default function KitchenDashboard() {
     }
   }, [router]);
 
-  // Fetch orders
   const fetchOrders = async () => {
     try {
       const token = localStorage.getItem("staffToken");
@@ -82,14 +79,11 @@ export default function KitchenDashboard() {
 
   useEffect(() => {
     fetchOrders();
-    
-    // Auto-refresh every 30 seconds
     const interval = setInterval(fetchOrders, 30000);
     return () => clearInterval(interval);
   }, [activeTab]);
 
-  // Update order status
- const updateStatus = async (orderId: string, newStatus: string) => {
+  const updateStatus = async (orderId: string, newStatus: string) => {
     try {
       const token = localStorage.getItem("staffToken") || localStorage.getItem("token");
       
@@ -99,7 +93,7 @@ export default function KitchenDashboard() {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-       body: JSON.stringify({
+        body: JSON.stringify({
           id: orderId,
           kitchenStatus: newStatus,
         }),
@@ -109,16 +103,13 @@ export default function KitchenDashboard() {
         fetchOrders();
       } else {
         const errData = await res.json();
-        console.error("Update error:", errData);
         alert("❌ Update failed: " + (errData.error || "Unknown error"));
       }
     } catch (error) {
-      console.error("Error updating status:", error);
       alert("❌ Error updating status");
     }
   };
 
-  // Logout
   const handleLogout = () => {
     localStorage.removeItem("staffToken");
     localStorage.removeItem("staff");
@@ -127,31 +118,24 @@ export default function KitchenDashboard() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header */}
       <div className="bg-white shadow-sm border-b">
         <div className="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
           <div>
             <h1 className="text-2xl font-bold text-gray-800">👨‍🍳 Kitchen Dashboard</h1>
             <p className="text-sm text-gray-500">Welcome, {staffName}</p>
           </div>
-          <button
-            onClick={handleLogout}
-            className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600"
-          >
+          <button onClick={handleLogout} className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600">
             🚪 Logout
           </button>
         </div>
       </div>
 
       <div className="max-w-7xl mx-auto px-4 py-6">
-        {/* Tabs */}
         <div className="flex gap-2 mb-6">
           <button
             onClick={() => setActiveTab("PENDING")}
             className={`px-6 py-3 rounded-lg font-medium transition ${
-              activeTab === "PENDING"
-                ? "bg-orange-500 text-white"
-                : "bg-white text-gray-700 hover:bg-gray-100"
+              activeTab === "PENDING" ? "bg-orange-500 text-white" : "bg-white text-gray-700 hover:bg-gray-100"
             }`}
           >
             🔔 Pending ({orders.length})
@@ -159,26 +143,13 @@ export default function KitchenDashboard() {
           <button
             onClick={() => setActiveTab("PREPARING")}
             className={`px-6 py-3 rounded-lg font-medium transition ${
-              activeTab === "PREPARING"
-                ? "bg-blue-500 text-white"
-                : "bg-white text-gray-700 hover:bg-gray-100"
+              activeTab === "PREPARING" ? "bg-blue-500 text-white" : "bg-white text-gray-700 hover:bg-gray-100"
             }`}
           >
             👨‍🍳 Preparing
           </button>
-          <button
-            onClick={() => setActiveTab("DELIVERED")}
-            className={`px-6 py-3 rounded-lg font-medium transition ${
-              activeTab === "DELIVERED"
-                ? "bg-green-500 text-white"
-                : "bg-white text-gray-700 hover:bg-gray-100"
-            }`}
-          >
-            ✅ Delivered
-          </button>
         </div>
 
-        {/* Loading */}
         {loading ? (
           <div className="text-center py-12">
             <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-orange-500 border-t-transparent"></div>
@@ -189,22 +160,17 @@ export default function KitchenDashboard() {
             <p className="text-gray-500 text-lg">
               {activeTab === "PENDING" && "🎉 No pending orders! Kitchen is clear."}
               {activeTab === "PREPARING" && "⏳ No orders in preparation."}
-              {activeTab === "DELIVERED" && "📦 No delivered orders yet."}
             </p>
           </div>
-       ) : (
+        ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {orders.map((order) => (
-              <div
-                key={order.id}
-              className="bg-green-50 border border-green-200 rounded-xl p-4 hover:shadow-md transition text-center"
-              >
-               <div className="text-3xl mb-2">🛏️</div>
+              <div key={order.id} className="bg-green-50 border border-green-200 rounded-xl p-4 hover:shadow-md transition text-center">
+                <div className="text-3xl mb-2">🛏️</div>
                 <h3 className="text-lg font-bold text-gray-800">#{order.roomNumber}</h3>
                 <p className="text-sm text-gray-500 mb-1">{order.guestName}</p>
                 <p className="text-xs text-gray-400 mb-2">{new Date(order.createdAt).toLocaleTimeString()}</p>
 
-                {/* Items */}
                 <div className="bg-white rounded-lg px-3 py-2 mb-2 text-left">
                   {order.items.map((item) => (
                     <div key={item.id} className="flex justify-between text-xs text-gray-700 py-0.5">
@@ -223,30 +189,22 @@ export default function KitchenDashboard() {
                   <span className="text-sm font-bold text-green-600">₹{order.totalAmount}</span>
                 </div>
 
-                {/* Action Button */}
-                <div>
-                  {activeTab === "PENDING" && (
-                    <button
-                      onClick={() => updateStatus(order.id, "PREPARING")}
-                      className="w-full px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 text-sm font-medium transition"
-                    >
-                      👨‍🍳 Start Preparing
-                    </button>
-                  )}
-                  {activeTab === "PREPARING" && (
-                    <button
-                      onClick={() => updateStatus(order.id, "DELIVERED")}
-                      className="w-full px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 text-sm font-medium transition"
-                    >
-                      ✅ Mark Delivered
-                    </button>
-                  )}
-                  {activeTab === "DELIVERED" && (
-                    <div className="w-full px-4 py-2 bg-green-100 text-green-700 rounded-lg text-center text-sm font-medium">
-                      ✅ Delivered at {new Date(order.createdAt).toLocaleTimeString()}
-                    </div>
-                  )}
-                </div>
+                {activeTab === "PENDING" && (
+                  <button
+                    onClick={() => updateStatus(order.id, "PREPARING")}
+                    className="w-full px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 text-sm font-medium transition"
+                  >
+                    👨‍🍳 Start Preparing
+                  </button>
+                )}
+                {activeTab === "PREPARING" && (
+                  <button
+                    onClick={() => updateStatus(order.id, "PREPARED")}
+                    className="w-full px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 text-sm font-medium transition"
+                  >
+                    ✅ Mark Prepared
+                  </button>
+                )}
               </div>
             ))}
           </div>
