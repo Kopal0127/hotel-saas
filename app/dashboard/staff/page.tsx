@@ -333,7 +333,7 @@ export default function StaffPage() {
                 <span className="text-red-500">*</span> Role & Responsibilities
                 <span className="text-xs text-gray-500 font-normal ml-2">(Ek ya multiple select karo)</span>
               </label>
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                 {ROLE_OPTIONS.map(role => {
                   const isSelected = form.roles.includes(role.value);
                   return (
