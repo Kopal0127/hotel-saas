@@ -29,7 +29,10 @@ export default function StaffDashboardPage() {
 
     // Sirf 1 role hai toh seedha redirect
     if (parsed.roles?.length === 1) {
-      const config = ROLE_CONFIG[parsed.roles[0]];
+      const roleKey = Object.keys(ROLE_CONFIG).find(
+  key => key.toLowerCase() === parsed.roles[0].toLowerCase()
+);
+const config = roleKey ? ROLE_CONFIG[roleKey] : undefined;
       if (config) router.push(config.path);
     }
   }, []);
@@ -73,7 +76,10 @@ export default function StaffDashboardPage() {
         ) : (
           <div className="grid grid-cols-2 gap-4">
             {roles.map((role) => {
-              const config = ROLE_CONFIG[role];
+             const roleKey = Object.keys(ROLE_CONFIG).find(
+  key => key.toLowerCase() === role.toLowerCase()
+);
+const config = roleKey ? ROLE_CONFIG[roleKey] : undefined;
               if (!config) return null;
               return (
                 <button key={role}
