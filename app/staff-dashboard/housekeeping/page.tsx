@@ -34,7 +34,7 @@ export default function HousekeepingDashboard() {
     const staffData = JSON.parse(staff);
     setStaffName(staffData.name);
 
-    if (!staffData.roles || !staffData.roles.includes("HOUSEKEEPING")) {
+   if (!staffData.roles || !staffData.roles.map((r: string) => r.toLowerCase()).includes("housekeeping")) {
       alert("❌ Access Denied! Housekeeping role nahi hai.");
       router.push("/staff-dashboard");
       return;

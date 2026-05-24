@@ -44,7 +44,7 @@ export default function KitchenDashboard() {
     setStaffName(staffData.name);
 
     // Check if KITCHEN role hai
-    if (!staffData.roles || !staffData.roles.includes("KITCHEN")) {
+    if (!staffData.roles || !staffData.roles.map((r: string) => r.toLowerCase()).includes("kitchen")) {
       alert("❌ Access Denied! Kitchen role nahi hai.");
       router.push("/staff-dashboard");
       return;
