@@ -40,7 +40,7 @@ function RoomServiceContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const roomIdFromUrl = searchParams.get("roomId");
-  const [activeTab, setActiveTab] = useState<ServiceType>("FOOD");
+ const [activeTab, setActiveTab] = useState<ServiceType | "TRACKER">("FOOD");
   const [categories, setCategories] = useState<Category[]>([]);
   const [selectedCategoryId, setSelectedCategoryId] = useState<string>("");
   const [hotelId, setHotelId] = useState("");
@@ -69,6 +69,27 @@ function RoomServiceContent() {
   const [itemForm, setItemForm] = useState({
     name: "", itemCategory: "", price: "", minBaseline: "", stock: "",
   });
+  const [trackerOrders, setTrackerOrders] = useState<any[]>([]);
+
+const fetchTrackerOrders = useCallback(async () => {
+  try {
+    const hotelsRes = await fetch("/api/hotels");
+    const hotelsData = await hotelsRes.json();
+    const hId = hotelsData.hotels?.[0]?.id;
+    if (!hId) return;
+    const res = await fetch(`/api/service-orders?hotelId=${hId}`);
+    const data = await res.json();
+    setTrackerOrders(data.orders || []);
+  } catch (e) {
+    console.error(e);
+  }
+}, []);
+
+useEffect(() => {
+  if (activeTab === "TRACKER") {
+    fetchTrackerOrders();
+  }
+}, [activeTab]);
 
   // Fetch occupied rooms (CHECKED_IN status)
   const fetchOccupiedRooms = useCallback(async (hId: string) => {
@@ -123,7 +144,8 @@ function RoomServiceContent() {
     setLoading(false);
   }, [activeTab, fetchOccupiedRooms]);
 
-  useEffect(() => {
+ useEffect(() => {
+    if (activeTab === "TRACKER") return;
     fetchData();
     setSelectedCategoryId("");
     setOrderItems([]);
@@ -265,10 +287,11 @@ function RoomServiceContent() {
     fetchData();
   };
 
-  const tabConfig = [
+ const tabConfig = [
     { key: "FOOD", label: "🍽️ Foods", color: "bg-orange-500" },
     { key: "DRINKS", label: "🥤 Drinks", color: "bg-blue-500" },
     { key: "OTHER", label: "🛎️ Other Service", color: "bg-purple-500" },
+    { key: "TRACKER", label: "📋 Order Tracker", color: "bg-gray-700" },
   ];
 
   const selectedCategory = categories.find(c => c.id === selectedCategoryId);
@@ -563,6 +586,80 @@ function RoomServiceContent() {
                 </div>
               </div>
             </div>
+          </div>
+        )}
+
+       {/* ORDER TRACKER */}
+        {activeTab === "TRACKER" && activeView === "pos" && (
+          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-x-auto">
+            <div className="p-4 border-b border-gray-100 flex items-center justify-between">
+              <h3 className="text-sm font-bold text-gray-900">📋 Order Tracker</h3>
+              <button onClick={fetchTrackerOrders} className="text-xs bg-gray-100 text-gray-600 px-3 py-1.5 rounded-lg hover:bg-gray-200">
+                🔄 Refresh
+              </button>
+            </div>
+            {trackerOrders.length === 0 ? (
+              <div className="text-center py-12 text-gray-400">
+                <p className="text-4xl mb-3">📋</p>
+                <p>Koi order nahi hai</p>
+              </div>
+            ) : (
+              <table className="w-full min-w-[900px]">
+                <thead className="bg-gray-50 border-b border-gray-100">
+                  <tr>
+                    <th className="text-left px-4 py-3 text-xs font-medium text-gray-600">Room No</th>
+                    <th className="text-left px-4 py-3 text-xs font-medium text-gray-600">Guest Name</th>
+                    <th className="text-left px-4 py-3 text-xs font-medium text-gray-600">Items</th>
+                    <th className="text-left px-4 py-3 text-xs font-medium text-gray-600">Amount</th>
+                    <th className="text-left px-4 py-3 text-xs font-medium text-gray-600">Time</th>
+                    <th className="text-left px-4 py-3 text-xs font-medium text-gray-600">Allocated to Kitchen</th>
+                    <th className="text-left px-4 py-3 text-xs font-medium text-gray-600">Allocated to Room Service</th>
+                    <th className="text-left px-4 py-3 text-xs font-medium text-gray-600">Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {trackerOrders.map((order) => {
+                    const isFood = order.serviceType === "FOOD" || order.serviceType === "DRINKS";
+                    const kitchenAllocated = isFood;
+                    const roomServiceAllocated = isFood
+                      ? order.kitchenStatus === "PREPARED" || order.kitchenStatus === "DELIVERED"
+                      : true;
+                    const delivered = order.kitchenStatus === "DELIVERED";
+                    return (
+                      <tr key={order.id} className="border-b border-gray-50 hover:bg-gray-50">
+                        <td className="px-4 py-3 text-sm font-medium text-gray-800">#{order.roomNumber}</td>
+                        <td className="px-4 py-3 text-sm text-gray-600">{order.guestName}</td>
+                        <td className="px-4 py-3 text-xs text-gray-600">
+                          {order.items?.map((i: any) => `${i.quantity}x ${i.itemName}`).join(", ")}
+                        </td>
+                        <td className="px-4 py-3 text-sm font-medium text-green-600">₹{order.totalAmount}</td>
+                        <td className="px-4 py-3 text-xs text-gray-400">
+                          {new Date(order.createdAt).toLocaleTimeString()}
+                        </td>
+                        <td className="px-4 py-3">
+                          {isFood
+                            ? <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full">✅ Allocated</span>
+                            : <span className="text-xs text-gray-400">—</span>
+                          }
+                        </td>
+                        <td className="px-4 py-3">
+                          {roomServiceAllocated
+                            ? <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full">✅ Allocated</span>
+                            : <span className="text-xs bg-red-100 text-red-600 px-2 py-1 rounded-full">❌ Not Allocated</span>
+                          }
+                        </td>
+                        <td className="px-4 py-3">
+                          {delivered
+                            ? <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full">✅ Delivered</span>
+                            : <span className="text-xs bg-orange-100 text-orange-600 px-2 py-1 rounded-full">⏳ Not Delivered</span>
+                          }
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            )}
           </div>
         )}
 
