@@ -59,15 +59,15 @@ export default function KitchenDashboard() {
       const staffData = JSON.parse(staff);
       const hotelId = staffData.hotelId;
 
-      const res = await fetch(
-        `/api/service-orders?hotelId=${hotelId}&kitchenStatus=${activeTab}&serviceType=FOOD`,
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-
-      if (res.ok) {
-        const data = await res.json();
-        setOrders(data.orders || []);
-      }
+     const [foodRes, drinksRes] = await Promise.all([
+  fetch(`/api/service-orders?hotelId=${hotelId}&kitchenStatus=${activeTab}&serviceType=FOOD`, { headers: { Authorization: `Bearer ${token}` } }),
+  fetch(`/api/service-orders?hotelId=${hotelId}&kitchenStatus=${activeTab}&serviceType=DRINKS`, { headers: { Authorization: `Bearer ${token}` } }),
+]);
+const foodData = foodRes.ok ? await foodRes.json() : { orders: [] };
+const drinksData = drinksRes.ok ? await drinksRes.json() : { orders: [] };
+const combined = [...(foodData.orders || []), ...(drinksData.orders || [])];
+combined.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+setOrders(combined);
     } catch (error) {
       console.error("Error fetching orders:", error);
     } finally {
@@ -84,20 +84,19 @@ export default function KitchenDashboard() {
       const staffData = JSON.parse(staff);
       const hotelId = staffData.hotelId;
 
-      const res = await fetch(
-        `/api/service-orders?hotelId=${hotelId}&serviceType=FOOD`,
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-
-      if (res.ok) {
-        const data = await res.json();
-        const sevenDaysAgo = new Date();
-        sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
-        const filtered = (data.orders || []).filter((o: ServiceOrder) =>
-          new Date(o.createdAt) >= sevenDaysAgo
-        );
-        setRecentOrders(filtered);
-      }
+      const [foodRes, drinksRes] = await Promise.all([
+  fetch(`/api/service-orders?hotelId=${hotelId}&serviceType=FOOD`, { headers: { Authorization: `Bearer ${token}` } }),
+  fetch(`/api/service-orders?hotelId=${hotelId}&serviceType=DRINKS`, { headers: { Authorization: `Bearer ${token}` } }),
+]);
+const foodData = foodRes.ok ? await foodRes.json() : { orders: [] };
+const drinksData = drinksRes.ok ? await drinksRes.json() : { orders: [] };
+const sevenDaysAgo = new Date();
+sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+const combined = [...(foodData.orders || []), ...(drinksData.orders || [])].filter((o: ServiceOrder) =>
+  new Date(o.createdAt) >= sevenDaysAgo
+);
+combined.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+setRecentOrders(combined);
     } catch (error) {
       console.error("Error fetching recent orders:", error);
     }
