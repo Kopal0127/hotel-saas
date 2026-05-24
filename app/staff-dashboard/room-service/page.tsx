@@ -42,7 +42,7 @@ export default function RoomServiceDashboard() {
     const staffData = JSON.parse(staff);
     setStaffName(staffData.name);
 
-    if (!staffData.roles || !staffData.roles.map((r: string) => r.toLowerCase()).includes("room service")) {
+    if (!staffData.roles || !staffData.roles.map((r: string) => r.toLowerCase()).includes("room_service")) {
       alert("❌ Access Denied! Room Service role nahi hai.");
       router.push("/staff-dashboard");
       return;
