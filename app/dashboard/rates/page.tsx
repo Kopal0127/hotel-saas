@@ -11,6 +11,11 @@ interface RatePlan {
   id: string; channelId: string; roomId: string;
   date: string; price: number; available: number; isBlocked: boolean;
 }
+interface Booking {
+  roomId: string;
+  checkIn: string;
+  checkOut: string;
+}
 
 const DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 const MONTHS = ["January","February","March","April","May","June","July","August","September","October","November","December"];
@@ -29,6 +34,7 @@ export default function RatesPage() {
   const [selectedRoom, setSelectedRoom] = useState("");
   const [hotelId, setHotelId] = useState("");
   const [loading, setLoading] = useState(false);
+  const [bookings, setBookings] = useState<Booking[]>([]);
 
   const [bulkMode, setBulkMode] = useState(false);
   const [selectedDates, setSelectedDates] = useState<string[]>([]);
@@ -62,6 +68,7 @@ export default function RatesPage() {
     setRooms(data.rooms || []);
     setChannels(data.channels || []);
     setRatePlans(data.ratePlans || []);
+    setBookings(data.bookings || []);
     if (!selectedRoom && data.rooms?.[0]) setSelectedRoom(data.rooms[0].id);
     setLoading(false);
   }
@@ -97,6 +104,21 @@ export default function RatesPage() {
 
   function getDefaultPrice() {
     return rooms.find((r) => r.id === selectedRoom)?.price || 0;
+  }
+  function getDefaultAvailable() {
+    return rooms.filter(r => r.type === rooms.find(r2 => r2.id === selectedRoom)?.type).length;
+  }
+
+  function getBookedCount(day: number) {
+    const ds = dateStr(day);
+    const date = new Date(ds);
+    const roomType = rooms.find(r => r.id === selectedRoom)?.type;
+    const typeRoomIds = rooms.filter(r => r.type === roomType).map(r => r.id);
+    return bookings.filter(b =>
+      typeRoomIds.includes(b.roomId) &&
+      new Date(b.checkIn) <= date &&
+      new Date(b.checkOut) > date
+    ).length;
   }
 
   const connectedChannels = channels.filter(c => c.isConnected);
@@ -438,7 +460,7 @@ export default function RatesPage() {
                             onClick={(e) => { e.stopPropagation(); setEditCell({ date: ds, field: "available" }); setEditValue(String(combined?.available ?? 1)); }}
                             title="Click to edit availability"
                           >
-                            {isBlocked ? "🚫 Blocked" : `${combined?.available ?? 1} avail`}
+                           {isBlocked ? "🚫 Blocked" : `${(combined?.available ?? getDefaultAvailable()) - getBookedCount(day)} avail`}
                           </div>
                         )}
 

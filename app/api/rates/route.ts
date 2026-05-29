@@ -48,7 +48,18 @@ export async function GET(req: NextRequest) {
   const rooms = await prisma.room.findMany({ where: { hotelId } });
   const channels = await prisma.otaChannel.findMany({ where: { hotelId } });
 
-  return NextResponse.json({ ratePlans, rooms, channels });
+  // Har date ke liye booked rooms count
+  const bookings = await prisma.booking.findMany({
+    where: {
+      room: { hotelId },
+      status: "CONFIRMED",
+      checkIn: { lte: endDate },
+      checkOut: { gte: startDate },
+    },
+    select: { roomId: true, checkIn: true, checkOut: true },
+  });
+
+  return NextResponse.json({ ratePlans, rooms, channels, bookings });
 }
 
 // POST /api/rates — Single ya bulk rate plan create/update
