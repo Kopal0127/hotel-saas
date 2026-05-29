@@ -23,9 +23,10 @@ export async function GET(req: NextRequest) {
         const typeRooms = rooms.filter(r => r.type === roomType);
         const totalRooms = typeRooms.length;
 
-        const todayBookings = await prisma.booking.findMany({
+       const todayBookings = await prisma.booking.findMany({
           where: {
-            checkIn: { gte: today, lt: tomorrow },
+            checkIn: { lte: today },
+            checkOut: { gt: today },
             status: { in: ["CONFIRMED", "CHECKED_IN"] },
           },
           include: { bookingRooms: true }
