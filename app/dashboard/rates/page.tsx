@@ -248,7 +248,7 @@ export default function RatesPage() {
           <div>
             <label className="text-xs text-gray-500 font-medium">Room Type</label>
             <select
-              value={selectedRoom}
+              value={rooms.find(r => r.id === selectedRoom)?.type || ""}
               onChange={(e) => {
                 // Type se pehla room select karo
                 const firstRoom = rooms.find(r => r.type === e.target.value);
