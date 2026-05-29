@@ -160,7 +160,7 @@ export default function RatesPage() {
     fetchRates();
   }
 
-  async function bulkUpdate() {
+ async function bulkUpdate() {
     if (!selectedDates.length) { showToast("Koi date select nahi ki!", "warning"); return; }
     if (!bulkPrice && !bulkAvailable) { showToast("Price ya available enter karo!", "warning"); return; }
     const token = localStorage.getItem("token");
