@@ -165,8 +165,12 @@ export default function RatesPage() {
     if (!bulkPrice && !bulkAvailable) { showToast("Price ya available enter karo!", "warning"); return; }
     const token = localStorage.getItem("token");
 
+    const channelsToUpdate = connectedChannels.length > 0
+      ? [...connectedChannels, { id: "NO_OTA" }]
+      : [{ id: "NO_OTA" }];
+
     await Promise.all(
-      connectedChannels.map(channel =>
+      channelsToUpdate.map(channel =>
         fetch("/api/rates", {
           method: "PUT",
           headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },

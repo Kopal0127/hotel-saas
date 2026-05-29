@@ -104,34 +104,41 @@ export async function PUT(req: NextRequest) {
     return NextResponse.json({ error: "channelId, roomId, dates[] required" }, { status: 400 });
   }
 
-  const results = await Promise.all(
-    dates.map(async (date: string) => {
-      const existing = await prisma.ratePlan.findFirst({
-        where: { channelId, roomId, date: new Date(date) },
-      });
+  const resolvedChannelId = (!channelId || channelId === "NO_OTA") ? null : channelId;
 
-      if (existing) {
-        return prisma.ratePlan.update({
-          where: { id: existing.id },
-          data: {
-            price: price ?? existing.price,
-            available: available ?? existing.available,
-            isBlocked: isBlocked ?? existing.isBlocked,
-          },
+  // Null channelId (revenue manager wali rows) + OTA rows dono update karo
+  const allChannelIds = [null, resolvedChannelId].filter((v, i, a) => a.indexOf(v) === i);
+
+  const results = await Promise.all(
+    dates.flatMap((date: string) =>
+      allChannelIds.map(async (cId) => {
+        const existing = await prisma.ratePlan.findFirst({
+          where: { channelId: cId, roomId, date: new Date(date) },
         });
-      } else {
-        return prisma.ratePlan.create({
-          data: {
-            channelId,
-            roomId,
-            date: new Date(date),
-            price: price || 0,
-            available: available ?? 1,
-            isBlocked: isBlocked || false,
-          },
-        });
-      }
-    })
+
+        if (existing) {
+          return prisma.ratePlan.update({
+            where: { id: existing.id },
+            data: {
+              price: price ?? existing.price,
+              available: available ?? existing.available,
+              isBlocked: isBlocked ?? existing.isBlocked,
+            },
+          });
+        } else {
+          return prisma.ratePlan.create({
+            data: {
+              channelId: cId,
+              roomId,
+              date: new Date(date),
+              price: price || 0,
+              available: available ?? 1,
+              isBlocked: isBlocked || false,
+            },
+          });
+        }
+      })
+    )
   );
 
   return NextResponse.json({ success: true, updated: results.length });
