@@ -34,6 +34,7 @@ model Hotel {
   razorpayKeySecret String?
   serpApiKey        String?
   competitors       Competitor[]
+  inventoryCategories InventoryCategory[]
 }
 
 model Room {
@@ -196,6 +197,13 @@ model Inventory {
   status      String   @default("IN_STOCK")
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+}
+model InventoryCategory {
+  id        String   @id @default(cuid())
+  hotelId   String
+  hotel     Hotel    @relation(fields: [hotelId], references: [id])
+  name      String
+  createdAt DateTime @default(now())
 }
 model BookingEngine {
   id                  String   @id @default(cuid())

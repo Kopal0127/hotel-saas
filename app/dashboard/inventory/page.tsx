@@ -15,6 +15,10 @@ interface InventoryItem {
   status: string;
   createdAt: string;
 }
+interface Category {
+  id: string;
+  name: string;
+}
 
 export default function InventoryPage() {
   useAuth();
@@ -27,18 +31,20 @@ export default function InventoryPage() {
   const [hotelId, setHotelId] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
   const [filterCategory, setFilterCategory] = useState("ALL");
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [showCategoryModal, setShowCategoryModal] = useState(false);
+  const [newCategoryName, setNewCategoryName] = useState("");
+  const [categoryLoading, setCategoryLoading] = useState(false);
 
   const [form, setForm] = useState({
     itemName: "",
     description: "",
-    category: "General",
+    category: "",
     quantity: "0",
     status: "IN_STOCK",
   });
 
-  const categories = ["General", "Room", "Bathroom", "Housekeeping", "Linen", "Electrical", "Kitchen"];
-
-  useEffect(() => {
+    useEffect(() => {
     fetchHotelAndItems();
   }, []);
 
@@ -50,6 +56,7 @@ export default function InventoryPage() {
         const hId = data.hotels[0].id;
         setHotelId(hId);
         fetchItems(hId);
+        fetchCategories(hId);
       }
     } catch (error) {
       showToast("Data load nahi ho saka!", "error");
@@ -65,6 +72,55 @@ export default function InventoryPage() {
       showToast("Items load nahi ho sake!", "error");
     } finally {
       setLoading(false);
+    }
+  };
+  const fetchCategories = async (hId: string) => {
+    try {
+      const res = await fetch(`/api/inventory-categories?hotelId=${hId}`);
+      const data = await res.json();
+      setCategories(data.categories || []);
+    } catch (error) {
+      showToast("Categories load nahi ho saki!", "error");
+    }
+  };
+  const handleAddCategory = async () => {
+    if (!newCategoryName.trim()) {
+      showToast("Category name daalo!", "error");
+      return;
+    }
+    setCategoryLoading(true);
+    try {
+      const res = await fetch("/api/inventory-categories", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ hotelId, name: newCategoryName.trim() }),
+      });
+      if (res.ok) {
+        showToast("✅ Category add ho gayi!", "success");
+        setNewCategoryName("");
+        fetchCategories(hotelId);
+      } else {
+        showToast("❌ Kuch galat hua!", "error");
+      }
+    } catch (error) {
+      showToast("❌ Error!", "error");
+    } finally {
+      setCategoryLoading(false);
+    }
+  };
+
+  const handleDeleteCategory = async (id: string) => {
+    if (!confirm("Category delete karna chahte ho?")) return;
+    try {
+      const res = await fetch(`/api/inventory-categories?id=${id}`, { method: "DELETE" });
+      if (res.ok) {
+        showToast("✅ Category delete ho gayi!", "success");
+        fetchCategories(hotelId);
+      } else {
+        showToast("❌ Delete nahi ho saka!", "error");
+      }
+    } catch (error) {
+      showToast("❌ Error!", "error");
     }
   };
 
@@ -172,13 +228,76 @@ export default function InventoryPage() {
             <h2 className="text-2xl font-bold text-gray-900">📦 Stock Inventory</h2>
             <p className="text-sm text-gray-500 mt-1">Hotel ka saara inventory manage karo</p>
           </div>
-          <button
-            onClick={() => { resetForm(); setShowForm(!showForm); }}
-            className="bg-purple-600 text-white px-5 py-2 rounded-lg text-sm hover:bg-purple-700 font-medium"
-          >
-            + Add New Inventory
-          </button>
+          <div className="flex gap-3">
+            <button
+              onClick={() => setShowCategoryModal(true)}
+              className="bg-blue-600 text-white px-5 py-2 rounded-lg text-sm hover:bg-blue-700 font-medium"
+            >
+              + Add Category
+            </button>
+            <button
+              onClick={() => { resetForm(); setShowForm(!showForm); }}
+              className="bg-purple-600 text-white px-5 py-2 rounded-lg text-sm hover:bg-purple-700 font-medium"
+            >
+              + Add New Inventory
+            </button>
+          </div>
         </div>
+        {/* Category Modal */}
+        {showCategoryModal && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white rounded-2xl p-6 shadow-xl w-full max-w-md mx-4">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-semibold text-gray-900">🗂️ Manage Categories</h3>
+                <button
+                  onClick={() => setShowCategoryModal(false)}
+                  className="text-gray-400 hover:text-gray-600 text-xl font-bold"
+                >
+                  ✕
+                </button>
+              </div>
+
+              {/* Add new category */}
+              <div className="flex gap-2 mb-4">
+                <input
+                  type="text"
+                  placeholder="Nayi category ka naam..."
+                  value={newCategoryName}
+                  onChange={(e) => setNewCategoryName(e.target.value)}
+                  className="flex-1 border border-gray-200 rounded-lg px-4 py-2 text-sm focus:outline-none focus:border-blue-500"
+                />
+                <button
+                  onClick={handleAddCategory}
+                  disabled={categoryLoading}
+                  className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-blue-700 font-medium disabled:opacity-50"
+                >
+                  {categoryLoading ? "..." : "Add"}
+                </button>
+              </div>
+
+              {/* Categories list */}
+              <div className="max-h-64 overflow-y-auto">
+                {categories.length === 0 ? (
+                  <p className="text-center text-gray-400 text-sm py-6">Koi category nahi hai abhi</p>
+                ) : (
+                  <div className="space-y-2">
+                    {categories.map((cat) => (
+                      <div key={cat.id} className="flex items-center justify-between bg-gray-50 px-4 py-2 rounded-lg">
+                        <span className="text-sm text-gray-700">{cat.name}</span>
+                        <button
+                          onClick={() => handleDeleteCategory(cat.id)}
+                          className="text-red-400 hover:text-red-600 text-sm"
+                        >
+                          🗑️
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Add/Edit Form */}
         {showForm && (
@@ -214,8 +333,8 @@ export default function InventoryPage() {
                   onChange={(e) => setForm({ ...form, category: e.target.value })}
                   className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-purple-500"
                 >
-                  {categories.map(c => (
-                    <option key={c} value={c}>{c}</option>
+                 {categories.map(c => (
+                    <option key={c.id} value={c.name}>{c.name}</option>
                   ))}
                 </select>
               </div>
@@ -274,8 +393,8 @@ export default function InventoryPage() {
             className="border border-gray-200 rounded-lg px-4 py-2 text-sm focus:outline-none focus:border-purple-500 bg-white"
           >
             <option value="ALL">All Categories</option>
-            {categories.map(c => (
-              <option key={c} value={c}>{c}</option>
+           {categories.map(c => (
+              <option key={c.id} value={c.name}>{c.name}</option>
             ))}
           </select>
         </div>
