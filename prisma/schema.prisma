@@ -35,6 +35,9 @@ model Hotel {
   serpApiKey        String?
   competitors       Competitor[]
   inventoryCategories InventoryCategory[]
+  purchases         Purchase[]
+  expenses          Expense[]
+  pettyCash         PettyCash[]
 }
 
 model Room {
@@ -435,4 +438,36 @@ model CompetitorRate {
   rating       Float?
   reviewCount  Int?
   fetchedAt    DateTime   @default(now())
+}
+model Purchase {
+  id        String   @id @default(cuid())
+  hotelId   String
+  hotel     Hotel    @relation(fields: [hotelId], references: [id])
+  itemName  String
+  category  String
+  date      DateTime
+  amount    Float
+  createdAt DateTime @default(now())
+}
+
+model Expense {
+  id        String   @id @default(cuid())
+  hotelId   String
+  hotel     Hotel    @relation(fields: [hotelId], references: [id])
+  itemName  String
+  category  String
+  date      DateTime
+  amount    Float
+  createdAt DateTime @default(now())
+}
+
+model PettyCash {
+  id        String   @id @default(cuid())
+  hotelId   String
+  hotel     Hotel    @relation(fields: [hotelId], references: [id])
+  type      String
+  name      String
+  date      DateTime
+  amount    Float
+  createdAt DateTime @default(now())
 }

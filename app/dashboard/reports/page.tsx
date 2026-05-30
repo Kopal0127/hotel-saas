@@ -9,6 +9,7 @@ export default function ReportsPage() {
   const [allBookings, setAllBookings] = useState<any[]>([])
   const [allPayments, setAllPayments] = useState<any[]>([])
   const [activeReport, setActiveReport] = useState<string | null>(null)
+  const [hotelId, setHotelId] = useState("")
 
   const [filterType, setFilterType] = useState<"date_range" | "monthly">("monthly")
   const [fromDate, setFromDate] = useState("")
@@ -40,7 +41,10 @@ export default function ReportsPage() {
     setLoading(true)
     try {
       const hotels = await fetch('/api/hotels').then(r => r.json())
-      const hotelId = hotels.hotels?.[0]?.id
+      const hId = hotels.hotels?.[0]?.id
+      setHotelId(hId)
+      const hotelId = hId
+      setHotelId(hotels.hotels?.[0]?.id || "")
       const rooms = await fetch(`/api/rooms?hotelId=${hotelId}`).then(r => r.json())
       const bookings = await fetch(`/api/bookings?hotelId=${hotelId}`).then(r => r.json())
       const payments = await fetch('/api/payments').then(r => r.json())
@@ -342,7 +346,25 @@ export default function ReportsPage() {
           </div>
         )}
 
-        {!["total_reservation", "cancelled_reservation", "occupancy"].includes(activeReport || "") && (
+       {activeReport === "purchase" && (
+          <PurchaseReport hotelId={hotelId} />
+        )}
+
+        {activeReport === "expense" && (
+          <ExpenseReport hotelId={hotelId} />
+        )}
+
+        {activeReport === "petty_cash" && (
+          <PettyCashReport hotelId={hotelId} />
+        )}
+
+        {!["total_reservation", "cancelled_reservation", "occupancy", "purchase", "expense", "petty_cash"].includes(activeReport || "") && (
+          <div className="text-center py-12 text-gray-400">
+            <div className="text-5xl mb-3">{report.icon}</div>
+            <p className="font-medium text-gray-600">{report.title} Report</p>
+            <p className="text-sm mt-2">Yeh feature coming soon hai!</p>
+          </div>
+        )}
           <div className="text-center py-12 text-gray-400">
             <div className="text-5xl mb-3">{report.icon}</div>
             <p className="font-medium text-gray-600">{report.title} Report</p>
@@ -409,4 +431,352 @@ export default function ReportsPage() {
       </div>
     </div>
   )
+  function PurchaseReport({ hotelId }: { hotelId: string }) {
+  const [purchases, setPurchases] = useState<any[]>([]);
+  const [form, setForm] = useState({ itemName: "", category: "", date: "", amount: "" });
+  const [fromDate, setFromDate] = useState("");
+  const [toDate, setToDate] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => { if (hotelId) fetchPurchases(); }, [hotelId]);
+
+  const fetchPurchases = async (from = "", to = "") => {
+    const params = new URLSearchParams({ hotelId });
+    if (from && to) { params.set("from", from); params.set("to", to); }
+    const res = await fetch(`/api/purchase?${params}`);
+    const data = await res.json();
+    setPurchases(data.purchases || []);
+  };
+
+  const handleAdd = async () => {
+    if (!form.itemName || !form.date || !form.amount) return;
+    setLoading(true);
+    const res = await fetch("/api/purchase", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ hotelId, ...form }),
+    });
+    if (res.ok) { setForm({ itemName: "", category: "", date: "", amount: "" }); fetchPurchases(); }
+    setLoading(false);
+  };
+
+  const handleDelete = async (id: string) => {
+    if (!confirm("Delete karna chahte ho?")) return;
+    await fetch(`/api/purchase?id=${id}`, { method: "DELETE" });
+    fetchPurchases();
+  };
+
+  const total = purchases.reduce((sum, p) => sum + p.amount, 0);
+
+  return (
+    <div>
+      {/* Form */}
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-3 mb-6">
+        <input placeholder="Item Name *" value={form.itemName} onChange={e => setForm({ ...form, itemName: e.target.value })}
+          className="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-500" />
+        <input placeholder="Category" value={form.category} onChange={e => setForm({ ...form, category: e.target.value })}
+          className="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-500" />
+        <input type="date" value={form.date} onChange={e => setForm({ ...form, date: e.target.value })}
+          className="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-500" />
+        <input type="number" placeholder="Amount *" value={form.amount} onChange={e => setForm({ ...form, amount: e.target.value })}
+          className="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-500" />
+        <button onClick={handleAdd} disabled={loading}
+          className="bg-blue-600 text-white rounded-lg px-4 py-2 text-sm hover:bg-blue-700 disabled:opacity-50">
+          + Add
+        </button>
+      </div>
+
+      {/* Filter */}
+      <div className="flex gap-3 items-end justify-end mb-4">
+        <input type="date" value={fromDate} onChange={e => setFromDate(e.target.value)}
+          className="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-500" />
+        <input type="date" value={toDate} onChange={e => setToDate(e.target.value)}
+          className="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-500" />
+        <button onClick={() => fetchPurchases(fromDate, toDate)}
+          className="bg-gray-700 text-white rounded-lg px-4 py-2 text-sm hover:bg-gray-800">
+          Filter
+        </button>
+        <button onClick={() => { setFromDate(""); setToDate(""); fetchPurchases(); }}
+          className="bg-gray-100 text-gray-600 rounded-lg px-4 py-2 text-sm hover:bg-gray-200">
+          Clear
+        </button>
+      </div>
+
+      {/* Table */}
+      <div className="overflow-x-auto">
+        <table className="w-full text-sm">
+          <thead className="bg-gray-50">
+            <tr>
+              <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase">Item Name</th>
+              <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase">Category</th>
+              <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase">Date</th>
+              <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase">Amount</th>
+              <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase">Action</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-gray-50">
+            {purchases.map((p) => (
+              <tr key={p.id} className="hover:bg-gray-50">
+                <td className="px-4 py-3 font-medium text-gray-900">{p.itemName}</td>
+                <td className="px-4 py-3 text-gray-600">{p.category}</td>
+                <td className="px-4 py-3 text-gray-600">{new Date(p.date).toLocaleDateString("en-IN")}</td>
+                <td className="px-4 py-3 font-semibold text-gray-900">₹{p.amount.toLocaleString("en-IN")}</td>
+                <td className="px-4 py-3">
+                  <button onClick={() => handleDelete(p.id)} className="text-red-400 hover:text-red-600 text-xs">🗑️ Delete</button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+          <tfoot>
+            <tr className="bg-gray-50 font-bold">
+              <td colSpan={3} className="px-4 py-3 text-sm text-gray-700">Total</td>
+              <td className="px-4 py-3 text-sm text-green-700">₹{total.toLocaleString("en-IN")}</td>
+              <td></td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+    </div>
+  );
+}
+
+function ExpenseReport({ hotelId }: { hotelId: string }) {
+  const [expenses, setExpenses] = useState<any[]>([]);
+  const [form, setForm] = useState({ itemName: "", category: "", date: "", amount: "" });
+  const [fromDate, setFromDate] = useState("");
+  const [toDate, setToDate] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => { if (hotelId) fetchExpenses(); }, [hotelId]);
+
+  const fetchExpenses = async (from = "", to = "") => {
+    const params = new URLSearchParams({ hotelId });
+    if (from && to) { params.set("from", from); params.set("to", to); }
+    const res = await fetch(`/api/expense?${params}`);
+    const data = await res.json();
+    setExpenses(data.expenses || []);
+  };
+
+  const handleAdd = async () => {
+    if (!form.itemName || !form.date || !form.amount) return;
+    setLoading(true);
+    const res = await fetch("/api/expense", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ hotelId, ...form }),
+    });
+    if (res.ok) { setForm({ itemName: "", category: "", date: "", amount: "" }); fetchExpenses(); }
+    setLoading(false);
+  };
+
+  const handleDelete = async (id: string) => {
+    if (!confirm("Delete karna chahte ho?")) return;
+    await fetch(`/api/expense?id=${id}`, { method: "DELETE" });
+    fetchExpenses();
+  };
+
+  const total = expenses.reduce((sum, e) => sum + e.amount, 0);
+
+  return (
+    <div>
+      {/* Form */}
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-3 mb-6">
+        <input placeholder="Item Name *" value={form.itemName} onChange={e => setForm({ ...form, itemName: e.target.value })}
+          className="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-500" />
+        <input placeholder="Category" value={form.category} onChange={e => setForm({ ...form, category: e.target.value })}
+          className="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-500" />
+        <input type="date" value={form.date} onChange={e => setForm({ ...form, date: e.target.value })}
+          className="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-500" />
+        <input type="number" placeholder="Amount *" value={form.amount} onChange={e => setForm({ ...form, amount: e.target.value })}
+          className="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-500" />
+        <button onClick={handleAdd} disabled={loading}
+          className="bg-red-600 text-white rounded-lg px-4 py-2 text-sm hover:bg-red-700 disabled:opacity-50">
+          + Add
+        </button>
+      </div>
+
+      {/* Filter */}
+      <div className="flex gap-3 items-end justify-end mb-4">
+        <input type="date" value={fromDate} onChange={e => setFromDate(e.target.value)}
+          className="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-500" />
+        <input type="date" value={toDate} onChange={e => setToDate(e.target.value)}
+          className="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-500" />
+        <button onClick={() => fetchExpenses(fromDate, toDate)}
+          className="bg-gray-700 text-white rounded-lg px-4 py-2 text-sm hover:bg-gray-800">
+          Filter
+        </button>
+        <button onClick={() => { setFromDate(""); setToDate(""); fetchExpenses(); }}
+          className="bg-gray-100 text-gray-600 rounded-lg px-4 py-2 text-sm hover:bg-gray-200">
+          Clear
+        </button>
+      </div>
+
+      {/* Table */}
+      <div className="overflow-x-auto">
+        <table className="w-full text-sm">
+          <thead className="bg-gray-50">
+            <tr>
+              <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase">Item Name</th>
+              <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase">Category</th>
+              <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase">Date</th>
+              <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase">Amount</th>
+              <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase">Action</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-gray-50">
+            {expenses.map((e) => (
+              <tr key={e.id} className="hover:bg-gray-50">
+                <td className="px-4 py-3 font-medium text-gray-900">{e.itemName}</td>
+                <td className="px-4 py-3 text-gray-600">{e.category}</td>
+                <td className="px-4 py-3 text-gray-600">{new Date(e.date).toLocaleDateString("en-IN")}</td>
+                <td className="px-4 py-3 font-semibold text-gray-900">₹{e.amount.toLocaleString("en-IN")}</td>
+                <td className="px-4 py-3">
+                  <button onClick={() => handleDelete(e.id)} className="text-red-400 hover:text-red-600 text-xs">🗑️ Delete</button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+          <tfoot>
+            <tr className="bg-gray-50 font-bold">
+              <td colSpan={3} className="px-4 py-3 text-sm text-gray-700">Total</td>
+              <td className="px-4 py-3 text-sm text-red-700">₹{total.toLocaleString("en-IN")}</td>
+              <td></td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+    </div>
+  );
+}
+
+function PettyCashReport({ hotelId }: { hotelId: string }) {
+  const [activeTab, setActiveTab] = useState<"IN" | "OUT">("IN");
+  const [records, setRecords] = useState<any[]>([]);
+  const [formIn, setFormIn] = useState({ name: "", date: "", amount: "" });
+  const [formOut, setFormOut] = useState({ name: "", date: "", amount: "" });
+  const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1);
+  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
+  const [loading, setLoading] = useState(false);
+
+  const MONTHS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+  const YEARS = [2024, 2025, 2026, 2027];
+
+  useEffect(() => { if (hotelId) fetchRecords(); }, [hotelId, activeTab, selectedMonth, selectedYear]);
+
+  const fetchRecords = async () => {
+    const params = new URLSearchParams({ hotelId, type: activeTab, month: String(selectedMonth), year: String(selectedYear) });
+    const res = await fetch(`/api/petty-cash?${params}`);
+    const data = await res.json();
+    setRecords(data.pettyCash || []);
+  };
+
+  const handleAdd = async () => {
+    const form = activeTab === "IN" ? formIn : formOut;
+    if (!form.name || !form.date || !form.amount) return;
+    setLoading(true);
+    const res = await fetch("/api/petty-cash", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ hotelId, type: activeTab, name: form.name, date: form.date, amount: form.amount }),
+    });
+    if (res.ok) {
+      if (activeTab === "IN") setFormIn({ name: "", date: "", amount: "" });
+      else setFormOut({ name: "", date: "", amount: "" });
+      fetchRecords();
+    }
+    setLoading(false);
+  };
+
+  const handleDelete = async (id: string) => {
+    if (!confirm("Delete karna chahte ho?")) return;
+    await fetch(`/api/petty-cash?id=${id}`, { method: "DELETE" });
+    fetchRecords();
+  };
+
+  const total = records.reduce((sum, r) => sum + r.amount, 0);
+
+  return (
+    <div>
+      {/* Tabs */}
+      <div className="flex gap-2 mb-6">
+        <button onClick={() => setActiveTab("IN")}
+          className={`px-5 py-2 rounded-lg text-sm font-medium transition-colors ${activeTab === "IN" ? "bg-green-600 text-white" : "bg-gray-100 text-gray-600 hover:bg-gray-200"}`}>
+          💵 Petty Cash In
+        </button>
+        <button onClick={() => setActiveTab("OUT")}
+          className={`px-5 py-2 rounded-lg text-sm font-medium transition-colors ${activeTab === "OUT" ? "bg-red-600 text-white" : "bg-gray-100 text-gray-600 hover:bg-gray-200"}`}>
+          💸 Petty Cash Out
+        </button>
+      </div>
+
+      {/* Form */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
+        <input
+          placeholder={activeTab === "IN" ? "Name *" : "Expense Name *"}
+          value={activeTab === "IN" ? formIn.name : formOut.name}
+          onChange={e => activeTab === "IN" ? setFormIn({ ...formIn, name: e.target.value }) : setFormOut({ ...formOut, name: e.target.value })}
+          className="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-500" />
+        <input type="date"
+          value={activeTab === "IN" ? formIn.date : formOut.date}
+          onChange={e => activeTab === "IN" ? setFormIn({ ...formIn, date: e.target.value }) : setFormOut({ ...formOut, date: e.target.value })}
+          className="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-500" />
+        <input type="number" placeholder="Amount *"
+          value={activeTab === "IN" ? formIn.amount : formOut.amount}
+          onChange={e => activeTab === "IN" ? setFormIn({ ...formIn, amount: e.target.value }) : setFormOut({ ...formOut, amount: e.target.value })}
+          className="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-500" />
+        <button onClick={handleAdd} disabled={loading}
+          className={`text-white rounded-lg px-4 py-2 text-sm disabled:opacity-50 ${activeTab === "IN" ? "bg-green-600 hover:bg-green-700" : "bg-red-600 hover:bg-red-700"}`}>
+          + Add
+        </button>
+      </div>
+
+      {/* Filter */}
+      <div className="flex gap-3 items-end justify-end mb-4">
+        <select value={selectedMonth} onChange={e => setSelectedMonth(parseInt(e.target.value))}
+          className="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-500">
+          {MONTHS.map((m, i) => <option key={i} value={i + 1}>{m}</option>)}
+        </select>
+        <select value={selectedYear} onChange={e => setSelectedYear(parseInt(e.target.value))}
+          className="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-500">
+          {YEARS.map(y => <option key={y} value={y}>{y}</option>)}
+        </select>
+      </div>
+
+      {/* Table */}
+      <div className="overflow-x-auto">
+        <table className="w-full text-sm">
+          <thead className="bg-gray-50">
+            <tr>
+              <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase">{activeTab === "IN" ? "Name" : "Expense Name"}</th>
+              <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase">Date</th>
+              <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase">Amount</th>
+              <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase">Action</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-gray-50">
+            {records.map((r) => (
+              <tr key={r.id} className="hover:bg-gray-50">
+                <td className="px-4 py-3 font-medium text-gray-900">{r.name}</td>
+                <td className="px-4 py-3 text-gray-600">{new Date(r.date).toLocaleDateString("en-IN")}</td>
+                <td className="px-4 py-3 font-semibold text-gray-900">₹{r.amount.toLocaleString("en-IN")}</td>
+                <td className="px-4 py-3">
+                  <button onClick={() => handleDelete(r.id)} className="text-red-400 hover:text-red-600 text-xs">🗑️ Delete</button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+          <tfoot>
+            <tr className="bg-gray-50 font-bold">
+              <td colSpan={2} className="px-4 py-3 text-sm text-gray-700">Total</td>
+              <td className="px-4 py-3 text-sm" style={{ color: activeTab === "IN" ? "#16a34a" : "#dc2626" }}>
+                ₹{total.toLocaleString("en-IN")}
+              </td>
+              <td></td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+    </div>
+  );
+}
 }
