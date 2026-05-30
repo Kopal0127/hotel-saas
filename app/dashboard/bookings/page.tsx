@@ -829,7 +829,7 @@ const validate = () => {
                       { value: "CHECKED_IN", label: "✅ Check-in", color: "text-blue-600" },
                       { value: "CHECKED_OUT", label: "🚪 Check-out", color: "text-orange-600" },
                       { value: "CANCELLED", label: "❌ Cancel", color: "text-red-600" },
-                      { value: "UPGRADED", label: "⬆️ Upgrade", color: "text-purple-600", isExtend: true },
+                      { value: "CHECKED_IN", label: "✅ Check-in", color: "text-blue-600" },
                     ];
 
                     return (
