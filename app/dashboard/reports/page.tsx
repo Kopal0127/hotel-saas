@@ -364,13 +364,7 @@ export default function ReportsPage() {
             <p className="font-medium text-gray-600">{report.title} Report</p>
             <p className="text-sm mt-2">Yeh feature coming soon hai!</p>
           </div>
-        )}
-          <div className="text-center py-12 text-gray-400">
-            <div className="text-5xl mb-3">{report.icon}</div>
-            <p className="font-medium text-gray-600">{report.title} Report</p>
-            <p className="text-sm mt-2">Yeh feature coming soon hai!</p>
-          </div>
-        )}
+       )}
       </div>
     )
   }
