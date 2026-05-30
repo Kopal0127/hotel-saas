@@ -24,6 +24,10 @@ export default function BookingsPage() {
   const itemsPerPage = 10;
   const [openActionId, setOpenActionId] = useState<string | null>(null);
   const [openExtraIdx, setOpenExtraIdx] = useState<number | null>(null);
+  const [showExtendModal, setShowExtendModal] = useState(false);
+  const [extendBooking, setExtendBooking] = useState<any>(null);
+  const [newCheckOut, setNewCheckOut] = useState("");
+  const [extendLoading, setExtendLoading] = useState(false);
   const actionRef = useRef<HTMLDivElement>(null);
 
   const [bookingRooms, setBookingRooms] = useState<any[]>([
@@ -108,6 +112,49 @@ export default function BookingsPage() {
       showToast("Kuch galat hua!", "error");
     }
     setOpenActionId(null);
+  };
+  const handleExtend = async () => {
+    if (!newCheckOut) { showToast("Nayi checkout date daalo!", "error"); return; }
+    if (!extendBooking) return;
+
+    const oldCheckOut = new Date(extendBooking.checkOut);
+    const newCheckOutDate = new Date(newCheckOut);
+
+    if (newCheckOutDate <= oldCheckOut) {
+      showToast("Nayi checkout date purani date ke baad honi chahiye!", "error");
+      return;
+    }
+
+    const extraNights = Math.ceil((newCheckOutDate.getTime() - oldCheckOut.getTime()) / (1000 * 60 * 60 * 24));
+    const roomPrice = extendBooking.price || extendBooking.rooms?.[0]?.roomPrice || 0;
+    const pendingAmount = extendBooking.amount - (extendBooking.paymentAmount || 0);
+    const newAmount = extendBooking.amount + (extraNights * roomPrice);
+
+    setExtendLoading(true);
+    try {
+      const res = await fetch("/api/bookings", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          id: extendBooking.id,
+          status: "EXTEND",
+          newCheckOut,
+          newAmount,
+        }),
+      });
+      if (res.ok) {
+        showToast(`✅ Booking extend ho gayi! Extra ${extraNights} night(s) add ho gayi.`, "success");
+        setShowExtendModal(false);
+        setExtendBooking(null);
+        setNewCheckOut("");
+        fetchData();
+      } else {
+        showToast("❌ Extend nahi ho saka!", "error");
+      }
+    } catch {
+      showToast("❌ Error!", "error");
+    }
+    setExtendLoading(false);
   };
 
   const roomTypes = [...new Set(rooms.map(r => r.type))];
@@ -782,7 +829,7 @@ const validate = () => {
                       { value: "CHECKED_IN", label: "✅ Check-in", color: "text-blue-600" },
                       { value: "CHECKED_OUT", label: "🚪 Check-out", color: "text-orange-600" },
                       { value: "CANCELLED", label: "❌ Cancel", color: "text-red-600" },
-                      { value: "UPGRADED", label: "⬆️ Upgrade", color: "text-purple-600" },
+                      { value: "UPGRADED", label: "⬆️ Upgrade", color: "text-purple-600", isExtend: true },
                     ];
 
                     return (
@@ -850,9 +897,18 @@ const validate = () => {
                             </button>
                             {openActionId === booking.id && (
                               <div className="absolute right-0 top-10 z-50 bg-white border border-gray-200 rounded-xl shadow-lg w-40 overflow-hidden">
-                                {actionOpts.map((opt) => (
+                               {actionOpts.map((opt) => (
                                   <button key={opt.value}
-                                    onClick={() => handleStatusChange(booking.id, opt.value)}
+                                    onClick={() => {
+                                      if (opt.isExtend) {
+                                        setExtendBooking(booking);
+                                        setNewCheckOut("");
+                                        setShowExtendModal(true);
+                                        setOpenActionId(null);
+                                      } else {
+                                        handleStatusChange(booking.id, opt.value);
+                                      }
+                                    }}
                                     className={`w-full text-left px-4 py-2.5 text-sm hover:bg-gray-50 transition-colors ${opt.color} ${booking.status === opt.value ? "bg-gray-50 font-semibold" : ""}`}>
                                     {opt.label}
                                   </button>
@@ -885,6 +941,78 @@ const validate = () => {
           </>
         )}
       </div>
+      {/* Extend Modal */}
+      {showExtendModal && extendBooking && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-2xl p-6 shadow-xl w-full max-w-md mx-4">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold text-gray-900">⬆️ Booking Extend Karo</h3>
+              <button onClick={() => { setShowExtendModal(false); setExtendBooking(null); setNewCheckOut(""); }}
+                className="text-gray-400 hover:text-gray-600 text-xl font-bold">✕</button>
+            </div>
+
+            {/* Guest Info */}
+            <div className="bg-gray-50 rounded-xl p-4 mb-4 space-y-1">
+              <p className="text-sm font-medium text-gray-900">{extendBooking.guestName}</p>
+              <p className="text-xs text-gray-500">{extendBooking.guestEmail}</p>
+              <p className="text-xs text-gray-500">
+                Rooms: {extendBooking.rooms?.map((r: any) => `#${r.roomNumber}`).join(", ") || `#${extendBooking.roomNumber}`}
+              </p>
+              <p className="text-xs text-gray-500">
+                Current Check-out: <span className="font-medium text-orange-600">{new Date(extendBooking.checkOut).toLocaleDateString("en-IN")}</span>
+              </p>
+              <p className="text-xs text-gray-500">
+                Total Amount: ₹{extendBooking.amount} | Paid: ₹{extendBooking.paymentAmount || 0} | 
+                <span className="text-red-600 font-medium"> Pending: ₹{extendBooking.amount - (extendBooking.paymentAmount || 0)}</span>
+              </p>
+            </div>
+
+            {/* New Checkout Date */}
+            <div className="mb-4">
+              <label className="text-sm font-medium text-gray-700 mb-1 block">Nayi Check-out Date</label>
+              <input
+                type="date"
+                value={newCheckOut}
+                min={new Date(new Date(extendBooking.checkOut).getTime() + 86400000).toISOString().split("T")[0]}
+                onChange={(e) => setNewCheckOut(e.target.value)}
+                className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-blue-500"
+              />
+            </div>
+
+            {/* Amount Preview */}
+            {newCheckOut && (
+              <div className="bg-blue-50 rounded-xl p-4 mb-4">
+                {(() => {
+                  const extraNights = Math.ceil((new Date(newCheckOut).getTime() - new Date(extendBooking.checkOut).getTime()) / (1000 * 60 * 60 * 24));
+                  const roomPrice = extendBooking.price || extendBooking.rooms?.[0]?.roomPrice || 0;
+                  const extraAmount = extraNights * roomPrice;
+                  const newTotal = extendBooking.amount + extraAmount;
+                  const newPending = newTotal - (extendBooking.paymentAmount || 0);
+                  return (
+                    <div className="space-y-1 text-xs">
+                      <p className="text-gray-600">Extra Nights: <span className="font-semibold text-blue-700">{extraNights}</span></p>
+                      <p className="text-gray-600">Extra Amount: <span className="font-semibold text-blue-700">₹{extraAmount}</span></p>
+                      <p className="text-gray-600">New Total: <span className="font-semibold text-green-700">₹{newTotal}</span></p>
+                      <p className="text-gray-600">New Pending: <span className="font-semibold text-red-600">₹{newPending}</span></p>
+                    </div>
+                  );
+                })()}
+              </div>
+            )}
+
+            <div className="flex gap-3">
+              <button onClick={handleExtend} disabled={extendLoading}
+                className="flex-1 bg-purple-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-purple-700 disabled:opacity-50 font-medium">
+                {extendLoading ? "Extending..." : "✅ Extend Karo"}
+              </button>
+              <button onClick={() => { setShowExtendModal(false); setExtendBooking(null); setNewCheckOut(""); }}
+                className="px-4 py-2 bg-gray-100 text-gray-600 rounded-lg text-sm hover:bg-gray-200">
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {toast && <Toast message={toast.message} type={toast.type} onClose={hideToast} />}
     </div>

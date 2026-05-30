@@ -335,6 +335,23 @@ export async function PUT(req: NextRequest) {
       return NextResponse.json({ error: "ID aur status chahiye!" }, { status: 400 });
     }
 
+   // EXTEND logic — checkOut date aur amount update
+    if (status === "EXTEND") {
+      const { newCheckOut, newAmount } = body;
+      if (!newCheckOut || !newAmount) {
+        return NextResponse.json({ error: "newCheckOut aur newAmount chahiye!" }, { status: 400 });
+      }
+      const booking = await prisma.booking.update({
+        where: { id },
+        data: {
+          checkOut: new Date(newCheckOut),
+          amount: parseFloat(newAmount),
+          status: "UPGRADED",
+        },
+      });
+      return NextResponse.json({ message: "Booking extend ho gayi!", booking });
+    }
+
     const validStatuses = ["CONFIRMED", "CHECKED_IN", "CHECKED_OUT", "CANCELLED", "UPGRADED"];
     if (!validStatuses.includes(status)) {
       return NextResponse.json({ error: "Invalid status!" }, { status: 400 });
