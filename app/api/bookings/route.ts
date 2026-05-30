@@ -341,6 +341,10 @@ export async function PUT(req: NextRequest) {
       if (!newCheckOut || !newAmount) {
         return NextResponse.json({ error: "newCheckOut aur newAmount chahiye!" }, { status: 400 });
       }
+      // Pehle purana checkOut save karo
+      const oldBooking = await prisma.booking.findUnique({ where: { id }, include: { bookingRooms: true } });
+      const oldCheckOut = oldBooking!.checkOut;
+
       const booking = await prisma.booking.update({
         where: { id },
         data: {
@@ -352,9 +356,8 @@ export async function PUT(req: NextRequest) {
       });
 
       // Extra nights ki availability update karo
-      const oldCheckOut = await prisma.booking.findUnique({ where: { id } });
       const extraDates: Date[] = [];
-      const cur = new Date(booking.checkOut);
+      const cur = new Date(oldCheckOut);
       const newEnd = new Date(newCheckOut);
       while (cur < newEnd) {
         extraDates.push(new Date(cur));
