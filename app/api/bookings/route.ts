@@ -346,9 +346,45 @@ export async function PUT(req: NextRequest) {
         data: {
           checkOut: new Date(newCheckOut),
           amount: parseFloat(newAmount),
-          status: "UPGRADED",
+          status: "CHECKED_IN",
         },
+        include: { bookingRooms: true }
       });
+
+      // Extra nights ki availability update karo
+      const oldCheckOut = await prisma.booking.findUnique({ where: { id } });
+      const extraDates: Date[] = [];
+      const cur = new Date(booking.checkOut);
+      const newEnd = new Date(newCheckOut);
+      while (cur < newEnd) {
+        extraDates.push(new Date(cur));
+        cur.setDate(cur.getDate() + 1);
+      }
+
+      const roomIds = booking.bookingRooms.length > 0
+        ? booking.bookingRooms.map((br: any) => br.roomId)
+        : [booking.roomId];
+
+      for (const rId of roomIds) {
+        await Promise.all(extraDates.map(async (date) => {
+          const existing = await prisma.ratePlan.findFirst({
+            where: {
+              roomId: rId,
+              date: {
+                gte: new Date(date.getFullYear(), date.getMonth(), date.getDate()),
+                lt: new Date(date.getFullYear(), date.getMonth(), date.getDate() + 1),
+              }
+            }
+          });
+          if (existing && existing.available > 0) {
+            await prisma.ratePlan.update({
+              where: { id: existing.id },
+              data: { available: existing.available - 1 }
+            });
+          }
+        }));
+      }
+
       return NextResponse.json({ message: "Booking extend ho gayi!", booking });
     }
 
