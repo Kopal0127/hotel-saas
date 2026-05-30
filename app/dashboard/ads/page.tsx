@@ -74,7 +74,7 @@ export default function AdsPage() {
   const [dateRange, setDateRange] = useState("Last 14 days");
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [campaignForm, setCampaignForm] = useState({
-    name: "", type: "Search", budget: "", objective: "Conversions",
+    name: "", goal: "", type: "Search", budget: "", objective: "Conversions",
     startDate: "", endDate: "", targeting: "",
   });
 
@@ -544,21 +544,39 @@ export default function AdsPage() {
               <h3 className="text-lg font-semibold text-gray-900">New {isGoogle ? "Google" : "Meta"} Campaign</h3>
             </div>
             <div className="space-y-3">
-              <div>
-                <label className="text-sm font-medium text-gray-700 mb-1 block">Campaign Name</label>
-                <input type="text" placeholder="e.g. Hotel Summer Sale" value={campaignForm.name}
-                  onChange={(e) => setCampaignForm({ ...campaignForm, name: e.target.value })}
-                  className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-blue-500" />
-              </div>
-              <div>
-                <label className="text-sm font-medium text-gray-700 mb-1 block">Campaign Type</label>
-                <select value={campaignForm.type} onChange={(e) => setCampaignForm({ ...campaignForm, type: e.target.value })}
-                  className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-blue-500">
-                  {isGoogle
-                    ? <><option>Search</option><option>Display</option><option>Shopping</option><option>Video</option></>
-                    : <><option>Awareness</option><option>Conversion</option><option>Retargeting</option><option>Lead Generation</option></>
-                  }
-                </select>
+             <div className="grid grid-cols-3 gap-3">
+                <div>
+                  <label className="text-sm font-medium text-gray-700 mb-1 block">Campaign Name</label>
+                  <input type="text" placeholder="e.g. Hotel Summer Sale" value={campaignForm.name}
+                    onChange={(e) => setCampaignForm({ ...campaignForm, name: e.target.value })}
+                    className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-blue-500" />
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-gray-700 mb-1 block">Campaign Goal</label>
+                  <select value={campaignForm.goal} onChange={(e) => setCampaignForm({ ...campaignForm, goal: e.target.value })}
+                    className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-blue-500">
+                    <option value="">Select Goal</option>
+                    <option>Sales</option>
+                    <option>Leads</option>
+                    <option>Website traffic</option>
+                    <option>App promotion</option>
+                    <option>YouTube reach, views, and engagements</option>
+                    <option>Local store visits and promotions</option>
+                    <option>Create a campaign without guidance</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-gray-700 mb-1 block">Campaign Type</label>
+                  <select value={campaignForm.type} onChange={(e) => setCampaignForm({ ...campaignForm, type: e.target.value })}
+                    className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-blue-500">
+                    <option>Performance Max</option>
+                    <option>Search</option>
+                    <option>Demand Gen</option>
+                    <option>Display</option>
+                    <option>Video</option>
+                    <option>App</option>
+                  </select>
+                </div>
               </div>
               <div>
                 <label className="text-sm font-medium text-gray-700 mb-1 block">Daily Budget (₹)</label>
