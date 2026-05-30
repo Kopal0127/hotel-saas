@@ -31,7 +31,7 @@ export default function ReportsPage() {
     { id: "purchase", title: "Purchase", desc: "View and export all vendor-wise purchase reports.", icon: "🛒", color: "bg-orange-50 border-orange-100 hover:bg-orange-100" },
     { id: "expense", title: "Expense", desc: "View and export all category-wise expense reports.", icon: "🧾", color: "bg-red-50 border-red-100 hover:bg-red-100" },
     { id: "petty_cash", title: "Petty Cash", desc: "View and export all category-wise petty cash transactions.", icon: "💵", color: "bg-yellow-50 border-yellow-100 hover:bg-yellow-100" },
-    { id: "invoices", title: "Invoices", desc: "View all invoices and export various reports like sales, payment, product wise, order ticket & shift reports.", icon: "🧾", color: "bg-cyan-50 border-cyan-100 hover:bg-cyan-100" },
+    { id: "invoices", title: "Invoices", desc: "View all invoices and export various reports.", icon: "🧾", color: "bg-cyan-50 border-cyan-100 hover:bg-cyan-100" },
     { id: "taxes", title: "Taxes", desc: "View and track taxes collected from various sources.", icon: "🏛️", color: "bg-gray-50 border-gray-200 hover:bg-gray-100" },
   ]
 
@@ -42,17 +42,13 @@ export default function ReportsPage() {
     try {
       const hotels = await fetch('/api/hotels').then(r => r.json())
       const hId = hotels.hotels?.[0]?.id
-      setHotelId(hId)
-      const hotelId = hId
-      setHotelId(hotels.hotels?.[0]?.id || "")
-      const rooms = await fetch(`/api/rooms?hotelId=${hotelId}`).then(r => r.json())
-      const bookings = await fetch(`/api/bookings?hotelId=${hotelId}`).then(r => r.json())
+      setHotelId(hId || "")
+      const rooms = await fetch(`/api/rooms?hotelId=${hId}`).then(r => r.json())
+      const bookings = await fetch(`/api/bookings?hotelId=${hId}`).then(r => r.json())
       const payments = await fetch('/api/payments').then(r => r.json())
-
       const bookingsList = bookings.bookings || []
       const paymentsList = payments.payments || []
       const roomsList = rooms.rooms || []
-
       setAllBookings(bookingsList)
       setAllPayments(paymentsList)
       computeStats(bookingsList, paymentsList, roomsList, "monthly", selectedMonth, selectedYear, "", "")
@@ -128,8 +124,8 @@ export default function ReportsPage() {
     setLoading(true)
     try {
       const hotels = await fetch('/api/hotels').then(r => r.json())
-      const hotelId = hotels.hotels?.[0]?.id
-      const rooms = await fetch(`/api/rooms?hotelId=${hotelId}`).then(r => r.json())
+      const hId = hotels.hotels?.[0]?.id
+      const rooms = await fetch(`/api/rooms?hotelId=${hId}`).then(r => r.json())
       computeStats(allBookings, allPayments, rooms.rooms || [], filterType, selectedMonth, selectedYear, fromDate, toDate)
     } catch (e) { console.error(e) }
     setLoading(false)
@@ -142,8 +138,6 @@ export default function ReportsPage() {
   )
 
   if (!stats) return null
-
-  const maxRevenue = Math.max(...Object.values(stats.monthlyRevenue as any).map(Number), 1)
 
   const renderReportDetail = () => {
     const report = reportCards.find(r => r.id === activeReport)
@@ -159,71 +153,68 @@ export default function ReportsPage() {
               <p className="text-sm text-gray-500">{report.desc}</p>
             </div>
           </div>
-          <button
-            onClick={() => setActiveReport(null)}
-            className="text-xs bg-gray-100 text-gray-600 px-3 py-1.5 rounded-lg hover:bg-gray-200 font-medium"
-          >
+          <button onClick={() => setActiveReport(null)}
+            className="text-xs bg-gray-100 text-gray-600 px-3 py-1.5 rounded-lg hover:bg-gray-200 font-medium">
             ← Back
           </button>
         </div>
 
-        {/* Filter Section */}
-        <div className="bg-gray-50 rounded-xl p-4 mb-6">
-          <div className="flex gap-3 mb-4">
-            <button onClick={() => setFilterType("monthly")}
-              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${filterType === "monthly" ? "bg-blue-600 text-white" : "bg-white text-gray-600 hover:bg-gray-100 border"}`}>
-              📅 Monthly
-            </button>
-            <button onClick={() => setFilterType("date_range")}
-              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${filterType === "date_range" ? "bg-blue-600 text-white" : "bg-white text-gray-600 hover:bg-gray-100 border"}`}>
-              📆 Date Range
-            </button>
+        {/* Filter Section — sirf purchase/expense/petty_cash ke liye nahi dikhega */}
+        {!["purchase", "expense", "petty_cash"].includes(activeReport || "") && (
+          <div className="bg-gray-50 rounded-xl p-4 mb-6">
+            <div className="flex gap-3 mb-4">
+              <button onClick={() => setFilterType("monthly")}
+                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${filterType === "monthly" ? "bg-blue-600 text-white" : "bg-white text-gray-600 hover:bg-gray-100 border"}`}>
+                📅 Monthly
+              </button>
+              <button onClick={() => setFilterType("date_range")}
+                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${filterType === "date_range" ? "bg-blue-600 text-white" : "bg-white text-gray-600 hover:bg-gray-100 border"}`}>
+                📆 Date Range
+              </button>
+            </div>
+            {filterType === "monthly" && (
+              <div className="flex flex-wrap gap-4 items-end">
+                <div>
+                  <label className="text-xs text-gray-500 font-medium block mb-1">Month</label>
+                  <select value={selectedMonth} onChange={(e) => setSelectedMonth(parseInt(e.target.value))}
+                    className="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-500">
+                    {MONTHS.map((m, i) => <option key={i} value={i + 1}>{m}</option>)}
+                  </select>
+                </div>
+                <div>
+                  <label className="text-xs text-gray-500 font-medium block mb-1">Year</label>
+                  <select value={selectedYear} onChange={(e) => setSelectedYear(parseInt(e.target.value))}
+                    className="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-500">
+                    {YEARS.map(y => <option key={y} value={y}>{y}</option>)}
+                  </select>
+                </div>
+                <button onClick={handleApplyFilter}
+                  className="bg-blue-600 text-white px-5 py-2 rounded-lg text-sm hover:bg-blue-700">
+                  Apply Filter
+                </button>
+              </div>
+            )}
+            {filterType === "date_range" && (
+              <div className="flex flex-wrap gap-4 items-end">
+                <div>
+                  <label className="text-xs text-gray-500 font-medium block mb-1">From Date</label>
+                  <input type="date" value={fromDate} onChange={(e) => setFromDate(e.target.value)}
+                    className="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-500" />
+                </div>
+                <div>
+                  <label className="text-xs text-gray-500 font-medium block mb-1">To Date</label>
+                  <input type="date" value={toDate} onChange={(e) => setToDate(e.target.value)}
+                    className="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-500" />
+                </div>
+                <button onClick={handleApplyFilter}
+                  className="bg-blue-600 text-white px-5 py-2 rounded-lg text-sm hover:bg-blue-700">
+                  Apply Filter
+                </button>
+              </div>
+            )}
           </div>
+        )}
 
-          {filterType === "monthly" && (
-            <div className="flex flex-wrap gap-4 items-end">
-              <div>
-                <label className="text-xs text-gray-500 font-medium block mb-1">Month</label>
-                <select value={selectedMonth} onChange={(e) => setSelectedMonth(parseInt(e.target.value))}
-                  className="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-500">
-                  {MONTHS.map((m, i) => <option key={i} value={i + 1}>{m}</option>)}
-                </select>
-              </div>
-              <div>
-                <label className="text-xs text-gray-500 font-medium block mb-1">Year</label>
-                <select value={selectedYear} onChange={(e) => setSelectedYear(parseInt(e.target.value))}
-                  className="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-500">
-                  {YEARS.map(y => <option key={y} value={y}>{y}</option>)}
-                </select>
-              </div>
-              <button onClick={handleApplyFilter}
-                className="bg-blue-600 text-white px-5 py-2 rounded-lg text-sm hover:bg-blue-700">
-                Apply Filter
-              </button>
-            </div>
-          )}
-
-          {filterType === "date_range" && (
-            <div className="flex flex-wrap gap-4 items-end">
-              <div>
-                <label className="text-xs text-gray-500 font-medium block mb-1">From Date</label>
-                <input type="date" value={fromDate} onChange={(e) => setFromDate(e.target.value)}
-                  className="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-500" />
-              </div>
-              <div>
-                <label className="text-xs text-gray-500 font-medium block mb-1">To Date</label>
-                <input type="date" value={toDate} onChange={(e) => setToDate(e.target.value)}
-                  className="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-500" />
-              </div>
-              <button onClick={handleApplyFilter}
-                className="bg-blue-600 text-white px-5 py-2 rounded-lg text-sm hover:bg-blue-700">
-                Apply Filter
-              </button>
-            </div>
-          )}
-        </div>
-
-        {/* Report Data */}
         {activeReport === "total_reservation" && (
           <div>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
@@ -315,7 +306,6 @@ export default function ReportsPage() {
                 </div>
               ))}
             </div>
-            {/* Daily Sales Table */}
             <h3 className="text-sm font-semibold text-gray-700 mb-3">📊 Daily Sales</h3>
             <table className="w-full text-sm">
               <thead className="bg-gray-50">
@@ -346,17 +336,9 @@ export default function ReportsPage() {
           </div>
         )}
 
-       {activeReport === "purchase" && (
-          <PurchaseReport hotelId={hotelId} />
-        )}
-
-        {activeReport === "expense" && (
-          <ExpenseReport hotelId={hotelId} />
-        )}
-
-        {activeReport === "petty_cash" && (
-          <PettyCashReport hotelId={hotelId} />
-        )}
+        {activeReport === "purchase" && <PurchaseReport hotelId={hotelId} />}
+        {activeReport === "expense" && <ExpenseReport hotelId={hotelId} />}
+        {activeReport === "petty_cash" && <PettyCashReport hotelId={hotelId} />}
 
         {!["total_reservation", "cancelled_reservation", "occupancy", "purchase", "expense", "petty_cash"].includes(activeReport || "") && (
           <div className="text-center py-12 text-gray-400">
@@ -364,7 +346,7 @@ export default function ReportsPage() {
             <p className="font-medium text-gray-600">{report.title} Report</p>
             <p className="text-sm mt-2">Yeh feature coming soon hai!</p>
           </div>
-       )}
+        )}
       </div>
     )
   }
@@ -406,11 +388,9 @@ export default function ReportsPage() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
               {reportCards.map((report) => (
-                <div
-                  key={report.id}
+                <div key={report.id}
                   className={`rounded-2xl border p-5 cursor-pointer transition-all hover:shadow-md ${report.color}`}
-                  onClick={() => setActiveReport(report.id)}
-                >
+                  onClick={() => setActiveReport(report.id)}>
                   <div className="text-3xl mb-3">{report.icon}</div>
                   <h3 className="font-semibold text-gray-900 mb-1">{report.title}</h3>
                   <p className="text-xs text-gray-500 mb-4 leading-relaxed">{report.desc}</p>
@@ -425,11 +405,13 @@ export default function ReportsPage() {
       </div>
     </div>
   )
-  function PurchaseReport({ hotelId }: { hotelId: string }) {
+}
+
+function PurchaseReport({ hotelId }: { hotelId: string }) {
   const [purchases, setPurchases] = useState<any[]>([]);
   const [form, setForm] = useState({ itemName: "", category: "", date: "", amount: "" });
-  const [fromDate, setFromDate] = useState("");
-  const [toDate, setToDate] = useState("");
+  const [filterFrom, setFilterFrom] = useState("");
+  const [filterTo, setFilterTo] = useState("");
   const [loading, setLoading] = useState(false);
 
   useEffect(() => { if (hotelId) fetchPurchases(); }, [hotelId]);
@@ -460,11 +442,18 @@ export default function ReportsPage() {
     fetchPurchases();
   };
 
-  const total = purchases.reduce((sum, p) => sum + p.amount, 0);
+  const filtered = purchases.filter(p => {
+    if (!filterFrom && !filterTo) return true;
+    const d = new Date(p.date);
+    if (filterFrom && d < new Date(filterFrom)) return false;
+    if (filterTo && d > new Date(filterTo + "T23:59:59")) return false;
+    return true;
+  });
+
+  const total = filtered.reduce((sum, p) => sum + p.amount, 0);
 
   return (
     <div>
-      {/* Form */}
       <div className="grid grid-cols-2 md:grid-cols-5 gap-3 mb-6">
         <input placeholder="Item Name *" value={form.itemName} onChange={e => setForm({ ...form, itemName: e.target.value })}
           className="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-500" />
@@ -479,24 +468,16 @@ export default function ReportsPage() {
           + Add
         </button>
       </div>
-
-      {/* Filter */}
-      <div className="flex gap-3 items-end justify-end mb-4">
-        <input type="date" value={fromDate} onChange={e => setFromDate(e.target.value)}
+      <div className="flex gap-3 items-center justify-end mb-4">
+        <input type="date" value={filterFrom} onChange={e => setFilterFrom(e.target.value)}
           className="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-500" />
-        <input type="date" value={toDate} onChange={e => setToDate(e.target.value)}
+        <input type="date" value={filterTo} onChange={e => setFilterTo(e.target.value)}
           className="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-500" />
-        <button onClick={() => fetchPurchases(fromDate, toDate)}
-          className="bg-gray-700 text-white rounded-lg px-4 py-2 text-sm hover:bg-gray-800">
-          Filter
-        </button>
-        <button onClick={() => { setFromDate(""); setToDate(""); fetchPurchases(); }}
-          className="bg-gray-100 text-gray-600 rounded-lg px-4 py-2 text-sm hover:bg-gray-200">
-          Clear
-        </button>
+        <button onClick={() => fetchPurchases(filterFrom, filterTo)}
+          className="bg-gray-700 text-white rounded-lg px-4 py-2 text-sm hover:bg-gray-800">Filter</button>
+        <button onClick={() => { setFilterFrom(""); setFilterTo(""); fetchPurchases(); }}
+          className="bg-gray-100 text-gray-600 rounded-lg px-4 py-2 text-sm hover:bg-gray-200">Clear</button>
       </div>
-
-      {/* Table */}
       <div className="overflow-x-auto">
         <table className="w-full text-sm">
           <thead className="bg-gray-50">
@@ -509,12 +490,12 @@ export default function ReportsPage() {
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-50">
-            {purchases.map((p) => (
+            {filtered.map((p) => (
               <tr key={p.id} className="hover:bg-gray-50">
                 <td className="px-4 py-3 font-medium text-gray-900">{p.itemName}</td>
                 <td className="px-4 py-3 text-gray-600">{p.category}</td>
                 <td className="px-4 py-3 text-gray-600">{new Date(p.date).toLocaleDateString("en-IN")}</td>
-                <td className="px-4 py-3 font-semibold text-gray-900">₹{p.amount.toLocaleString("en-IN")}</td>
+                <td className="px-4 py-3 font-semibold text-green-700">₹{p.amount.toLocaleString("en-IN")}</td>
                 <td className="px-4 py-3">
                   <button onClick={() => handleDelete(p.id)} className="text-red-400 hover:text-red-600 text-xs">🗑️ Delete</button>
                 </td>
@@ -537,8 +518,8 @@ export default function ReportsPage() {
 function ExpenseReport({ hotelId }: { hotelId: string }) {
   const [expenses, setExpenses] = useState<any[]>([]);
   const [form, setForm] = useState({ itemName: "", category: "", date: "", amount: "" });
-  const [fromDate, setFromDate] = useState("");
-  const [toDate, setToDate] = useState("");
+  const [filterFrom, setFilterFrom] = useState("");
+  const [filterTo, setFilterTo] = useState("");
   const [loading, setLoading] = useState(false);
 
   useEffect(() => { if (hotelId) fetchExpenses(); }, [hotelId]);
@@ -569,11 +550,18 @@ function ExpenseReport({ hotelId }: { hotelId: string }) {
     fetchExpenses();
   };
 
-  const total = expenses.reduce((sum, e) => sum + e.amount, 0);
+  const filtered = expenses.filter(e => {
+    if (!filterFrom && !filterTo) return true;
+    const d = new Date(e.date);
+    if (filterFrom && d < new Date(filterFrom)) return false;
+    if (filterTo && d > new Date(filterTo + "T23:59:59")) return false;
+    return true;
+  });
+
+  const total = filtered.reduce((sum, e) => sum + e.amount, 0);
 
   return (
     <div>
-      {/* Form */}
       <div className="grid grid-cols-2 md:grid-cols-5 gap-3 mb-6">
         <input placeholder="Item Name *" value={form.itemName} onChange={e => setForm({ ...form, itemName: e.target.value })}
           className="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-500" />
@@ -588,24 +576,16 @@ function ExpenseReport({ hotelId }: { hotelId: string }) {
           + Add
         </button>
       </div>
-
-      {/* Filter */}
-      <div className="flex gap-3 items-end justify-end mb-4">
-        <input type="date" value={fromDate} onChange={e => setFromDate(e.target.value)}
+      <div className="flex gap-3 items-center justify-end mb-4">
+        <input type="date" value={filterFrom} onChange={e => setFilterFrom(e.target.value)}
           className="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-500" />
-        <input type="date" value={toDate} onChange={e => setToDate(e.target.value)}
+        <input type="date" value={filterTo} onChange={e => setFilterTo(e.target.value)}
           className="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-500" />
-        <button onClick={() => fetchExpenses(fromDate, toDate)}
-          className="bg-gray-700 text-white rounded-lg px-4 py-2 text-sm hover:bg-gray-800">
-          Filter
-        </button>
-        <button onClick={() => { setFromDate(""); setToDate(""); fetchExpenses(); }}
-          className="bg-gray-100 text-gray-600 rounded-lg px-4 py-2 text-sm hover:bg-gray-200">
-          Clear
-        </button>
+        <button onClick={() => fetchExpenses(filterFrom, filterTo)}
+          className="bg-gray-700 text-white rounded-lg px-4 py-2 text-sm hover:bg-gray-800">Filter</button>
+        <button onClick={() => { setFilterFrom(""); setFilterTo(""); fetchExpenses(); }}
+          className="bg-gray-100 text-gray-600 rounded-lg px-4 py-2 text-sm hover:bg-gray-200">Clear</button>
       </div>
-
-      {/* Table */}
       <div className="overflow-x-auto">
         <table className="w-full text-sm">
           <thead className="bg-gray-50">
@@ -618,12 +598,12 @@ function ExpenseReport({ hotelId }: { hotelId: string }) {
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-50">
-            {expenses.map((e) => (
+            {filtered.map((e) => (
               <tr key={e.id} className="hover:bg-gray-50">
                 <td className="px-4 py-3 font-medium text-gray-900">{e.itemName}</td>
                 <td className="px-4 py-3 text-gray-600">{e.category}</td>
                 <td className="px-4 py-3 text-gray-600">{new Date(e.date).toLocaleDateString("en-IN")}</td>
-                <td className="px-4 py-3 font-semibold text-gray-900">₹{e.amount.toLocaleString("en-IN")}</td>
+                <td className="px-4 py-3 font-semibold text-red-700">₹{e.amount.toLocaleString("en-IN")}</td>
                 <td className="px-4 py-3">
                   <button onClick={() => handleDelete(e.id)} className="text-red-400 hover:text-red-600 text-xs">🗑️ Delete</button>
                 </td>
@@ -661,7 +641,7 @@ function PettyCashReport({ hotelId }: { hotelId: string }) {
     const params = new URLSearchParams({ hotelId, type: activeTab, month: String(selectedMonth), year: String(selectedYear) });
     const res = await fetch(`/api/petty-cash?${params}`);
     const data = await res.json();
-    setRecords(data.pettyCash || []);
+    setRecords(data.pettyCash || data.entries || []);
   };
 
   const handleAdd = async () => {
@@ -691,7 +671,6 @@ function PettyCashReport({ hotelId }: { hotelId: string }) {
 
   return (
     <div>
-      {/* Tabs */}
       <div className="flex gap-2 mb-6">
         <button onClick={() => setActiveTab("IN")}
           className={`px-5 py-2 rounded-lg text-sm font-medium transition-colors ${activeTab === "IN" ? "bg-green-600 text-white" : "bg-gray-100 text-gray-600 hover:bg-gray-200"}`}>
@@ -702,8 +681,6 @@ function PettyCashReport({ hotelId }: { hotelId: string }) {
           💸 Petty Cash Out
         </button>
       </div>
-
-      {/* Form */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
         <input
           placeholder={activeTab === "IN" ? "Name *" : "Expense Name *"}
@@ -723,9 +700,7 @@ function PettyCashReport({ hotelId }: { hotelId: string }) {
           + Add
         </button>
       </div>
-
-      {/* Filter */}
-      <div className="flex gap-3 items-end justify-end mb-4">
+      <div className="flex gap-3 items-center justify-end mb-4">
         <select value={selectedMonth} onChange={e => setSelectedMonth(parseInt(e.target.value))}
           className="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-500">
           {MONTHS.map((m, i) => <option key={i} value={i + 1}>{m}</option>)}
@@ -735,8 +710,6 @@ function PettyCashReport({ hotelId }: { hotelId: string }) {
           {YEARS.map(y => <option key={y} value={y}>{y}</option>)}
         </select>
       </div>
-
-      {/* Table */}
       <div className="overflow-x-auto">
         <table className="w-full text-sm">
           <thead className="bg-gray-50">
@@ -772,5 +745,4 @@ function PettyCashReport({ hotelId }: { hotelId: string }) {
       </div>
     </div>
   );
-}
 }

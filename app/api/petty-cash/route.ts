@@ -7,11 +7,19 @@ export async function GET(req: NextRequest) {
     const { searchParams } = new URL(req.url);
     const hotelId = searchParams.get("hotelId");
     const type = searchParams.get("type");
+    const month = searchParams.get("month");
+    const year = searchParams.get("year");
+
+    const where: any = { hotelId: hotelId || undefined };
+    if (type) where.type = type;
+    if (month && year) {
+      const startDate = new Date(parseInt(year), parseInt(month) - 1, 1);
+      const endDate = new Date(parseInt(year), parseInt(month), 0, 23, 59, 59);
+      where.date = { gte: startDate, lte: endDate };
+    }
+
     const entries = await prisma.pettyCash.findMany({
-      where: {
-        hotelId: hotelId || undefined,
-        ...(type ? { type } : {}),
-      },
+      where,
       orderBy: { date: "desc" },
     });
     return NextResponse.json({ entries });
