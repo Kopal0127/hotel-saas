@@ -21,19 +21,15 @@ export default function ReportsPage() {
 
   const reportCards = [
     { id: "total_reservation", title: "Total Reservation", desc: "Track your daily, weekly, monthly reservations from all sources.", icon: "📋", color: "bg-blue-50 border-blue-100 hover:bg-blue-100" },
-    { id: "room_reservations", title: "Room Reservations", desc: "View & track your room wise reservations from different sources.", icon: "🛏️", color: "bg-green-50 border-green-100 hover:bg-green-100" },
     { id: "cancelled_reservation", title: "Cancelled Reservation", desc: "View all cancelled reservations and extract report with ease.", icon: "❌", color: "bg-red-50 border-red-100 hover:bg-red-100" },
     { id: "outstanding_payments", title: "Outstanding Payments", desc: "View all outstanding reservations and export detailed reports with ease.", icon: "💸", color: "bg-orange-50 border-orange-100 hover:bg-orange-100" },
     { id: "revenue_source", title: "Revenue by Source", desc: "View detailed revenue generated from each booking and sales source.", icon: "💰", color: "bg-yellow-50 border-yellow-100 hover:bg-yellow-100" },
     { id: "revenue_room_type", title: "Revenue by Room Type", desc: "Analyse revenue generated from each room type with detailed insights.", icon: "🏨", color: "bg-purple-50 border-purple-100 hover:bg-purple-100" },
-    { id: "occupancy", title: "Occupancy", desc: "Track your daily rooms occupancy and generate detailed reports with ease.", icon: "📈", color: "bg-cyan-50 border-cyan-100 hover:bg-cyan-100" },
-    { id: "daily_sales", title: "Daily Sales", desc: "Track and analyse sales performance from all sources and export detailed reports.", icon: "📊", color: "bg-indigo-50 border-indigo-100 hover:bg-indigo-100" },
+    { id: "occupancy", title: "Occupancy & Daily Sales", desc: "Track your daily rooms occupancy and sales performance with detailed reports.", icon: "📈", color: "bg-cyan-50 border-cyan-100 hover:bg-cyan-100" },
     { id: "payment_received", title: "Payment Received", desc: "View all recorded payments and export detailed reports.", icon: "✅", color: "bg-green-50 border-green-100 hover:bg-green-100" },
-    { id: "daily_payments", title: "Daily Payments", desc: "Analyse daily, weekly, monthly payment mode from different payment mode and extract report.", icon: "💳", color: "bg-blue-50 border-blue-100 hover:bg-blue-100" },
     { id: "purchase", title: "Purchase", desc: "View and export all vendor-wise purchase reports.", icon: "🛒", color: "bg-orange-50 border-orange-100 hover:bg-orange-100" },
     { id: "expense", title: "Expense", desc: "View and export all category-wise expense reports.", icon: "🧾", color: "bg-red-50 border-red-100 hover:bg-red-100" },
     { id: "petty_cash", title: "Petty Cash", desc: "View and export all category-wise petty cash transactions.", icon: "💵", color: "bg-yellow-50 border-yellow-100 hover:bg-yellow-100" },
-    { id: "product_wise", title: "Product Wise", desc: "View and track your most selling products and categories.", icon: "📦", color: "bg-purple-50 border-purple-100 hover:bg-purple-100" },
     { id: "invoices", title: "Invoices", desc: "View all invoices and export various reports like sales, payment, product wise, order ticket & shift reports.", icon: "🧾", color: "bg-cyan-50 border-cyan-100 hover:bg-cyan-100" },
     { id: "taxes", title: "Taxes", desc: "View and track taxes collected from various sources.", icon: "🏛️", color: "bg-gray-50 border-gray-200 hover:bg-gray-100" },
   ]
@@ -145,7 +141,6 @@ export default function ReportsPage() {
 
   const maxRevenue = Math.max(...Object.values(stats.monthlyRevenue as any).map(Number), 1)
 
-  // Report detail view
   const renderReportDetail = () => {
     const report = reportCards.find(r => r.id === activeReport)
     if (!report) return null
@@ -299,25 +294,54 @@ export default function ReportsPage() {
         )}
 
         {activeReport === "occupancy" && (
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-            {[
-              { label: "Total Rooms", value: stats.totalRooms, icon: "🛏️" },
-              { label: "Occupied", value: stats.confirmedBookings, icon: "🏨" },
-              { label: "Occupancy Rate", value: `${stats.occupancyRate}%`, icon: "📈" },
-              { label: "Available", value: stats.totalRooms - stats.confirmedBookings, icon: "✅" },
-              { label: "Avg Booking Value", value: `₹${stats.avgRevenue.toLocaleString('en-IN')}`, icon: "💰" },
-              { label: "Total Revenue", value: `₹${stats.totalRevenue.toLocaleString('en-IN')}`, icon: "💵" },
-            ].map((c, i) => (
-              <div key={i} className="bg-gray-50 rounded-xl p-5 border border-gray-100">
-                <div className="text-3xl mb-2">{c.icon}</div>
-                <div className="text-2xl font-bold text-gray-900">{c.value}</div>
-                <div className="text-sm text-gray-500">{c.label}</div>
-              </div>
-            ))}
+          <div>
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-6">
+              {[
+                { label: "Total Rooms", value: stats.totalRooms, icon: "🛏️" },
+                { label: "Occupied", value: stats.confirmedBookings, icon: "🏨" },
+                { label: "Occupancy Rate", value: `${stats.occupancyRate}%`, icon: "📈" },
+                { label: "Available", value: stats.totalRooms - stats.confirmedBookings, icon: "✅" },
+                { label: "Avg Booking Value", value: `₹${stats.avgRevenue.toLocaleString('en-IN')}`, icon: "💰" },
+                { label: "Total Revenue", value: `₹${stats.totalRevenue.toLocaleString('en-IN')}`, icon: "💵" },
+              ].map((c, i) => (
+                <div key={i} className="bg-gray-50 rounded-xl p-5 border border-gray-100">
+                  <div className="text-3xl mb-2">{c.icon}</div>
+                  <div className="text-2xl font-bold text-gray-900">{c.value}</div>
+                  <div className="text-sm text-gray-500">{c.label}</div>
+                </div>
+              ))}
+            </div>
+            {/* Daily Sales Table */}
+            <h3 className="text-sm font-semibold text-gray-700 mb-3">📊 Daily Sales</h3>
+            <table className="w-full text-sm">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase">Date</th>
+                  <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase">Bookings</th>
+                  <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase">Revenue</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-50">
+                {Object.entries(
+                  stats.filteredBookings.reduce((acc: any, b: any) => {
+                    const date = new Date(b.checkIn).toLocaleDateString('en-IN')
+                    if (!acc[date]) acc[date] = { bookings: 0, revenue: 0 }
+                    acc[date].bookings += 1
+                    acc[date].revenue += b.amount || 0
+                    return acc
+                  }, {})
+                ).map(([date, data]: any, i) => (
+                  <tr key={i} className="hover:bg-gray-50">
+                    <td className="px-4 py-3 text-gray-700">{date}</td>
+                    <td className="px-4 py-3 text-gray-600">{data.bookings}</td>
+                    <td className="px-4 py-3 font-semibold text-green-700">₹{data.revenue.toLocaleString('en-IN')}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         )}
 
-        {/* Default view for other reports */}
         {!["total_reservation", "cancelled_reservation", "occupancy"].includes(activeReport || "") && (
           <div className="text-center py-12 text-gray-400">
             <div className="text-5xl mb-3">{report.icon}</div>
@@ -345,13 +369,10 @@ export default function ReportsPage() {
           <p className="text-gray-500 mt-1">Hotel performance ka complete overview</p>
         </div>
 
-        {/* Report Detail View */}
         {activeReport && renderReportDetail()}
 
-        {/* Report Cards Grid */}
         {!activeReport && (
           <>
-            {/* KPI Cards */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
               {[
                 { icon: "💰", value: `₹${stats.totalRevenue.toLocaleString('en-IN')}`, label: "Total Revenue" },
@@ -367,7 +388,6 @@ export default function ReportsPage() {
               ))}
             </div>
 
-            {/* All Report Cards */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
               {reportCards.map((report) => (
                 <div
