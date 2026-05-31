@@ -81,6 +81,12 @@ export default function AdsPage() {
   const [locationSearchType, setLocationSearchType] = useState("Location");
   const [bidFocus, setBidFocus] = useState("Conversions");
   const [targetCPA, setTargetCPA] = useState(false);
+  const [showMoreAssetTypes, setShowMoreAssetTypes] = useState(false);
+  const [showAdditionalSignals, setShowAdditionalSignals] = useState(false);
+  const [showYourData, setShowYourData] = useState(true);
+  const [showAudienceName, setShowAudienceName] = useState(false);
+  const [showSearchThemes, setShowSearchThemes] = useState(true);
+  const [showAudienceSignal, setShowAudienceSignal] = useState(true);
   const [campaignForm, setCampaignForm] = useState({
     name: "", goal: "", type: "", budget: "", objective: "Conversions",
     startDate: "", endDate: "", targeting: "",
@@ -937,12 +943,301 @@ export default function AdsPage() {
                 </div>
 
               </div>
+           )}
+
+            {campaignStep === 4 && (
+              <div className="space-y-4">
+
+                {/* Asset Group Header */}
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900">Asset group</h3>
+                  <p className="text-xs text-gray-500 mt-1">Show high quality ads to the right people. Start by adding your assets, the building blocks of every ad. Google will test different combinations to create high performing ads across the formats and networks that work best for your goals and the audiences you want to reach.</p>
+                </div>
+
+                {/* Asset group name */}
+                <div className="border border-gray-200 rounded-xl overflow-hidden">
+                  <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200 bg-gray-50">
+                    <p className="text-sm font-semibold text-gray-900">Asset group name</p>
+                    <span className="text-gray-400">∧</span>
+                  </div>
+                  <div className="p-4">
+                    <input type="text" defaultValue="Asset Group 1"
+                      className="border border-gray-300 rounded-lg px-3 py-2 text-sm w-64 focus:outline-none" />
+                  </div>
+                </div>
+
+                {/* Final URL */}
+                <div className="border border-gray-200 rounded-xl overflow-hidden">
+                  <div className="flex items-center justify-between px-4 py-3 bg-gray-50">
+                    <p className="text-sm font-semibold text-gray-900">Final URL</p>
+                    <div className="flex items-center gap-4">
+                      <span className="text-xs text-gray-500">http://ktwebcreations.com</span>
+                      <span className="text-gray-400">∨</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Assets */}
+                <div className="border border-gray-200 rounded-xl overflow-hidden">
+                  <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200 bg-gray-50">
+                    <p className="text-sm font-semibold text-gray-900">Assets</p>
+                    <span className="text-gray-400">∧</span>
+                  </div>
+                  <div className="p-4 space-y-4">
+
+                    {/* Calls */}
+                    <div className="border border-gray-200 rounded-xl overflow-hidden">
+                      <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200">
+                        <div className="flex items-center gap-2">
+                          <input type="radio" name="calls" />
+                          <p className="text-sm font-medium text-gray-900">Calls</p>
+                        </div>
+                        <span className="text-gray-400">∧</span>
+                      </div>
+                      <div className="p-3">
+                        <p className="text-xs text-gray-500 mb-2">Add a phone number</p>
+                        <div className="bg-orange-50 border border-orange-200 rounded-lg p-3 text-xs text-orange-700 mb-2">
+                          ⚠️ Because you selected phone calls as a campaign goal, add a call asset to use with your ads.
+                        </div>
+                        <button className="text-sm text-blue-600 hover:underline">+ Calls</button>
+                      </div>
+                    </div>
+
+                    {/* Row 1: Headlines + Long headlines */}
+                    <div className="grid grid-cols-2 gap-4">
+                      {/* Headlines */}
+                      <div className="border border-gray-200 rounded-xl overflow-hidden">
+                        <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200">
+                          <div className="flex items-center gap-2">
+                            <input type="radio" name="headlines" />
+                            <p className="text-sm font-medium text-gray-900">Headline (0) ⓘ</p>
+                          </div>
+                          <span className="text-gray-400">∧</span>
+                        </div>
+                        <div className="p-3 space-y-2">
+                          {[0, 1, 2].map(i => (
+                            <div key={i} className="relative">
+                              <input type="text" placeholder="Headline" className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none" />
+                              <span className="absolute right-2 top-2 text-xs text-gray-400">0/30</span>
+                              <p className="text-xs text-red-400">Required</p>
+                            </div>
+                          ))}
+                          <button className="text-sm text-blue-600 hover:underline">+ Headline</button>
+                        </div>
+                      </div>
+
+                      {/* Long Headlines */}
+                      <div className="border border-gray-200 rounded-xl overflow-hidden">
+                        <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200">
+                          <div className="flex items-center gap-2">
+                            <input type="radio" name="long-headlines" />
+                            <p className="text-sm font-medium text-gray-900">Long headlines (0) ⓘ</p>
+                          </div>
+                          <span className="text-gray-400">∧</span>
+                        </div>
+                        <div className="p-3 space-y-2">
+                          <div className="relative">
+                            <input type="text" placeholder="Long headline" className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none" />
+                            <span className="absolute right-2 top-2 text-xs text-gray-400">0/40</span>
+                          </div>
+                          <button className="text-sm text-blue-600 hover:underline">+ Long headline</button>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Descriptions */}
+                    <div className="border border-gray-200 rounded-xl overflow-hidden">
+                      <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200">
+                        <div className="flex items-center gap-2">
+                          <input type="radio" name="descriptions" />
+                          <p className="text-sm font-medium text-gray-900">Descriptions (0) ⓘ</p>
+                        </div>
+                        <span className="text-gray-400">∧</span>
+                      </div>
+                      <div className="p-3 space-y-2">
+                        {[0, 1].map(i => (
+                          <div key={i} className="relative">
+                            <input type="text" placeholder="Description" className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none" />
+                            <span className="absolute right-2 top-2 text-xs text-gray-400">0/90</span>
+                            <p className="text-xs text-red-400">Required</p>
+                          </div>
+                        ))}
+                        <button className="text-sm text-blue-600 hover:underline">+ Description</button>
+                      </div>
+                    </div>
+
+                    {/* Row 2: Images + Logos */}
+                    <div className="grid grid-cols-2 gap-4">
+                      {/* Images */}
+                      <div className="border border-gray-200 rounded-xl overflow-hidden">
+                        <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200">
+                          <div className="flex items-center gap-2">
+                            <input type="radio" name="images" />
+                            <p className="text-sm font-medium text-gray-900">Images (0) ⓘ</p>
+                          </div>
+                          <span className="text-gray-400">∧</span>
+                        </div>
+                        <div className="p-3 space-y-2">
+                          <button className="text-sm text-blue-600 hover:underline">+ Images</button>
+                          <p className="text-xs text-gray-500">Suggested Images ⓘ</p>
+                          <div className="grid grid-cols-2 gap-2">
+                            <div className="bg-gray-100 rounded-lg h-20 flex items-center justify-center text-xs text-gray-400">Generated</div>
+                            <div className="bg-gray-100 rounded-lg h-20 flex items-center justify-center text-xs text-gray-400">Enhanced from URL</div>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Logos */}
+                      <div className="border border-gray-200 rounded-xl overflow-hidden">
+                        <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200">
+                          <div className="flex items-center gap-2">
+                            <input type="radio" name="logos" />
+                            <p className="text-sm font-medium text-gray-900">Logos (0) ⓘ</p>
+                          </div>
+                          <span className="text-gray-400">∧</span>
+                        </div>
+                        <div className="p-3 space-y-2">
+                          <button className="text-sm text-blue-600 hover:underline">+ Logos</button>
+                          <p className="text-xs text-gray-500">Suggested logos ⓘ</p>
+                          <div className="grid grid-cols-2 gap-2">
+                            <div className="bg-gray-100 rounded-lg h-20 flex items-center justify-center text-xs text-gray-400">From your URL</div>
+                            <div className="bg-gray-100 rounded-lg h-20 flex items-center justify-center text-xs text-gray-400">From your URL</div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Row 3: Business name, Videos, Sitelinks, Call to action */}
+                    <div className="grid grid-cols-4 gap-4">
+                      {/* Business name */}
+                      <div className="border border-gray-200 rounded-xl overflow-hidden">
+                        <div className="flex items-center justify-between px-3 py-2 border-b border-gray-200">
+                          <div className="flex items-center gap-2">
+                            <input type="radio" name="business" />
+                            <p className="text-xs font-medium text-gray-900">Business name ⓘ</p>
+                          </div>
+                          <span className="text-gray-400">∨</span>
+                        </div>
+                      </div>
+
+                     {/* Videos */}
+                      <div className="border border-gray-200 rounded-xl overflow-hidden">
+                        <div className="flex items-center justify-between px-3 py-2 border-b border-gray-200">
+                          <div className="flex items-center gap-2">
+                            <input type="radio" name="videos" />
+                            <p className="text-xs font-medium text-gray-900">Videos (0) ⓘ</p>
+                          </div>
+                          <span className="text-gray-400">∨</span>
+                        </div>
+                      </div>
+
+                      {/* Sitelinks */}
+                      <div className="border border-gray-200 rounded-xl overflow-hidden">
+                        <div className="flex items-center justify-between px-3 py-2 border-b border-gray-200">
+                          <div className="flex items-center gap-2">
+                            <input type="radio" name="sitelinks" />
+                            <p className="text-xs font-medium text-gray-900">Sitelinks ⓘ</p>
+                          </div>
+                          <span className="text-gray-400">∨</span>
+                        </div>
+                      </div>
+
+                      {/* Call to action */}
+                      <div className="border border-gray-200 rounded-xl overflow-hidden">
+                        <div className="flex items-center justify-between px-3 py-2 border-b border-gray-200">
+                          <div className="flex items-center gap-2">
+                            <input type="checkbox" className="w-4 h-4 accent-blue-600" defaultChecked />
+                            <p className="text-xs font-medium text-gray-900">Call to action ⓘ</p>
+                          </div>
+                          <span className="text-gray-400">∨</span>
+                        </div>
+                      </div>
+                    </div>
+
+                  </div>
+                </div>
+
+                {/* Signals */}
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900">Signals</h3>
+                  <p className="text-xs text-gray-500 mt-1">Signals provide valuable information about the people you want to reach. They help guide who sees your ads on Google Search, YouTube, and more.</p>
+                </div>
+
+                {/* Search themes */}
+                <div className="border border-gray-200 rounded-xl overflow-hidden">
+                  <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200 bg-gray-50 cursor-pointer" onClick={() => setShowSearchThemes(!showSearchThemes)}>
+                    <p className="text-sm font-semibold text-gray-900">Search themes</p>
+                    <span className="text-gray-400">{showSearchThemes ? "∧" : "∨"}</span>
+                  </div>
+                  {showSearchThemes && (
+                    <div className="p-4">
+                      <p className="text-xs text-gray-500 mb-2">What are some words or phrases people use when searching for your products or services? ⓘ</p>
+                      <input type="text" placeholder="Add search themes (up to 50)"
+                        className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none" />
+                    </div>
+                  )}
+                </div>
+
+                {/* Audience signal */}
+                <div className="border border-gray-200 rounded-xl overflow-hidden">
+                  <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200 bg-gray-50 cursor-pointer" onClick={() => setShowAudienceSignal(!showAudienceSignal)}>
+                    <p className="text-sm font-semibold text-gray-900">Audience signal</p>
+                    <span className="text-gray-400">{showAudienceSignal ? "∧" : "∨"}</span>
+                  </div>
+                  {showAudienceSignal && (
+                    <div className="p-4 space-y-3">
+                      <div className="flex items-center justify-between">
+                        <p className="text-xs text-gray-500">Reach the right customers faster across Google with an audience signal. ⓘ</p>
+                        <button className="text-xs text-blue-600 border border-blue-600 px-3 py-1.5 rounded-lg hover:bg-blue-50">Add saved audience signal</button>
+                      </div>
+                      <div className="border border-gray-200 rounded-xl overflow-hidden">
+                        <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200 cursor-pointer" onClick={() => setShowYourData(!showYourData)}>
+                          <p className="text-sm font-medium text-gray-900">Your data</p>
+                          <span className="text-gray-400">{showYourData ? "∧" : "∨"}</span>
+                        </div>
+                        {showYourData && (
+                          <div className="p-3">
+                            <p className="text-xs text-gray-500 mb-2">First-party data can help us reach your customers ⓘ</p>
+                            <button className="text-sm text-blue-600 hover:underline">+ New segment</button>
+                          </div>
+                        )}
+                      </div>
+                      <div className="border border-gray-200 rounded-xl overflow-hidden cursor-pointer">
+                        <div className="flex items-center gap-2 px-4 py-3">
+                          <span className="text-blue-600">⚙️</span>
+                          <p className="text-sm text-blue-600 font-medium">Additional signals</p>
+                        </div>
+                      </div>
+                      <div className="border border-gray-200 rounded-xl overflow-hidden">
+                        <div className="flex items-center justify-between px-4 py-3 cursor-pointer" onClick={() => setShowAudienceName(!showAudienceName)}>
+                          <p className="text-sm font-medium text-gray-900">Audience name</p>
+                          <div className="flex items-center gap-4">
+                            <span className="text-xs text-gray-400">Add a name for your audience to save it to your library (optional)</span>
+                            <span className="text-gray-400">{showAudienceName ? "∧" : "∨"}</span>
+                          </div>
+                        </div>
+                        {showAudienceName && (
+                          <div className="p-3 border-t border-gray-200">
+                            <input type="text" placeholder="Audience name"
+                              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none" />
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                <div className="flex items-center justify-between pt-2">
+                  <p className="text-xs text-gray-400">© Google, 2026. <span className="text-blue-600 cursor-pointer hover:underline">Leave feedback</span></p>
+                </div>
+
+              </div>
             )}
-            </div>
+           </div>
             <div className="flex gap-3 mt-4">
               <button onClick={() => { setShowCreateModal(false); setCampaignStep(1); }}
                 className="flex-1 bg-gray-100 text-gray-600 py-2 rounded-lg text-sm hover:bg-gray-200">Cancel</button>
-              <button onClick={() => setCampaignStep(campaignStep === 1 ? 2 : 3)}
+              <button onClick={() => setCampaignStep(campaignStep + 1)}
                 className="flex-1 text-white py-2 rounded-lg text-sm font-medium hover:opacity-90"
                 style={{ backgroundColor: primaryColor }}>Continue</button>
             </div>
