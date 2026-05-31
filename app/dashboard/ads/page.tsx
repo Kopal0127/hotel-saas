@@ -1320,9 +1320,13 @@ export default function AdsPage() {
               </div>
             )}
            </div>
-            <div className="flex gap-3 mt-4">
+           <div className="flex gap-3 mt-4">
               <button onClick={() => { setShowCreateModal(false); setCampaignStep(1); }}
                 className="flex-1 bg-gray-100 text-gray-600 py-2 rounded-lg text-sm hover:bg-gray-200">Cancel</button>
+              {campaignStep > 1 && (
+                <button onClick={() => setCampaignStep(campaignStep - 1)}
+                  className="flex-1 bg-gray-100 text-gray-700 py-2 rounded-lg text-sm font-medium hover:bg-gray-200">← Back</button>
+              )}
               <button onClick={() => setCampaignStep(campaignStep + 1)}
                 className="flex-1 text-white py-2 rounded-lg text-sm font-medium hover:opacity-90"
                 style={{ backgroundColor: primaryColor }}>Continue</button>
