@@ -102,6 +102,17 @@ export default function BookingsPage() {
   };
 
   const handleStatusChange = async (bookingId: string, newStatus: string) => {
+    if (newStatus === "CHECKED_OUT") {
+      const booking = bookings.find(b => b.id === bookingId);
+      if (booking) {
+        const dueAmount = booking.amount - (booking.paymentAmount || 0);
+        if (dueAmount > 0) {
+          showToast(`❌ Pehle due amount clear karo! Due: ₹${dueAmount}`, "error");
+          setOpenActionId(null);
+          return;
+        }
+      }
+    }
     try {
       const res = await fetch("/api/bookings", {
         method: "PUT",

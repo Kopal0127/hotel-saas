@@ -188,13 +188,21 @@ const handleHousekeepingRequest = async (bookingId: string) => {
   };
 
   const handleStatusChange = async (bookingId: string, newStatus: string) => {
-    // Block checkout if pending bill (only in checkout tab)
-    if (newStatus === "CHECKED_OUT" && activeFilter === "checkout") {
-      const pending = getPendingBill(bookingId);
-      if (pending > 0) {
-        showToast(`❌ Pehle bill clear karo! Pending: ₹${pending}`, "error");
-        setOpenActionId(null);
-        return;
+    if (newStatus === "CHECKED_OUT") {
+      const booking = allBookings.find(b => b.id === bookingId);
+      if (booking) {
+        const dueAmount = booking.amount - (booking.paymentAmount || 0);
+        if (dueAmount > 0) {
+          showToast(`❌ Pehle due amount clear karo! Due: ₹${dueAmount}`, "error");
+          setOpenActionId(null);
+          return;
+        }
+        const pendingBill = getPendingBill(bookingId);
+        if (pendingBill > 0) {
+          showToast(`❌ Pehle room service bill clear karo! Pending: ₹${pendingBill}`, "error");
+          setOpenActionId(null);
+          return;
+        }
       }
     }
     try {
