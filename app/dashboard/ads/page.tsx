@@ -74,6 +74,7 @@ export default function AdsPage() {
   const [dateRange, setDateRange] = useState("Last 14 days");
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [campaignStep, setCampaignStep] = useState(1);
+  const [showSeeMore, setShowSeeMore] = useState(false);
   const [campaignForm, setCampaignForm] = useState({
     name: "", goal: "", type: "", budget: "", objective: "Conversions",
     startDate: "", endDate: "", targeting: "",
@@ -587,16 +588,43 @@ export default function AdsPage() {
               </div>
              {campaignStep === 2 && (
               <>
-                {/* Performance Max — Final URL + Campaign Name */}
+                {/* Performance Max */}
                 {campaignForm.type === "Performance Max" && (
                   <div className="space-y-4">
+                    {campaignForm.goal === "Sales" && (
+                      <div className="border border-gray-200 rounded-xl p-4">
+                        <p className="text-sm font-semibold text-gray-900 mb-1">Choose your sales conversion goals</p>
+                        <p className="text-xs text-gray-500 mb-3">Pick the most important sales goals that you would like to focus on. Based on your selection, Smart Bidding will then optimize for delivering your ads to the right people to meet the goals. <span className="text-blue-600 cursor-pointer hover:underline">Learn more about smart bidding</span></p>
+                        <div className="space-y-2">
+                          {[
+                            { icon: "💳", title: "Purchase", desc: "Show your ads to people who are most likely to buy products from your website, app, or store." },
+                            { icon: "📦", title: "Purchase subscription", desc: "Show your ads to people who are most likely to get paid subscriptions of your services and/or products." },
+                            ...(showSeeMore ? [
+                              { icon: "🛒", title: "Add to cart", desc: "Show your ads to people who are interested in your products and then you can send reminders to finish checking out" },
+                              { icon: "🏷️", title: "Begin checkout", desc: "Show your ads to people who are interested in your products and then you can send reminders to finish checking out" },
+                            ] : [])
+                          ].map((item, i) => (
+                            <label key={i} className="flex items-center gap-3 border border-gray-200 rounded-lg p-3 cursor-pointer hover:border-blue-400">
+                              <span className="text-lg">{item.icon}</span>
+                              <div className="flex-1">
+                                <p className="text-sm font-medium text-gray-900">{item.title}</p>
+                                <p className="text-xs text-gray-500">{item.desc}</p>
+                              </div>
+                              <input type="radio" name="conv-goal-pmax" />
+                            </label>
+                          ))}
+                        </div>
+                        <button onClick={() => setShowSeeMore(!showSeeMore)} className="text-sm text-blue-600 hover:underline mt-2">
+                          {showSeeMore ? "See less" : "See more"}
+                        </button>
+                      </div>
+                    )}
                     <div className="border border-gray-200 rounded-xl p-4">
                       <p className="text-sm font-semibold text-gray-900 mb-3">Where should people go after clicking your ads?</p>
                       <p className="text-xs text-gray-500 mb-3">Think about the product or service you want to sell and enter the URL you want people to see after clicking your ads.</p>
                       <div className="flex items-center border border-gray-300 rounded-lg px-3 py-2.5">
                         <span className="text-gray-400 mr-2">🔗</span>
-                        <input type="text" placeholder="Final URL"
-                          className="flex-1 text-sm focus:outline-none" />
+                        <input type="text" placeholder="Final URL" className="flex-1 text-sm focus:outline-none" />
                       </div>
                     </div>
                     <div className="border border-gray-200 rounded-xl p-4">
@@ -607,17 +635,50 @@ export default function AdsPage() {
                   </div>
                 )}
 
-                {/* Search — Sales: Website visits, Phone calls, Store visits */}
+               {/* Search — Sales */}
                 {campaignForm.type === "Search" && campaignForm.goal === "Sales" && (
-                  <div className="border border-gray-200 rounded-xl p-4">
-                    <p className="text-sm font-semibold text-gray-900 mb-3">Select the ways you'd like to reach your goal ⓘ</p>
-                    <div className="space-y-2">
-                      {["Website visits", "Phone calls", "Store visits"].map(option => (
-                        <label key={option} className="flex items-center gap-2 cursor-pointer">
-                          <input type="checkbox" className="w-4 h-4" />
-                          <span className="text-sm text-gray-700">{option}</span>
-                        </label>
-                      ))}
+                  <div className="space-y-4">
+                    <div className="border border-gray-200 rounded-xl p-4">
+                      <p className="text-sm font-semibold text-gray-900 mb-3">Select the ways you'd like to reach your goal ⓘ</p>
+                      <div className="space-y-2">
+                        {["Website visits", "Phone calls", "Store visits"].map(option => (
+                          <label key={option} className="flex items-center gap-2 cursor-pointer">
+                            <input type="checkbox" className="w-4 h-4" />
+                            <span className="text-sm text-gray-700">{option}</span>
+                          </label>
+                        ))}
+                      </div>
+                    </div>
+                    <div className="border border-gray-200 rounded-xl p-4">
+                      <p className="text-sm font-semibold text-gray-900 mb-1">Choose your sales conversion goals</p>
+                      <p className="text-xs text-gray-500 mb-3">Pick the most important sales goals that you would like to focus on. Based on your selection, Smart Bidding will then optimize for delivering your ads to the right people to meet the goals. <span className="text-blue-600 cursor-pointer hover:underline">Learn more about smart bidding</span></p>
+                      <div className="space-y-2">
+                        {[
+                          { icon: "💳", title: "Purchase", desc: "Show your ads to people who are most likely to buy products from your website, app, or store." },
+                          { icon: "📦", title: "Purchase subscription", desc: "Show your ads to people who are most likely to get paid subscriptions of your services and/or products." },
+                          ...(showSeeMore ? [
+                            { icon: "🛒", title: "Add to cart", desc: "Show your ads to people who are interested in your products and then you can send reminders to finish checking out" },
+                            { icon: "🏷️", title: "Begin checkout", desc: "Show your ads to people who are interested in your products and then you can send reminders to finish checking out" },
+                          ] : [])
+                        ].map((item, i) => (
+                          <label key={i} className="flex items-center gap-3 border border-gray-200 rounded-lg p-3 cursor-pointer hover:border-blue-400">
+                            <span className="text-lg">{item.icon}</span>
+                            <div className="flex-1">
+                              <p className="text-sm font-medium text-gray-900">{item.title}</p>
+                              <p className="text-xs text-gray-500">{item.desc}</p>
+                            </div>
+                            <input type="radio" name="conv-goal-search" />
+                          </label>
+                        ))}
+                      </div>
+                      <button onClick={() => setShowSeeMore(!showSeeMore)} className="text-sm text-blue-600 hover:underline mt-2">
+                        {showSeeMore ? "See less" : "See more"}
+                      </button>
+                    </div>
+                    <div className="border border-gray-200 rounded-xl p-4">
+                      <p className="text-sm font-semibold text-gray-900 mb-3">Campaign name</p>
+                      <input type="text" defaultValue={`${campaignForm.goal}-Search-1`}
+                        className="border border-gray-300 rounded-lg px-3 py-2.5 text-sm w-64 focus:outline-none" />
                     </div>
                   </div>
                 )}
@@ -649,14 +710,48 @@ export default function AdsPage() {
                   </div>
                 )}
 
-                {/* Display — URL input */}
+                {/* Display */}
                 {campaignForm.type === "Display" && (
-                  <div className="border border-gray-200 rounded-xl p-4">
-                    <p className="text-sm font-semibold text-gray-900 mb-3">This is the web page people will go to after clicking your ad ⓘ</p>
-                    <div className="flex items-center border border-gray-300 rounded-lg px-3 py-2.5">
-                      <span className="text-gray-400 mr-2">🔗</span>
-                      <input type="text" placeholder="Your business's website"
-                        className="flex-1 text-sm focus:outline-none" />
+                  <div className="space-y-4">
+                    <div className="border border-gray-200 rounded-xl p-4">
+                      <p className="text-sm font-semibold text-gray-900 mb-3">This is the web page people will go to after clicking your ad ⓘ</p>
+                      <div className="flex items-center border border-gray-300 rounded-lg px-3 py-2.5">
+                        <span className="text-gray-400 mr-2">🔗</span>
+                        <input type="text" placeholder="Your business's website" className="flex-1 text-sm focus:outline-none" />
+                      </div>
+                    </div>
+                    {campaignForm.goal === "Sales" && (
+                      <div className="border border-gray-200 rounded-xl p-4">
+                        <p className="text-sm font-semibold text-gray-900 mb-1">Choose your sales conversion goals</p>
+                        <p className="text-xs text-gray-500 mb-3">Pick the most important sales goals that you would like to focus on. Based on your selection, Smart Bidding will then optimize for delivering your ads to the right people to meet the goals. <span className="text-blue-600 cursor-pointer hover:underline">Learn more about smart bidding</span></p>
+                        <div className="space-y-2">
+                          {[
+                            { icon: "💳", title: "Purchase", desc: "Show your ads to people who are most likely to buy products from your website, app, or store." },
+                            { icon: "📦", title: "Purchase subscription", desc: "Show your ads to people who are most likely to get paid subscriptions of your services and/or products." },
+                            ...(showSeeMore ? [
+                              { icon: "🛒", title: "Add to cart", desc: "Show your ads to people who are interested in your products and then you can send reminders to finish checking out" },
+                              { icon: "🏷️", title: "Begin checkout", desc: "Show your ads to people who are interested in your products and then you can send reminders to finish checking out" },
+                            ] : [])
+                          ].map((item, i) => (
+                            <label key={i} className="flex items-center gap-3 border border-gray-200 rounded-lg p-3 cursor-pointer hover:border-blue-400">
+                              <span className="text-lg">{item.icon}</span>
+                              <div className="flex-1">
+                                <p className="text-sm font-medium text-gray-900">{item.title}</p>
+                                <p className="text-xs text-gray-500">{item.desc}</p>
+                              </div>
+                              <input type="radio" name="conv-goal-display" />
+                            </label>
+                          ))}
+                        </div>
+                        <button onClick={() => setShowSeeMore(!showSeeMore)} className="text-sm text-blue-600 hover:underline mt-2">
+                          {showSeeMore ? "See less" : "See more"}
+                        </button>
+                      </div>
+                    )}
+                    <div className="border border-gray-200 rounded-xl p-4">
+                      <p className="text-sm font-semibold text-gray-900 mb-3">Campaign name</p>
+                      <input type="text" defaultValue={`${campaignForm.goal}-Display-1`}
+                        className="border border-gray-300 rounded-lg px-3 py-2.5 text-sm w-64 focus:outline-none" />
                     </div>
                   </div>
                 )}
