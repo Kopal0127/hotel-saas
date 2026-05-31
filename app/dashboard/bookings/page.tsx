@@ -19,6 +19,7 @@ export default function BookingsPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [filterStatus, setFilterStatus] = useState("all");
   const [filterSource, setFilterSource] = useState("all");
+  const [connectedOTAs, setConnectedOTAs] = useState<string[]>([]);
   const [showFinalPayment, setShowFinalPayment] = useState(false);
   const [showMoreOptions, setShowMoreOptions] = useState(false);
   const [page, setPage] = useState(1);
@@ -92,9 +93,16 @@ export default function BookingsPage() {
         const roomsRes = await fetch(`/api/rooms?hotelId=${hId}`);
         const roomsData = await roomsRes.json();
         setRooms(roomsData.rooms || []);
-        const bookingsRes = await fetch(`/api/bookings?hotelId=${hId}`);
+       const bookingsRes = await fetch(`/api/bookings?hotelId=${hId}`);
         const bookingsData = await bookingsRes.json();
         setBookings(bookingsData.bookings || []);
+
+        const channelsRes = await fetch(`/api/channels?hotelId=${hId}`);
+        const channelsData = await channelsRes.json();
+        const otaNames = (channelsData.channels || [])
+          .filter((c: any) => c.isConnected)
+          .map((c: any) => c.name);
+        setConnectedOTAs(otaNames);
        
       }
     } catch (error) {
@@ -849,13 +857,17 @@ const validate = () => {
             className="border border-gray-200 rounded-lg px-4 py-2 text-sm focus:outline-none focus:border-blue-500 bg-white">
             <option value="all">All Sources</option>
             <option value="WALK_IN">🚶 Walk-in</option>
-            <option value="BOOKING_COM">🌐 Booking.com</option>
-            <option value="MAKEMYTRIP">✈️ MakeMyTrip</option>
-            <option value="GOOGLE_HOTEL_CENTRE">🔍 Google Hotel Centre</option>
-            <option value="EXPEDIA">🌍 Expedia</option>
-            <option value="AGODA">🏨 Agoda</option>
             <option value="PHONE">📞 Phone</option>
             <option value="OTHER">📋 Other</option>
+            {connectedOTAs.map((ota: string) => (
+              <option key={ota} value={ota}>
+                {ota === "BOOKING_COM" ? "🌐 Booking.com" :
+                 ota === "MAKEMYTRIP" ? "✈️ MakeMyTrip" :
+                 ota === "GOOGLE_HOTEL_CENTRE" ? "🔍 Google Hotel Centre" :
+                 ota === "EXPEDIA" ? "🌍 Expedia" :
+                 ota === "AGODA" ? "🏨 Agoda" : ota}
+              </option>
+            ))}
           </select>
         </div>
 
