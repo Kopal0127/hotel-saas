@@ -391,10 +391,27 @@ export async function PUT(req: NextRequest) {
       return NextResponse.json({ message: "Booking extend ho gayi!", booking });
     }
 
+   // PAY_DUE logic
+    if (status === "PAY_DUE") {
+      const { finalPaymentMode, finalPaymentAmount } = body;
+      if (!finalPaymentMode || !finalPaymentAmount) {
+        return NextResponse.json({ error: "Payment mode aur amount chahiye!" }, { status: 400 });
+      }
+      const booking = await prisma.booking.update({
+        where: { id },
+        data: {
+          paymentAmount: { increment: parseFloat(finalPaymentAmount) },
+          finalPaymentMode,
+          finalPaymentAmount: parseFloat(finalPaymentAmount),
+        },
+      });
+      return NextResponse.json({ message: "Due amount clear ho gaya!", booking });
+    }
+
     const validStatuses = ["CONFIRMED", "CHECKED_IN", "CHECKED_OUT", "CANCELLED", "UPGRADED"];
-if (!validStatuses.includes(status)) {
-  return NextResponse.json({ error: "Invalid status!" }, { status: 400 });
-}
+    if (!validStatuses.includes(status)) {
+      return NextResponse.json({ error: "Invalid status!" }, { status: 400 });
+    }
 
 const booking = await prisma.booking.update({
   where: { id },

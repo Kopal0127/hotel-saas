@@ -28,6 +28,11 @@ export default function BookingsPage() {
   const [extendBooking, setExtendBooking] = useState<any>(null);
   const [newCheckOut, setNewCheckOut] = useState("");
   const [extendLoading, setExtendLoading] = useState(false);
+  const [showPayDueModal, setShowPayDueModal] = useState(false);
+  const [payDueBooking, setPayDueBooking] = useState<any>(null);
+  const [payDueMode, setPayDueMode] = useState("CASH");
+  const [payDueAmount, setPayDueAmount] = useState("");
+  const [payDueLoading, setPayDueLoading] = useState(false);
   const actionRef = useRef<HTMLDivElement>(null);
 
   const [bookingRooms, setBookingRooms] = useState<any[]>([
@@ -155,6 +160,40 @@ export default function BookingsPage() {
       showToast("❌ Error!", "error");
     }
     setExtendLoading(false);
+  };
+
+ const handlePayDue = async () => {
+    if (!payDueBooking) return;
+    const dueAmount = payDueBooking.amount - (payDueBooking.paymentAmount || 0);
+    if (parseFloat(payDueAmount) !== dueAmount) {
+      showToast(`❌ Amount match nahi kiya! Due: ₹${dueAmount}`, "error");
+      return;
+    }
+    setPayDueLoading(true);
+    try {
+      const res = await fetch("/api/bookings", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          id: payDueBooking.id,
+          status: "PAY_DUE",
+          finalPaymentMode: payDueMode,
+          finalPaymentAmount: parseFloat(payDueAmount),
+        }),
+      });
+      if (res.ok) {
+        showToast("✅ Due amount clear ho gaya!", "success");
+        setShowPayDueModal(false);
+        setPayDueBooking(null);
+        setPayDueAmount("");
+        fetchData();
+      } else {
+        showToast("❌ Payment update nahi ho saki!", "error");
+      }
+    } catch {
+      showToast("❌ Error!", "error");
+    }
+    setPayDueLoading(false);
   };
 
   const roomTypes = [...new Set(rooms.map(r => r.type))];
@@ -825,11 +864,12 @@ const validate = () => {
                       ? booking.rooms
                       : [{ roomNumber: booking.roomNumber, roomType: booking.roomType, adults: booking.adults, children: booking.children, infants: booking.infants }];
 
-                   const actionOpts: { value: string; label: string; color: string; isExtend?: boolean }[] = [
+                  const actionOpts: { value: string; label: string; color: string; isExtend?: boolean; isPayDue?: boolean }[] = [
                       { value: "CHECKED_IN", label: "✅ Check-in", color: "text-blue-600" },
                       { value: "CHECKED_OUT", label: "🚪 Check-out", color: "text-orange-600" },
                       { value: "CANCELLED", label: "❌ Cancel", color: "text-red-600" },
                       { value: "UPGRADED", label: "⬆️ Upgrade", color: "text-purple-600", isExtend: true },
+                      ...(isDue ? [{ value: "PAY_DUE", label: "💰 Pay Due", color: "text-green-600", isPayDue: true }] : []),
                     ];
 
                     return (
@@ -900,10 +940,16 @@ const validate = () => {
                                {actionOpts.map((opt) => (
                                   <button key={opt.value}
                                     onClick={() => {
-                                      if (opt.isExtend) {
+                                     if (opt.isExtend) {
                                         setExtendBooking(booking);
                                         setNewCheckOut("");
                                         setShowExtendModal(true);
+                                        setOpenActionId(null);
+                                      } else if (opt.isPayDue) {
+                                        setPayDueBooking(booking);
+                                        setPayDueAmount("");
+                                        setPayDueMode("CASH");
+                                        setShowPayDueModal(true);
                                         setOpenActionId(null);
                                       } else {
                                         handleStatusChange(booking.id, opt.value);
@@ -1006,6 +1052,64 @@ const validate = () => {
                 {extendLoading ? "Extending..." : "✅ Extend Karo"}
               </button>
               <button onClick={() => { setShowExtendModal(false); setExtendBooking(null); setNewCheckOut(""); }}
+                className="px-4 py-2 bg-gray-100 text-gray-600 rounded-lg text-sm hover:bg-gray-200">
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Pay Due Modal */}
+      {showPayDueModal && payDueBooking && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-2xl p-6 shadow-xl w-full max-w-md mx-4">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold text-gray-900">💰 Due Amount Pay Karo</h3>
+              <button onClick={() => { setShowPayDueModal(false); setPayDueBooking(null); setPayDueAmount(""); }}
+                className="text-gray-400 hover:text-gray-600 text-xl font-bold">✕</button>
+            </div>
+            <div className="bg-gray-50 rounded-xl p-4 mb-4 space-y-1">
+              <p className="text-sm font-medium text-gray-900">{payDueBooking.guestName}</p>
+              <p className="text-xs text-gray-500">{payDueBooking.guestEmail}</p>
+              <p className="text-xs text-gray-500">
+                Rooms: {payDueBooking.rooms?.map((r: any) => `#${r.roomNumber}`).join(", ") || `#${payDueBooking.roomNumber}`}
+              </p>
+              <p className="text-xs text-gray-500">
+                Total: ₹{payDueBooking.amount} | Paid: ₹{payDueBooking.paymentAmount || 0} |
+                <span className="text-red-600 font-medium"> Due: ₹{payDueBooking.amount - (payDueBooking.paymentAmount || 0)}</span>
+              </p>
+            </div>
+            <div className="mb-4">
+              <label className="text-sm font-medium text-gray-700 mb-1 block">Payment Mode</label>
+              <select value={payDueMode} onChange={(e) => setPayDueMode(e.target.value)}
+                className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-blue-500">
+                <option value="CASH">💵 Cash</option>
+                <option value="CARD">💳 Card</option>
+                <option value="UPI">📱 UPI</option>
+                <option value="BANK_TRANSFER">🏦 Bank Transfer</option>
+                <option value="ONLINE">🌐 Online</option>
+              </select>
+            </div>
+            <div className="mb-4">
+              <label className="text-sm font-medium text-gray-700 mb-1 block">
+                Amount (₹) — Due: ₹{payDueBooking.amount - (payDueBooking.paymentAmount || 0)}
+              </label>
+              <input type="number"
+                value={payDueAmount}
+                onChange={(e) => setPayDueAmount(e.target.value)}
+                placeholder={`₹${payDueBooking.amount - (payDueBooking.paymentAmount || 0)}`}
+                className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-blue-500" />
+              {payDueAmount && parseFloat(payDueAmount) !== (payDueBooking.amount - (payDueBooking.paymentAmount || 0)) && (
+                <p className="text-xs text-red-500 mt-1">⚠️ Amount due amount se match karna chahiye!</p>
+              )}
+            </div>
+            <div className="flex gap-3">
+              <button onClick={handlePayDue} disabled={payDueLoading}
+                className="flex-1 bg-green-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-green-700 disabled:opacity-50 font-medium">
+                {payDueLoading ? "Processing..." : "✅ Pay Karo"}
+              </button>
+              <button onClick={() => { setShowPayDueModal(false); setPayDueBooking(null); setPayDueAmount(""); }}
                 className="px-4 py-2 bg-gray-100 text-gray-600 rounded-lg text-sm hover:bg-gray-200">
                 Cancel
               </button>
