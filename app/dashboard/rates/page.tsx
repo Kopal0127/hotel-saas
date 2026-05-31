@@ -460,7 +460,7 @@ export default function RatesPage() {
                             onClick={(e) => { e.stopPropagation(); setEditCell({ date: ds, field: "available" }); setEditValue(String(combined?.available ?? 1)); }}
                             title="Click to edit availability"
                           >
-                           {isBlocked ? "🚫 Blocked" : `${(combined?.available ?? getDefaultAvailable()) - getBookedCount(day)} avail`}
+                          {isBlocked ? "🚫 Blocked" : `${getDefaultAvailable() - getBookedCount(day)} avail`}
                           </div>
                         )}
 
