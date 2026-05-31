@@ -72,6 +72,7 @@ export default function AdsPage() {
   const [activeTab, setActiveTab] = useState<"google" | "meta">("google");
   const [activePage, setActivePage] = useState<"overview" | "campaigns" | "adgroups" | "keywords" | "billing">("overview");
   const [dateRange, setDateRange] = useState("Last 14 days");
+  const [showCreateModal, setShowCreateModal] = useState(false);
   const [campaignStep, setCampaignStep] = useState(1);
   const [campaignForm, setCampaignForm] = useState({
     name: "", goal: "", type: "", budget: "", objective: "Conversions",
