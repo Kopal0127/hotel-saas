@@ -81,13 +81,12 @@ export default function AdsPage() {
 
   const isGoogle = activeTab === "google";
   const goalTypeMap: Record<string, string[]> = {
-    "Sales": ["Performance Max", "Search", "Display", "Video", "App"],
+    "Sales": ["Performance Max", "Search", "Display", "Video"],
     "Leads": ["Performance Max", "Search", "Display", "Video"],
     "Website traffic": ["Performance Max", "Search", "Display", "Video"],
-    "App promotion": ["App"],
-    "YouTube reach, views, and engagements": ["Video", "Demand Gen"],
+    "YouTube reach, views, and engagements": ["Video"],
     "Local store visits and promotions": ["Performance Max"],
-    "Create a campaign without guidance": ["Performance Max", "Search", "Demand Gen", "Display", "Video", "App"],
+    "Create a campaign without guidance": ["Performance Max", "Search", "Display", "Video"],
   };
   const allowedTypes = campaignForm.goal ? goalTypeMap[campaignForm.goal] : [];
   const primaryColor = isGoogle ? "#4285F4" : "#1877F2";
@@ -566,11 +565,10 @@ export default function AdsPage() {
                   <label className="text-sm font-medium text-gray-700 mb-1 block">Campaign Goal</label>
                   <select value={campaignForm.goal} onChange={(e) => setCampaignForm({ ...campaignForm, goal: e.target.value, type: "" })}
                     className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-blue-500">
-                    <option value="">Select Goal</option>
+                   <option value="">Select Goal</option>
                     <option>Sales</option>
                     <option>Leads</option>
                     <option>Website traffic</option>
-                    <option>App promotion</option>
                     <option>YouTube reach, views, and engagements</option>
                     <option>Local store visits and promotions</option>
                     <option>Create a campaign without guidance</option>
@@ -587,8 +585,134 @@ export default function AdsPage() {
                   </select>
                 </div>
               </div>
-              {campaignStep === 2 && (
+             {campaignStep === 2 && (
               <>
+                {/* Performance Max — Final URL + Campaign Name */}
+                {campaignForm.type === "Performance Max" && (
+                  <div className="space-y-4">
+                    <div className="border border-gray-200 rounded-xl p-4">
+                      <p className="text-sm font-semibold text-gray-900 mb-3">Where should people go after clicking your ads?</p>
+                      <p className="text-xs text-gray-500 mb-3">Think about the product or service you want to sell and enter the URL you want people to see after clicking your ads.</p>
+                      <div className="flex items-center border border-gray-300 rounded-lg px-3 py-2.5">
+                        <span className="text-gray-400 mr-2">🔗</span>
+                        <input type="text" placeholder="Final URL"
+                          className="flex-1 text-sm focus:outline-none" />
+                      </div>
+                    </div>
+                    <div className="border border-gray-200 rounded-xl p-4">
+                      <p className="text-sm font-semibold text-gray-900 mb-3">Campaign name</p>
+                      <input type="text" defaultValue={`${campaignForm.goal}-Performance Max-1`}
+                        className="border border-gray-300 rounded-lg px-3 py-2.5 text-sm w-64 focus:outline-none" />
+                    </div>
+                  </div>
+                )}
+
+                {/* Search — Sales: Website visits, Phone calls, Store visits */}
+                {campaignForm.type === "Search" && campaignForm.goal === "Sales" && (
+                  <div className="border border-gray-200 rounded-xl p-4">
+                    <p className="text-sm font-semibold text-gray-900 mb-3">Select the ways you'd like to reach your goal ⓘ</p>
+                    <div className="space-y-2">
+                      {["Website visits", "Phone calls", "Store visits"].map(option => (
+                        <label key={option} className="flex items-center gap-2 cursor-pointer">
+                          <input type="checkbox" className="w-4 h-4" />
+                          <span className="text-sm text-gray-700">{option}</span>
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Search — Leads / Without guidance: Website visits, Store visits */}
+                {campaignForm.type === "Search" && (campaignForm.goal === "Leads" || campaignForm.goal === "Create a campaign without guidance") && (
+                  <div className="border border-gray-200 rounded-xl p-4">
+                    <p className="text-sm font-semibold text-gray-900 mb-3">Select the ways you'd like to reach your goal ⓘ</p>
+                    <div className="space-y-2">
+                      {["Website visits", "Store visits"].map(option => (
+                        <label key={option} className="flex items-center gap-2 cursor-pointer">
+                          <input type="checkbox" className="w-4 h-4" />
+                          <span className="text-sm text-gray-700">{option}</span>
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Search — Website Traffic: URL input */}
+                {campaignForm.type === "Search" && campaignForm.goal === "Website traffic" && (
+                  <div className="border border-gray-200 rounded-xl p-4">
+                    <p className="text-sm font-semibold text-gray-900 mb-3">Select the ways you'd like to reach your goal ⓘ</p>
+                    <div className="flex items-center border border-gray-300 rounded-lg px-3 py-2.5">
+                      <span className="text-gray-400 mr-2">🔗</span>
+                      <input type="text" placeholder="Your business's website"
+                        className="flex-1 text-sm focus:outline-none" />
+                    </div>
+                  </div>
+                )}
+
+                {/* Display — URL input */}
+                {campaignForm.type === "Display" && (
+                  <div className="border border-gray-200 rounded-xl p-4">
+                    <p className="text-sm font-semibold text-gray-900 mb-3">This is the web page people will go to after clicking your ad ⓘ</p>
+                    <div className="flex items-center border border-gray-300 rounded-lg px-3 py-2.5">
+                      <span className="text-gray-400 mr-2">🔗</span>
+                      <input type="text" placeholder="Your business's website"
+                        className="flex-1 text-sm focus:outline-none" />
+                    </div>
+                  </div>
+                )}
+
+                {/* Video — Sales, Leads, Website Traffic */}
+                {campaignForm.type === "Video" && (campaignForm.goal === "Sales" || campaignForm.goal === "Leads" || campaignForm.goal === "Website traffic") && (
+                  <div className="border border-gray-200 rounded-xl p-4">
+                    <p className="text-sm text-gray-700">Get more conversions with video ads designed to encourage valuable interactions with your business. <span className="text-blue-600 cursor-pointer hover:underline">Learn more</span></p>
+                  </div>
+                )}
+
+                {/* Video — Without guidance: Campaign subtype */}
+                {campaignForm.type === "Video" && campaignForm.goal === "Create a campaign without guidance" && (
+                  <div className="border border-gray-200 rounded-xl p-4">
+                    <p className="text-sm font-semibold text-gray-900 mb-3">Select a campaign subtype</p>
+                    <div className="space-y-3">
+                      {[
+                        { value: "Video views", desc: "Get TrueView views and engagement from people who are more likely to consider your products or brand." },
+                        { value: "Efficient reach", desc: "Get the most reach for your budget using bumper, skippable in-stream, in-feed, and Shorts ads.", group: "Video reach" },
+                        { value: "Non-skippable reach", desc: "Reach people using bumper, standard non-skippable, and 30-second non-skippable in-stream ads.", group: "Video reach" },
+                        { value: "Target frequency", desc: "Reach the same people multiple times using bumper, skippable in-stream, non-skippable in-stream, in-feed, and Shorts ads.", group: "Video reach" },
+                        { value: "Drive conversions", desc: "Get more conversions with video ads designed to encourage valuable interactions with your business." },
+                        { value: "Ad sequence", desc: "Tell your story by showing ads in a particular sequence to individual viewers." },
+                        { value: "Audio reach", desc: "Reach people while they're listening to content on YouTube." },
+                        { value: "YouTube subscriptions and engagements", desc: "Get subscriptions and drive engagement on your YouTube channel.", isNew: true },
+                      ].map((subtype, i) => (
+                        <div key={i}>
+                          {subtype.group && i === 1 && <p className="text-xs font-medium text-gray-500 mb-2">Video reach</p>}
+                          <label className="flex items-start gap-3 cursor-pointer border border-gray-200 rounded-lg p-3 hover:border-blue-400">
+                            <input type="radio" name="subtype" value={subtype.value} defaultChecked={i === 0} className="mt-0.5" />
+                            <div>
+                              <p className="text-sm font-medium text-gray-900">{subtype.value} {subtype.isNew && <span className="text-xs bg-green-100 text-green-700 px-1.5 py-0.5 rounded ml-1">NEW</span>}</p>
+                              <p className="text-xs text-gray-500 mt-0.5">{subtype.desc}</p>
+                            </div>
+                          </label>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* YouTube reach */}
+                {campaignForm.goal === "YouTube reach, views, and engagements" && campaignForm.type === "Video" && (
+                  <div className="border border-gray-200 rounded-xl p-4">
+                    <p className="text-sm font-semibold text-gray-900 mb-3">Select a campaign subtype</p>
+                    <div className="space-y-2">
+                      {["Video views", "Efficient reach", "Non-skippable reach", "Target frequency", "Audio reach", "YouTube subscriptions and engagements"].map((sub, i) => (
+                        <label key={i} className="flex items-center gap-2 cursor-pointer border border-gray-200 rounded-lg p-3 hover:border-blue-400">
+                          <input type="radio" name="yt-subtype" defaultChecked={i === 0} />
+                          <span className="text-sm text-gray-700">{sub}</span>
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
                 <div>
                   <label className="text-sm font-medium text-gray-700 mb-1 block">Daily Budget (₹)</label>
                   <input type="number" placeholder="e.g. 2000" value={campaignForm.budget}
