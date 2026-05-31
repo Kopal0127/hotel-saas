@@ -391,7 +391,130 @@ export async function PUT(req: NextRequest) {
       return NextResponse.json({ message: "Booking extend ho gayi!", booking });
     }
 
-   // PAY_DUE logic
+   // EDIT_BOOKING logic — complete replace
+    if (status === "EDIT_BOOKING") {
+      const {
+        rooms: newRooms, guestName, guestEmail, guestPhone,
+        checkIn, checkOut, amount, notes, specialRequests,
+        paymentMode, paymentAmount, finalPaymentMode, finalPaymentAmount, source
+      } = body;
+
+      const oldBooking = await prisma.booking.findUnique({
+        where: { id },
+        include: { bookingRooms: true }
+      });
+      if (!oldBooking) return NextResponse.json({ error: "Booking nahi mili!" }, { status: 404 });
+
+      const oldCheckIn = oldBooking.checkIn;
+      const oldCheckOut = oldBooking.checkOut;
+
+      // Purani dates pe availability wapas karo
+      const oldDates: Date[] = [];
+      const oldCur = new Date(oldCheckIn);
+      while (oldCur < oldCheckOut) { oldDates.push(new Date(oldCur)); oldCur.setDate(oldCur.getDate() + 1); }
+
+      const oldRoomIds = oldBooking.bookingRooms.length > 0
+        ? oldBooking.bookingRooms.map(br => br.roomId)
+        : [oldBooking.roomId];
+
+      for (const rId of oldRoomIds) {
+        await Promise.all(oldDates.map(async (date) => {
+          const existing = await prisma.ratePlan.findFirst({
+            where: {
+              roomId: rId,
+              date: {
+                gte: new Date(date.getFullYear(), date.getMonth(), date.getDate()),
+                lt: new Date(date.getFullYear(), date.getMonth(), date.getDate() + 1),
+              }
+            }
+          });
+          if (existing) {
+            await prisma.ratePlan.update({
+              where: { id: existing.id },
+              data: { available: existing.available + 1 }
+            });
+          }
+        }));
+      }
+
+      // Purane bookingRooms delete karo
+      await prisma.bookingRoom.deleteMany({ where: { bookingId: id } });
+
+      const checkInDate = new Date(checkIn);
+      const checkOutDate = new Date(checkOut);
+      const primaryRoomId = newRooms[0].roomId;
+
+      // Booking update karo
+      await prisma.booking.update({
+        where: { id },
+        data: {
+          roomId: primaryRoomId,
+          guestName, guestEmail,
+          guestPhone: guestPhone || null,
+          checkIn: checkInDate,
+          checkOut: checkOutDate,
+          amount: parseFloat(amount),
+          notes: notes || null,
+          specialRequests: specialRequests || null,
+          paymentMode: paymentMode || "CASH",
+          paymentAmount: paymentAmount ? parseFloat(paymentAmount) : null,
+          finalPaymentMode: finalPaymentMode || null,
+          finalPaymentAmount: finalPaymentAmount ? parseFloat(finalPaymentAmount) : null,
+          source: source || "WALK_IN",
+          adults: parseInt(newRooms[0].adults) || 1,
+          children: parseInt(newRooms[0].children) || 0,
+          infants: parseInt(newRooms[0].infants) || 0,
+        }
+      });
+
+      // Naye bookingRooms create karo
+      await Promise.all(newRooms.map(async (r: any) => {
+        const roomData = await prisma.room.findUnique({ where: { id: r.roomId } });
+        await prisma.bookingRoom.create({
+          data: {
+            bookingId: id,
+            roomId: r.roomId,
+            adults: parseInt(r.adults) || 1,
+            children: parseInt(r.children) || 0,
+            infants: parseInt(r.infants) || 0,
+            roomPrice: roomData?.price || 0,
+            extraMattress: parseInt(r.extraMattress) || 0,
+            extraPillow: parseInt(r.extraPillow) || 0,
+            extraBedsheet: parseInt(r.extraBedsheet) || 0,
+            blanket: parseInt(r.blanket) || 0,
+          }
+        });
+      }));
+
+      // Nayi dates pe availability kam karo
+      const newDates: Date[] = [];
+      const newCur = new Date(checkInDate);
+      while (newCur < checkOutDate) { newDates.push(new Date(newCur)); newCur.setDate(newCur.getDate() + 1); }
+
+      for (const r of newRooms) {
+        await Promise.all(newDates.map(async (date) => {
+          const existing = await prisma.ratePlan.findFirst({
+            where: {
+              roomId: r.roomId,
+              date: {
+                gte: new Date(date.getFullYear(), date.getMonth(), date.getDate()),
+                lt: new Date(date.getFullYear(), date.getMonth(), date.getDate() + 1),
+              }
+            }
+          });
+          if (existing && existing.available > 0) {
+            await prisma.ratePlan.update({
+              where: { id: existing.id },
+              data: { available: existing.available - 1 }
+            });
+          }
+        }));
+      }
+
+      return NextResponse.json({ message: "Booking update ho gayi!" });
+    }
+
+    // PAY_DUE logic
     if (status === "PAY_DUE") {
       const { finalPaymentMode, finalPaymentAmount } = body;
       if (!finalPaymentMode || !finalPaymentAmount) {

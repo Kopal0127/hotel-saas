@@ -33,6 +33,7 @@ export default function BookingsPage() {
   const [payDueMode, setPayDueMode] = useState("CASH");
   const [payDueAmount, setPayDueAmount] = useState("");
   const [payDueLoading, setPayDueLoading] = useState(false);
+  const [editBookingId, setEditBookingId] = useState<string | null>(null);
   const actionRef = useRef<HTMLDivElement>(null);
 
   const [bookingRooms, setBookingRooms] = useState<any[]>([
@@ -318,28 +319,30 @@ const validate = () => {
     if (!validate()) return;
     setLoading(true);
     try {
+      const payload = {
+        ...form,
+        rooms: bookingRooms.map(br => ({
+          roomId: br.roomId,
+          adults: parseInt(br.adults) || 1,
+          children: parseInt(br.children) || 0,
+          infants: parseInt(br.infants) || 0,
+          extraMattress: parseInt(br.extraMattress) || 0,
+          extraPillow: parseInt(br.extraPillow) || 0,
+          extraBedsheet: parseInt(br.extraBedsheet) || 0,
+          blanket: parseInt(br.blanket) || 0,
+        })),
+        source: form.source || "WALK_IN",
+        guestPhone: form.guestPhone ? `${form.countryCode || "+91"} ${form.guestPhone}` : null,
+      };
+
       const res = await fetch("/api/bookings", {
-        method: "POST",
+        method: editBookingId ? "PUT" : "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          ...form,
-          rooms: bookingRooms.map(br => ({
-            roomId: br.roomId,
-            adults: parseInt(br.adults) || 1,
-            children: parseInt(br.children) || 0,
-            infants: parseInt(br.infants) || 0,
-            extraMattress: parseInt(br.extraMattress) || 0,
-            extraPillow: parseInt(br.extraPillow) || 0,
-            extraBedsheet: parseInt(br.extraBedsheet) || 0,
-            blanket: parseInt(br.blanket) || 0,
-          })),
-          source: "WALK_IN",
-          guestPhone: form.guestPhone ? `${form.countryCode || "+91"} ${form.guestPhone}` : null,
-        }),
+        body: JSON.stringify(editBookingId ? { ...payload, id: editBookingId, status: "EDIT_BOOKING" } : payload),
       });
       const data = await res.json();
       if (res.ok) {
-        showToast("Booking ho gayi! ✅", "success");
+        showToast(editBookingId ? "Booking update ho gayi! ✅" : "Booking ho gayi! ✅", "success");
         setForm({
           guestName: "", guestEmail: "", guestPhone: "", countryCode: "+91",
           checkIn: "", checkOut: "", amount: "",
@@ -352,6 +355,7 @@ const validate = () => {
           selectedType: "", roomId: "", adults: "1", children: "0", infants: "0",
           extraMattress: "0", extraPillow: "0", extraBedsheet: "0", blanket: "0"
         }]);
+        setEditBookingId(null);
         setShowForm(false); setShowFinalPayment(false); setShowMoreOptions(false);
         fetchData();
       } else {
@@ -486,7 +490,7 @@ const validate = () => {
 
         {showForm && (
           <div className="bg-white rounded-2xl p-4 md:p-6 shadow-sm border border-gray-100 mb-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">Naya Booking Add Karo</h3>
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">{editBookingId ? "✏️ Booking Edit Karo" : "Naya Booking Add Karo"}</h3>
 
            {/* Summary Bar */}
             {bookingRooms.some(br => br.roomId) && (
@@ -801,10 +805,11 @@ const validate = () => {
             <div className="flex gap-3 mt-4">
               <button onClick={handleSubmit} disabled={loading}
                 className="bg-blue-600 text-white px-6 py-2 rounded-lg text-sm hover:bg-blue-700 disabled:opacity-50">
-                {loading ? "Adding..." : "Booking Confirm Karo"}
+                {loading ? "Saving..." : editBookingId ? "Booking Update Karo" : "Booking Confirm Karo"}
               </button>
               <button onClick={() => {
                 setShowForm(false); setShowFinalPayment(false); setShowMoreOptions(false);
+                setEditBookingId(null);
                 setBookingRooms([{ selectedType: "", roomId: "", adults: "1", children: "0", infants: "0", extraMattress: "0", extraPillow: "0", extraBedsheet: "0", blanket: "0" }]);
               }}
                 className="bg-gray-100 text-gray-600 px-6 py-2 rounded-lg text-sm hover:bg-gray-200">
@@ -864,12 +869,13 @@ const validate = () => {
                       ? booking.rooms
                       : [{ roomNumber: booking.roomNumber, roomType: booking.roomType, adults: booking.adults, children: booking.children, infants: booking.infants }];
 
-                  const actionOpts: { value: string; label: string; color: string; isExtend?: boolean; isPayDue?: boolean }[] = [
+                  const actionOpts: { value: string; label: string; color: string; isExtend?: boolean; isPayDue?: boolean; isEdit?: boolean }[] = [
                       { value: "CHECKED_IN", label: "✅ Check-in", color: "text-blue-600" },
                       { value: "CHECKED_OUT", label: "🚪 Check-out", color: "text-orange-600" },
                       { value: "CANCELLED", label: "❌ Cancel", color: "text-red-600" },
                       { value: "UPGRADED", label: "⬆️ Upgrade", color: "text-purple-600", isExtend: true },
                       ...(isDue ? [{ value: "PAY_DUE", label: "💰 Pay Due", color: "text-green-600", isPayDue: true }] : []),
+                      { value: "EDIT", label: "✏️ Edit Booking", color: "text-gray-700", isEdit: true },
                     ];
 
                     return (
@@ -951,6 +957,47 @@ const validate = () => {
                                         setPayDueMode("CASH");
                                         setShowPayDueModal(true);
                                         setOpenActionId(null);
+                                      } else if (opt.isEdit) {
+                                        // Form pre-fill karo
+                                        const phoneRaw = booking.guestPhone || "";
+                                        const phoneParts = phoneRaw.split(" ");
+                                        const countryCode = phoneParts.length > 1 ? phoneParts[0] : "+91";
+                                        const phoneNum = phoneParts.length > 1 ? phoneParts[1] : phoneRaw;
+                                        setForm({
+                                          guestName: booking.guestName || "",
+                                          guestEmail: booking.guestEmail || "",
+                                          guestPhone: phoneNum,
+                                          countryCode,
+                                          checkIn: new Date(booking.checkIn).toISOString().split("T")[0],
+                                          checkOut: new Date(booking.checkOut).toISOString().split("T")[0],
+                                          amount: String(booking.amount || ""),
+                                          notes: booking.notes || "",
+                                          specialRequests: booking.specialRequests || "",
+                                          paymentMode: booking.paymentMode || "CASH",
+                                          paymentAmount: String(booking.paymentAmount || ""),
+                                          finalPaymentMode: booking.finalPaymentMode || "",
+                                          finalPaymentAmount: String(booking.finalPaymentAmount || ""),
+                                          source: booking.source || "WALK_IN",
+                                        });
+                                        const roomsList = booking.rooms && booking.rooms.length > 0
+                                          ? booking.rooms
+                                          : [{ roomId: booking.roomId, roomType: booking.roomType, adults: booking.adults, children: booking.children, infants: booking.infants, extraMattress: 0, extraPillow: 0, extraBedsheet: 0, blanket: 0 }];
+                                        setBookingRooms(roomsList.map((r: any) => ({
+                                          selectedType: r.roomType || "",
+                                          roomId: r.roomId || "",
+                                          adults: String(r.adults || 1),
+                                          children: String(r.children || 0),
+                                          infants: String(r.infants || 0),
+                                          extraMattress: String(r.extraMattress || 0),
+                                          extraPillow: String(r.extraPillow || 0),
+                                          extraBedsheet: String(r.extraBedsheet || 0),
+                                          blanket: String(r.blanket || 0),
+                                        })));
+                                        setEditBookingId(booking.id);
+                                        setShowFinalPayment(!!booking.finalPaymentMode);
+                                        setShowForm(true);
+                                        setOpenActionId(null);
+                                        window.scrollTo({ top: 0, behavior: "smooth" });
                                       } else {
                                         handleStatusChange(booking.id, opt.value);
                                       }
