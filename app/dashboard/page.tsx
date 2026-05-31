@@ -68,7 +68,8 @@ export default function Dashboard() {
         }) || [];
 
         const checkInsToday = bookingsData.bookings?.filter((b: any) =>
-          new Date(b.checkIn).toDateString() === today || b.status === "CHECKED_IN"
+          (new Date(b.checkIn).toDateString() === today || b.status === "CHECKED_IN") &&
+          b.status !== "CHECKED_OUT"
         ).length || 0;
 
         const checkOutsToday = bookingsData.bookings?.filter((b: any) =>
@@ -227,9 +228,10 @@ const handleHousekeepingRequest = async (bookingId: string) => {
 
   const getFilteredBookings = () => {
     if (activeFilter === "all") return allBookings;
-    if (activeFilter === "checkin") return allBookings.filter((b) => 
-  new Date(b.checkIn).toDateString() === today || b.status === "CHECKED_IN"
-);
+   if (activeFilter === "checkin") return allBookings.filter((b) => 
+      (new Date(b.checkIn).toDateString() === today || b.status === "CHECKED_IN") &&
+      b.status !== "CHECKED_OUT"
+    );
     if (activeFilter === "checkout") return allBookings.filter((b) => new Date(b.checkOut).toDateString() === today);
     return recentBookings;
   };
