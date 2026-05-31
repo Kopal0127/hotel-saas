@@ -948,6 +948,92 @@ export default function AdsPage() {
             {campaignStep === 4 && (
               <div className="space-y-4">
 
+                {/* Budget */}
+                <div className="border border-gray-200 rounded-xl overflow-hidden">
+                  <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200 bg-white cursor-pointer">
+                    <p className="text-sm font-semibold text-gray-900">Budget</p>
+                    <span className="text-gray-400">∧</span>
+                  </div>
+                  <div className="p-4 space-y-4">
+                    {/* Info box */}
+                    <div className="bg-blue-50 border border-blue-100 rounded-lg p-3 flex items-start gap-2">
+                      <span className="text-blue-500 mt-0.5">ℹ️</span>
+                      <p className="text-xs text-gray-600">Your budget type (daily or campaign total) can't be changed once this campaign has started. You can change your budget amount at any time.</p>
+                    </div>
+
+                    <p className="text-sm font-medium text-gray-900">Select budget type</p>
+
+                    {/* Average daily budget */}
+                    <div className="space-y-2">
+                      <label className="flex items-start gap-2 cursor-pointer">
+                        <input type="radio" name="budget-type" defaultChecked className="mt-1" />
+                        <div>
+                          <p className="text-sm font-medium text-gray-900">Average daily budget</p>
+                          <p className="text-xs text-gray-500">Set your average daily budget for this campaign</p>
+                        </div>
+                      </label>
+
+                      {/* 4 budget options in one row */}
+                      <div className="grid grid-cols-4 gap-3 ml-5">
+                        {[
+                          { label: "₹500", value: "500" },
+                          { label: "₹1,000", value: "1000", recommended: true },
+                          { label: "₹2,000", value: "2000" },
+                          { label: "Set custom budget", value: "custom" },
+                        ].map((opt, i) => (
+                          <div key={i} className={`border rounded-xl p-3 cursor-pointer hover:border-blue-400 ${i === 1 ? "border-blue-500" : "border-gray-200"}`}>
+                            <div className="flex items-center gap-2">
+                              <input type="radio" name="daily-budget" defaultChecked={i === 1} />
+                              <div>
+                                <p className="text-sm font-medium text-gray-900">{opt.label}</p>
+                                {opt.recommended && <span className="text-xs bg-blue-100 text-blue-600 px-1.5 py-0.5 rounded">Recommended</span>}
+                              </div>
+                            </div>
+                            {i === 1 && (
+                              <div className="mt-3 pt-3 border-t border-gray-100">
+                                <p className="text-xs font-medium text-gray-500 mb-1">Average daily budget</p>
+                                <div className="grid grid-cols-3 gap-2 text-xs text-gray-500 mb-2">
+                                  <div><p className="underline decoration-dotted">Weekly conv.</p><p className="font-bold text-gray-900 text-sm">98</p></div>
+                                  <div><p className="underline decoration-dotted">Cost/Conv.</p><p className="font-bold text-gray-900 text-sm">₹325.64</p></div>
+                                  <div><p className="underline decoration-dotted">Weekly cost</p><p className="font-bold text-gray-900 text-sm">₹32,205.95</p></div>
+                                </div>
+                                <p className="text-xs text-gray-500">Recommended because of your campaign settings, such as bidding, targeting and ads, as well as the budgets of similar advertisers.</p>
+                              </div>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+
+                      <p className="text-xs text-gray-500 ml-5">For the month, you won't pay more than your daily budget times the average number of days in a month. Some days you might spend less than your daily budget, and on others you might spend up to twice as much. <span className="text-blue-600 cursor-pointer hover:underline">Learn more</span></p>
+                    </div>
+
+                    {/* Campaign total budget */}
+                    <div className="space-y-2">
+                      <label className="flex items-start gap-2 cursor-pointer">
+                        <input type="radio" name="budget-type" className="mt-1" />
+                        <div>
+                          <p className="text-sm font-medium text-gray-900">Campaign total budget</p>
+                          <p className="text-xs text-gray-500">Set a budget for the duration of your campaign</p>
+                        </div>
+                      </label>
+                      <div className="ml-5 space-y-2">
+                        <div className="flex items-center border border-gray-300 rounded-lg px-3 py-2 w-40">
+                          <span className="text-gray-500 mr-1">₹</span>
+                          <input type="number" className="flex-1 text-sm focus:outline-none" />
+                        </div>
+                        <div className="flex items-center justify-between border border-gray-200 rounded-lg px-4 py-3">
+                          <div>
+                            <p className="text-xs text-gray-700">Start date: May 31, 2026</p>
+                            <p className="text-xs text-gray-700">End date: None</p>
+                          </div>
+                          <button className="text-sm text-blue-600 hover:underline">Edit</button>
+                        </div>
+                      </div>
+                    </div>
+
+                  </div>
+                </div>
+
                 {/* Asset Group Header */}
                 <div>
                   <h3 className="text-lg font-semibold text-gray-900">Asset group</h3>
