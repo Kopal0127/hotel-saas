@@ -698,15 +698,25 @@ export default function AdsPage() {
                   </div>
                 )}
 
-                {/* YouTube reach */}
+               {/* YouTube reach */}
                 {campaignForm.goal === "YouTube reach, views, and engagements" && campaignForm.type === "Video" && (
                   <div className="border border-gray-200 rounded-xl p-4">
-                    <p className="text-sm font-semibold text-gray-900 mb-3">Select a campaign subtype</p>
-                    <div className="space-y-2">
-                      {["Video views", "Efficient reach", "Non-skippable reach", "Target frequency", "Audio reach", "YouTube subscriptions and engagements"].map((sub, i) => (
-                        <label key={i} className="flex items-center gap-2 cursor-pointer border border-gray-200 rounded-lg p-3 hover:border-blue-400">
-                          <input type="radio" name="yt-subtype" defaultChecked={i === 0} />
-                          <span className="text-sm text-gray-700">{sub}</span>
+                    <p className="text-sm font-semibold text-gray-900 mb-3">Choose a campaign goal</p>
+                    <div className="space-y-3">
+                      {[
+                        { value: "Video views", desc: "Get people to watch your video ads", recommended: true },
+                        { value: "Reach", desc: "Reach the maximum number of people" },
+                        { value: "YouTube subscriptions and engagements", desc: "Get people to subscribe and engage with your YouTube channel" },
+                      ].map((sub, i) => (
+                        <label key={i} className="flex items-start gap-3 cursor-pointer border border-gray-200 rounded-lg p-3 hover:border-blue-400">
+                          <input type="radio" name="yt-subtype" defaultChecked={i === 0} className="mt-0.5" />
+                          <div>
+                            <p className="text-sm font-medium text-gray-900">
+                              {sub.value}
+                              {sub.recommended && <span className="text-xs bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded ml-2">Recommended</span>}
+                            </p>
+                            <p className="text-xs text-gray-500 mt-0.5">{sub.desc}</p>
+                          </div>
                         </label>
                       ))}
                     </div>
