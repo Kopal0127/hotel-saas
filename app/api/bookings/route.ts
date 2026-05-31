@@ -392,13 +392,13 @@ export async function PUT(req: NextRequest) {
     }
 
     const validStatuses = ["CONFIRMED", "CHECKED_IN", "CHECKED_OUT", "CANCELLED", "UPGRADED"];
-    if (!validStatuses.includes(status)) {
-      return NextResponse.json({ error: "Invalid status!" }, { status: 400 });
-    }
+if (!validStatuses.includes(status)) {
+  return NextResponse.json({ error: "Invalid status!" }, { status: 400 });
+}
 
-   const booking = await prisma.booking.update({
-      where: { id },
-      data: { status },
+const booking = await prisma.booking.update({
+  where: { id },
+  data: { status: status === "UPGRADED" ? "CHECKED_IN" : status },
       include: { 
         room: { include: { hotel: true } }, 
         bookingRooms: { include: { room: true } } 
