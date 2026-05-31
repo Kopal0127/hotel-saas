@@ -15,6 +15,8 @@ export async function GET(req: NextRequest) {
       today.setHours(0, 0, 0, 0);
       const tomorrow = new Date(today);
       tomorrow.setDate(tomorrow.getDate() + 1);
+      const tomorrowEnd = new Date(tomorrow);
+      tomorrowEnd.setHours(23, 59, 59, 999);
       const dayAfter = new Date(tomorrow);
       dayAfter.setDate(dayAfter.getDate() + 1);
 
@@ -27,7 +29,7 @@ export async function GET(req: NextRequest) {
 
         const tomorrowBookings = await prisma.booking.findMany({
           where: {
-            checkIn: { lte: tomorrow },
+            checkIn: { lte: tomorrowEnd },
             checkOut: { gt: tomorrow },
             status: { in: ["CONFIRMED", "CHECKED_IN"] },
           },
