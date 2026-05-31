@@ -723,36 +723,7 @@ export default function AdsPage() {
                   </div>
                 )}
 
-                <div>
-                  <label className="text-sm font-medium text-gray-700 mb-1 block">Daily Budget (₹)</label>
-                  <input type="number" placeholder="e.g. 2000" value={campaignForm.budget}
-                    onChange={(e) => setCampaignForm({ ...campaignForm, budget: e.target.value })}
-                    className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-blue-500" />
-                </div>
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <label className="text-sm font-medium text-gray-700 mb-1 block">Start Date</label>
-                    <input type="date" value={campaignForm.startDate}
-                      onChange={(e) => setCampaignForm({ ...campaignForm, startDate: e.target.value })}
-                      className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-blue-500" />
-                  </div>
-                  <div>
-                    <label className="text-sm font-medium text-gray-700 mb-1 block">End Date</label>
-                    <input type="date" value={campaignForm.endDate}
-                      onChange={(e) => setCampaignForm({ ...campaignForm, endDate: e.target.value })}
-                      className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-blue-500" />
-                  </div>
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-gray-700 mb-1 block">Target Audience</label>
-                  <input type="text" placeholder="e.g. Travel enthusiasts, 25-45 age" value={campaignForm.targeting}
-                    onChange={(e) => setCampaignForm({ ...campaignForm, targeting: e.target.value })}
-                    className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-blue-500" />
-                </div>
-                <div className="rounded-lg p-3 text-xs" style={{ backgroundColor: `${primaryColor}10`, color: primaryColor }}>
-                  💡 Demo mode — Real API keys milne ke baad live campaigns create honge
-                </div>
-              </>
+                </>
             )}
             </div>
             <div className="flex gap-3 mt-4">
