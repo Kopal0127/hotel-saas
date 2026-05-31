@@ -68,7 +68,7 @@ export default function Dashboard() {
         }) || [];
 
         const checkInsToday = bookingsData.bookings?.filter((b: any) =>
-          new Date(b.checkIn).toDateString() === today
+          new Date(b.checkIn).toDateString() === today || b.status === "CHECKED_IN"
         ).length || 0;
 
         const checkOutsToday = bookingsData.bookings?.filter((b: any) =>
