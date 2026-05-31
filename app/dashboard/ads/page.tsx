@@ -551,7 +551,7 @@ export default function AdsPage() {
       {/* Create Campaign Modal */}
       {showCreateModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 px-4">
-          <div className="bg-white rounded-2xl p-6 w-full max-w-4xl shadow-xl">
+          <div className="bg-white rounded-2xl p-6 w-full max-w-6xl shadow-xl">
             <div className="flex items-center gap-3 mb-5">
               <div className="w-10 h-10 rounded-xl flex items-center justify-center text-white font-bold text-lg"
                 style={{ backgroundColor: primaryColor }}>
