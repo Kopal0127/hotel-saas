@@ -74,11 +74,21 @@ export default function AdsPage() {
   const [dateRange, setDateRange] = useState("Last 14 days");
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [campaignForm, setCampaignForm] = useState({
-    name: "", goal: "", type: "Search", budget: "", objective: "Conversions",
+    name: "", goal: "", type: "", budget: "", objective: "Conversions",
     startDate: "", endDate: "", targeting: "",
   });
 
   const isGoogle = activeTab === "google";
+  const goalTypeMap: Record<string, string[]> = {
+    "Sales": ["Performance Max", "Search", "Display", "Video", "App"],
+    "Leads": ["Performance Max", "Search", "Display", "Video"],
+    "Website traffic": ["Performance Max", "Search", "Display", "Video"],
+    "App promotion": ["App"],
+    "YouTube reach, views, and engagements": ["Video", "Demand Gen"],
+    "Local store visits and promotions": ["Performance Max"],
+    "Create a campaign without guidance": ["Performance Max", "Search", "Demand Gen", "Display", "Video", "App"],
+  };
+  const allowedTypes = campaignForm.goal ? goalTypeMap[campaignForm.goal] : [];
   const primaryColor = isGoogle ? "#4285F4" : "#1877F2";
   const data = OVERVIEW_DATA;
   const metaData = META_OVERVIEW_DATA;
@@ -553,7 +563,7 @@ export default function AdsPage() {
                 </div>
                 <div>
                   <label className="text-sm font-medium text-gray-700 mb-1 block">Campaign Goal</label>
-                  <select value={campaignForm.goal} onChange={(e) => setCampaignForm({ ...campaignForm, goal: e.target.value })}
+                  <select value={campaignForm.goal} onChange={(e) => setCampaignForm({ ...campaignForm, goal: e.target.value, type: "" })}
                     className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-blue-500">
                     <option value="">Select Goal</option>
                     <option>Sales</option>
@@ -569,12 +579,10 @@ export default function AdsPage() {
                   <label className="text-sm font-medium text-gray-700 mb-1 block">Campaign Type</label>
                   <select value={campaignForm.type} onChange={(e) => setCampaignForm({ ...campaignForm, type: e.target.value })}
                     className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-blue-500">
-                    <option>Performance Max</option>
-                    <option>Search</option>
-                    <option>Demand Gen</option>
-                    <option>Display</option>
-                    <option>Video</option>
-                    <option>App</option>
+                   <option value="">Select Type</option>
+                    {allowedTypes.map(type => (
+                      <option key={type}>{type}</option>
+                    ))}
                   </select>
                 </div>
               </div>
