@@ -18,6 +18,7 @@ export default function BookingsPage() {
   const [loading, setLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [filterStatus, setFilterStatus] = useState("all");
+  const [filterSource, setFilterSource] = useState("all");
   const [showFinalPayment, setShowFinalPayment] = useState(false);
   const [showMoreOptions, setShowMoreOptions] = useState(false);
   const [page, setPage] = useState(1);
@@ -398,11 +399,12 @@ const validate = () => {
     showToast("CSV download ho gaya! ✅", "success");
   };
 
-  const filteredBookings = bookings.filter(b => {
+ const filteredBookings = bookings.filter(b => {
     const matchesSearch = b.guestName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       b.guestEmail?.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesFilter = filterStatus === "all" || b.status === filterStatus;
-    return matchesSearch && matchesFilter;
+    const matchesSource = filterSource === "all" || b.source === filterSource;
+    return matchesSearch && matchesFilter && matchesSource;
   });
 
   const totalPages = Math.ceil(filteredBookings.length / itemsPerPage);
@@ -842,6 +844,18 @@ const validate = () => {
             <option value="CHECKED_OUT">Checked Out</option>
             <option value="CANCELLED">Cancelled</option>
             <option value="UPGRADED">Upgraded</option>
+          </select>
+          <select value={filterSource} onChange={(e) => { setFilterSource(e.target.value); setPage(1); }}
+            className="border border-gray-200 rounded-lg px-4 py-2 text-sm focus:outline-none focus:border-blue-500 bg-white">
+            <option value="all">All Sources</option>
+            <option value="WALK_IN">🚶 Walk-in</option>
+            <option value="BOOKING_COM">🌐 Booking.com</option>
+            <option value="MAKEMYTRIP">✈️ MakeMyTrip</option>
+            <option value="GOOGLE_HOTEL_CENTRE">🔍 Google Hotel Centre</option>
+            <option value="EXPEDIA">🌍 Expedia</option>
+            <option value="AGODA">🏨 Agoda</option>
+            <option value="PHONE">📞 Phone</option>
+            <option value="OTHER">📋 Other</option>
           </select>
         </div>
 
