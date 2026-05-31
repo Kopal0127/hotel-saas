@@ -36,9 +36,22 @@ export default function BookingEnginePage() {
     cancellationPolicies: [] as string[],
   });
 
-  const [newAttraction, setNewAttraction] = useState({ name: "", distance: "" });
+ const [newAttraction, setNewAttraction] = useState({ name: "", distance: "" });
   const [customAmenity, setCustomAmenity] = useState("");
   const [newPolicy, setNewPolicy] = useState("");
+  const [selectedRoomType, setSelectedRoomType] = useState("");
+  const [roomTypeContent, setRoomTypeContent] = useState({
+    description: "",
+    amenities: [] as string[],
+    nearestAttractions: [] as { name: string; distance: string }[],
+    galleryImages: [] as string[],
+    cancellationPolicies: [] as string[],
+  });
+  const [roomTypeNewAttraction, setRoomTypeNewAttraction] = useState({ name: "", distance: "" });
+  const [roomTypeCustomAmenity, setRoomTypeCustomAmenity] = useState("");
+  const [roomTypeNewPolicy, setRoomTypeNewPolicy] = useState("");
+  const [savingRoomType, setSavingRoomType] = useState(false);
+  const [uploadingRoomType, setUploadingRoomType] = useState(false);
   const [razorpayKeyId, setRazorpayKeyId] = useState("");
   const [razorpayKeySecret, setRazorpayKeySecret] = useState("");
   const [savingPayment, setSavingPayment] = useState(false);
@@ -213,6 +226,73 @@ export default function BookingEnginePage() {
 
   const selectedRoom = rooms.find(r => r.type === selectedRoomId);
 
+  const roomTypes = [...new Set(rooms.map(r => r.type))];
+
+  const fetchRoomTypeContent = async (roomType: string) => {
+    if (!hotelId || !roomType) return;
+    const res = await fetch(`/api/room-type-content?hotelId=${hotelId}&roomType=${encodeURIComponent(roomType)}`);
+    const data = await res.json();
+    if (data.content) {
+      setRoomTypeContent({
+        description: data.content.description || "",
+        amenities: data.content.amenities || [],
+        nearestAttractions: data.content.nearestAttractions || [],
+        galleryImages: data.content.galleryImages || [],
+        cancellationPolicies: data.content.cancellationPolicies || [],
+      });
+    } else {
+      setRoomTypeContent({
+        description: "",
+        amenities: [],
+        nearestAttractions: [],
+        galleryImages: [],
+        cancellationPolicies: [],
+      });
+    }
+  };
+
+  const handleRoomTypeSelect = async (roomType: string) => {
+    setSelectedRoomType(roomType);
+    await fetchRoomTypeContent(roomType);
+    setActiveTab("general");
+  };
+
+  const handleSaveRoomType = async () => {
+    if (!selectedRoomType) { showToast("Pehle room type select karo!", "warning"); return; }
+    setSavingRoomType(true);
+    try {
+      const res = await fetch("/api/room-type-content", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ hotelId, roomType: selectedRoomType, ...roomTypeContent }),
+      });
+      if (res.ok) {
+        showToast("✅ Room type content save ho gaya!", "success");
+      } else {
+        showToast("❌ Save nahi ho saka!", "error");
+      }
+    } catch {
+      showToast("❌ Error!", "error");
+    }
+    setSavingRoomType(false);
+  };
+
+  const handleRoomTypePhotoUpload = async (file: File) => {
+    setUploadingRoomType(true);
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("folder", `hotel_${hotelId}_type_${selectedRoomType}`);
+      const res = await fetch("/api/upload", { method: "POST", body: formData });
+      const data = await res.json();
+      if (res.ok) {
+        setRoomTypeContent(prev => ({ ...prev, galleryImages: [...prev.galleryImages, data.url] }));
+        showToast("✅ Photo upload ho gaya!", "success");
+      }
+    } catch { showToast("❌ Upload error!", "error"); }
+    setUploadingRoomType(false);
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       <nav className="bg-white border-b border-gray-100 px-4 md:px-8 py-4 flex items-center justify-between">
@@ -262,6 +342,34 @@ export default function BookingEnginePage() {
           </div>
         </div>
 
+        {/* Room Category Selector */}
+        <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 mb-6">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4 flex-1">
+              <label className="text-sm font-semibold text-gray-700 whitespace-nowrap">🛏️ Select Room Category:</label>
+              <select
+                value={selectedRoomType}
+                onChange={(e) => handleRoomTypeSelect(e.target.value)}
+                className="flex-1 border border-gray-200 rounded-lg px-4 py-2 text-sm focus:outline-none focus:border-blue-500"
+              >
+                <option value="">-- Room Type chuno --</option>
+                {roomTypes.map((type: string) => (
+                  <option key={type} value={type}>{type}</option>
+                ))}
+              </select>
+            </div>
+            {selectedRoomType && (
+              <button onClick={handleSaveRoomType} disabled={savingRoomType}
+                className="ml-4 px-5 py-2 bg-green-600 text-white rounded-lg text-sm font-medium hover:bg-green-700 disabled:opacity-50">
+                {savingRoomType ? "Saving..." : "💾 Save Room Type"}
+              </button>
+            )}
+          </div>
+          {!selectedRoomType && (
+            <p className="text-xs text-gray-400 mt-2">Room type select karo — phir us room ki specific details dal sakte ho</p>
+          )}
+        </div>
+
         <div className="flex gap-2 mb-6 flex-wrap">
           {[
             { key: "general", label: "🏨 General" },
@@ -278,21 +386,38 @@ export default function BookingEnginePage() {
           ))}
         </div>
 
-        {activeTab === "general" && (
-          <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
-            <h3 className="text-lg font-semibold text-gray-800 mb-4">🏨 Hotel Description</h3>
-            <textarea
-              placeholder="Hotel ki description likho jo guests ko dikhe..."
-              value={engine.description}
-              onChange={(e) => setEngine(prev => ({ ...prev, description: e.target.value }))}
-              rows={6}
-              className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-blue-500"
-            />
-            <p className="text-xs text-gray-400 mt-2">{engine.description.length} characters</p>
+       {activeTab === "general" && (
+          <div className="space-y-6">
+            <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+              <h3 className="text-lg font-semibold text-gray-800 mb-4">🏨 Hotel Description</h3>
+              <textarea
+                placeholder="Hotel ki description likho jo guests ko dikhe..."
+                value={engine.description}
+                onChange={(e) => setEngine(prev => ({ ...prev, description: e.target.value }))}
+                rows={6}
+                className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-blue-500"
+              />
+              <p className="text-xs text-gray-400 mt-2">{engine.description.length} characters</p>
+            </div>
+
+            {selectedRoomType && (
+              <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+                <h3 className="text-lg font-semibold text-gray-800 mb-4">🛏️ {selectedRoomType} — Description</h3>
+                <textarea
+                  placeholder={`${selectedRoomType} room ki description likho...`}
+                  value={roomTypeContent.description}
+                  onChange={(e) => setRoomTypeContent(prev => ({ ...prev, description: e.target.value }))}
+                  rows={6}
+                  className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-blue-500"
+                />
+                <p className="text-xs text-gray-400 mt-2">{(roomTypeContent.description || "").length} characters</p>
+              </div>
+            )}
           </div>
         )}
 
-        {activeTab === "amenities" && (
+       {activeTab === "amenities" && (
+          <div className="space-y-6">
           <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
             <h3 className="text-lg font-semibold text-gray-800 mb-4">✨ Hotel Amenities</h3>
             <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mb-6">
@@ -325,7 +450,45 @@ export default function BookingEnginePage() {
                 </div>
               )}
             </div>
-            <p className="text-xs text-gray-400 mt-4">{engine.amenities.length} amenities selected</p>
+           <p className="text-xs text-gray-400 mt-4">{engine.amenities.length} amenities selected</p>
+          </div>
+
+          {selectedRoomType && (
+            <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+              <h3 className="text-lg font-semibold text-gray-800 mb-4">✨ {selectedRoomType} — Amenities</h3>
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mb-6">
+                {DEFAULT_AMENITIES.map((amenity) => (
+                  <div key={amenity}
+                    onClick={() => setRoomTypeContent(prev => ({
+                      ...prev,
+                      amenities: prev.amenities.includes(amenity)
+                        ? prev.amenities.filter(a => a !== amenity)
+                        : [...prev.amenities, amenity]
+                    }))}
+                    className={`flex items-center gap-2 p-3 rounded-xl border cursor-pointer transition ${roomTypeContent.amenities.includes(amenity) ? "bg-blue-50 border-blue-300 text-blue-700" : "bg-gray-50 border-gray-200 text-gray-600 hover:bg-gray-100"}`}>
+                    <span className={`w-4 h-4 rounded border-2 flex items-center justify-center ${roomTypeContent.amenities.includes(amenity) ? "bg-blue-500 border-blue-500" : "border-gray-300"}`}>
+                      {roomTypeContent.amenities.includes(amenity) && <span className="text-white text-xs">✓</span>}
+                    </span>
+                    <span className="text-sm">{amenity}</span>
+                  </div>
+                ))}
+              </div>
+              <div className="border-t border-gray-100 pt-4">
+                <p className="text-sm font-medium text-gray-700 mb-2">+ Custom Amenity:</p>
+                <div className="flex gap-3">
+                  <input type="text" placeholder="e.g. 🎮 Gaming Room" value={roomTypeCustomAmenity}
+                    onChange={(e) => setRoomTypeCustomAmenity(e.target.value)}
+                    className="flex-1 border border-gray-200 rounded-lg px-4 py-2 text-sm focus:outline-none focus:border-blue-500" />
+                  <button onClick={() => {
+                    if (!roomTypeCustomAmenity.trim()) return;
+                    setRoomTypeContent(prev => ({ ...prev, amenities: [...prev.amenities, roomTypeCustomAmenity] }));
+                    setRoomTypeCustomAmenity("");
+                  }} className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700">+ Add</button>
+                </div>
+              </div>
+              <p className="text-xs text-gray-400 mt-4">{roomTypeContent.amenities.length} amenities selected</p>
+            </div>
+          )}
           </div>
         )}
 
@@ -347,7 +510,7 @@ export default function BookingEnginePage() {
               </div>
             </div>
             <button onClick={addAttraction} className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700 mb-6">+ Add Attraction</button>
-            {engine.nearestAttractions.length === 0 ? (
+           {engine.nearestAttractions.length === 0 ? (
               <p className="text-gray-400 text-sm text-center py-6">Koi attraction nahi add kiya</p>
             ) : (
               <div className="space-y-2">
@@ -364,6 +527,38 @@ export default function BookingEnginePage() {
               </div>
             )}
           </div>
+
+          {selectedRoomType && (
+            <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+              <h3 className="text-lg font-semibold text-gray-800 mb-4">📍 {selectedRoomType} — Nearest Attractions</h3>
+              <div className="grid grid-cols-2 gap-3 mb-4">
+                <input type="text" placeholder="e.g. Pune Airport" value={roomTypeNewAttraction.name}
+                  onChange={(e) => setRoomTypeNewAttraction(prev => ({ ...prev, name: e.target.value }))}
+                  className="border border-gray-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-blue-500" />
+                <input type="text" placeholder="e.g. 15 km" value={roomTypeNewAttraction.distance}
+                  onChange={(e) => setRoomTypeNewAttraction(prev => ({ ...prev, distance: e.target.value }))}
+                  className="border border-gray-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-blue-500" />
+              </div>
+              <button onClick={() => {
+                if (!roomTypeNewAttraction.name || !roomTypeNewAttraction.distance) return;
+                setRoomTypeContent(prev => ({ ...prev, nearestAttractions: [...prev.nearestAttractions, roomTypeNewAttraction] }));
+                setRoomTypeNewAttraction({ name: "", distance: "" });
+              }} className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700 mb-4">+ Add Attraction</button>
+              <div className="space-y-2">
+                {roomTypeContent.nearestAttractions.map((attr, i) => (
+                  <div key={i} className="flex items-center justify-between bg-gray-50 rounded-lg px-4 py-3">
+                    <div>
+                      <p className="text-sm font-medium text-gray-800">📍 {attr.name}</p>
+                      <p className="text-xs text-gray-500">{attr.distance}</p>
+                    </div>
+                    <button onClick={() => setRoomTypeContent(prev => ({ ...prev, nearestAttractions: prev.nearestAttractions.filter((_, idx) => idx !== i) }))}
+                      className="text-red-400 hover:text-red-600 text-sm">🗑️</button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
         )}
 
         {activeTab === "photos" && (
@@ -404,8 +599,31 @@ export default function BookingEnginePage() {
                       onChange={(e) => { const file = e.target.files?.[0]; if (file) handleRoomPhotoUpload(file, selectedRoom); }} />
                   </label>
                 </div>
-                {uploading && <p className="text-sm text-blue-600 text-center">⏳ Uploading...</p>}
+               {uploading && <p className="text-sm text-blue-600 text-center">⏳ Uploading...</p>}
                 <p className="text-xs text-gray-400">{(selectedRoom.photos || []).length} photos added</p>
+              </div>
+            )}
+
+            {selectedRoomType && (
+              <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+                <h3 className="text-lg font-semibold text-gray-800 mb-4">🖼️ {selectedRoomType} — Booking Engine Gallery</h3>
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-4">
+                  {roomTypeContent.galleryImages.map((img: string, i: number) => (
+                    <div key={i} className="relative rounded-xl overflow-hidden border border-gray-200">
+                      <img src={img} alt={`Gallery ${i}`} className="w-full h-32 object-cover" />
+                      <button onClick={() => setRoomTypeContent(prev => ({ ...prev, galleryImages: prev.galleryImages.filter((_, idx) => idx !== i) }))}
+                        className="absolute top-1 right-1 bg-red-500 text-white text-xs px-2 py-0.5 rounded-full hover:bg-red-600">🗑️</button>
+                    </div>
+                  ))}
+                  <label className="border-2 border-dashed border-gray-300 rounded-xl h-32 flex flex-col items-center justify-center cursor-pointer hover:border-blue-400 hover:bg-blue-50 transition">
+                    <div className="text-2xl mb-1">+</div>
+                    <p className="text-xs text-gray-500">Add Photo</p>
+                    <input type="file" accept="image/*" className="hidden"
+                      onChange={(e) => { const file = e.target.files?.[0]; if (file) handleRoomTypePhotoUpload(file); }} />
+                  </label>
+                </div>
+                {uploadingRoomType && <p className="text-sm text-blue-600 text-center">⏳ Uploading...</p>}
+                <p className="text-xs text-gray-400">{roomTypeContent.galleryImages.length} photos added</p>
               </div>
             )}
           </div>
@@ -443,8 +661,34 @@ export default function BookingEnginePage() {
                 ))}
               </div>
             )}
-            <p className="text-xs text-gray-400 mt-4">{engine.cancellationPolicies.length} policies added</p>
+           <p className="text-xs text-gray-400 mt-4">{engine.cancellationPolicies.length} policies added</p>
           </div>
+
+          {selectedRoomType && (
+            <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+              <h3 className="text-lg font-semibold text-gray-800 mb-4">📋 {selectedRoomType} — Cancellation Policy</h3>
+              <div className="flex gap-3 mb-6">
+                <input type="text" placeholder="e.g. Free cancellation 24 hours before check-in"
+                  value={roomTypeNewPolicy} onChange={(e) => setRoomTypeNewPolicy(e.target.value)}
+                  className="flex-1 border border-gray-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-blue-500" />
+                <button onClick={() => {
+                  if (!roomTypeNewPolicy.trim()) return;
+                  setRoomTypeContent(prev => ({ ...prev, cancellationPolicies: [...prev.cancellationPolicies, roomTypeNewPolicy.trim()] }));
+                  setRoomTypeNewPolicy("");
+                }} className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700">+ Add</button>
+              </div>
+              <div className="space-y-2">
+                {roomTypeContent.cancellationPolicies.map((policy, i) => (
+                  <div key={i} className="flex items-center justify-between bg-gray-50 rounded-lg px-4 py-3">
+                    <p className="text-sm text-gray-700">📌 {policy}</p>
+                    <button onClick={() => setRoomTypeContent(prev => ({ ...prev, cancellationPolicies: prev.cancellationPolicies.filter((_, idx) => idx !== i) }))}
+                      className="text-red-400 hover:text-red-600 text-sm ml-3">🗑️</button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
         )}
       </div>
 
