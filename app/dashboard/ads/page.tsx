@@ -944,6 +944,56 @@ export default function AdsPage() {
 
               </div>
            )}
+           {campaignStep === 5 && (
+              <div className="space-y-4">
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900">Review Campaign</h3>
+                  <p className="text-xs text-gray-500 mt-1">Please review your campaign details before publishing.</p>
+                </div>
+
+                <div className="border border-gray-200 rounded-xl overflow-hidden">
+                  <div className="px-4 py-3 border-b border-gray-200 bg-gray-50">
+                    <p className="text-sm font-semibold text-gray-900">Campaign Details</p>
+                  </div>
+                  <div className="p-4 space-y-3">
+                    {[
+                      { label: "Campaign Name", value: campaignForm.name || "—" },
+                      { label: "Campaign Goal", value: campaignForm.goal || "—" },
+                      { label: "Campaign Type", value: campaignForm.type || "—" },
+                      { label: "Bidding Focus", value: bidFocus },
+                      { label: "Location", value: locationOption },
+                      { label: "Language", value: "English" },
+                    ].map((item, i) => (
+                      <div key={i} className="flex items-center justify-between py-2 border-b border-gray-50">
+                        <p className="text-xs text-gray-500">{item.label}</p>
+                        <p className="text-sm font-medium text-gray-900">{item.value}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="border border-gray-200 rounded-xl overflow-hidden">
+                  <div className="px-4 py-3 border-b border-gray-200 bg-gray-50">
+                    <p className="text-sm font-semibold text-gray-900">Budget</p>
+                  </div>
+                  <div className="p-4 space-y-2">
+                    <div className="flex items-center justify-between py-2 border-b border-gray-50">
+                      <p className="text-xs text-gray-500">Budget Type</p>
+                      <p className="text-sm font-medium text-gray-900">Average daily budget</p>
+                    </div>
+                    <div className="flex items-center justify-between py-2">
+                      <p className="text-xs text-gray-500">Daily Budget</p>
+                      <p className="text-sm font-medium text-gray-900">₹1,000 (Recommended)</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="border border-orange-200 bg-orange-50 rounded-xl p-4">
+                  <p className="text-xs text-orange-700">⚠️ Demo mode — Real API keys milne ke baad live campaigns publish honge</p>
+                </div>
+
+              </div>
+            )}
 
             {campaignStep === 4 && (
               <div className="space-y-4">
@@ -1327,9 +1377,18 @@ export default function AdsPage() {
                 <button onClick={() => setCampaignStep(campaignStep - 1)}
                   className="flex-1 bg-gray-100 text-gray-700 py-2 rounded-lg text-sm font-medium hover:bg-gray-200">← Back</button>
               )}
-              <button onClick={() => setCampaignStep(campaignStep + 1)}
-                className="flex-1 text-white py-2 rounded-lg text-sm font-medium hover:opacity-90"
-                style={{ backgroundColor: primaryColor }}>Continue</button>
+              {campaignStep === 5 ? (
+                <button onClick={() => { alert("Campaign published!"); setShowCreateModal(false); setCampaignStep(1); }}
+                  className="flex-1 text-white py-2 rounded-lg text-sm font-medium hover:opacity-90 bg-green-600">
+                  🚀 Publish Campaign
+                </button>
+              ) : (
+                <button onClick={() => setCampaignStep(campaignStep + 1)}
+                  className="flex-1 text-white py-2 rounded-lg text-sm font-medium hover:opacity-90"
+                  style={{ backgroundColor: primaryColor }}>
+                  {campaignStep === 4 ? "Review" : "Continue"}
+                </button>
+              )}
             </div>
           </div>
         </div>
