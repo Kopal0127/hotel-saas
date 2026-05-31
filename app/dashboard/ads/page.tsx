@@ -792,6 +792,69 @@ export default function AdsPage() {
                     </div>
                   </div>
                 )}
+                {/* Leads — Performance Max, Search: Leads conversion goals (9 options) */}
+                {campaignForm.goal === "Leads" && (campaignForm.type === "Performance Max" || campaignForm.type === "Search") && (
+                  <div className="border border-gray-200 rounded-xl p-4">
+                    <p className="text-sm font-semibold text-gray-900 mb-1">Choose your leads conversion goals</p>
+                    <p className="text-xs text-gray-500 mb-3">Pick the most important leads goals that you would like to focus on. Based on your selection, Smart Bidding will then optimize for delivering your ads to the right people to meet the goals. <span className="text-blue-600 cursor-pointer hover:underline">Learn more about smart bidding</span></p>
+                    <div className="grid grid-cols-4 gap-2">
+                      {[
+                        "Form submissions from your ads",
+                        "Form submissions from your website",
+                        "Phone calls from your ads",
+                        "Sign up",
+                        ...(showSeeMore ? ["Book appointments", "Quote request", "Get directions", "Outbound click", "Contact"] : [])
+                      ].map((item, i) => (
+                        <label key={i} className="flex items-center gap-2 border border-gray-200 rounded-lg p-3 cursor-pointer hover:border-blue-400">
+                          <input type="radio" name="leads-goal" />
+                          <span className="text-xs font-medium text-gray-900">{item}</span>
+                        </label>
+                      ))}
+                    </div>
+                    <button onClick={() => setShowSeeMore(!showSeeMore)} className="text-sm text-blue-600 hover:underline mt-2">
+                      {showSeeMore ? "See less" : "See more"}
+                    </button>
+                  </div>
+                )}
+
+                {/* Leads — Display: 7 options */}
+                {campaignForm.goal === "Leads" && campaignForm.type === "Display" && (
+                  <div className="border border-gray-200 rounded-xl p-4">
+                    <p className="text-sm font-semibold text-gray-900 mb-1">Choose your leads conversion goals</p>
+                    <p className="text-xs text-gray-500 mb-3">Pick the most important leads goals that you would like to focus on. Based on your selection, Smart Bidding will then optimize for delivering your ads to the right people to meet the goals. <span className="text-blue-600 cursor-pointer hover:underline">Learn more about smart bidding</span></p>
+                    <div className="grid grid-cols-4 gap-2">
+                      {[
+                        "Form submissions from your website",
+                        "Sign up",
+                        "Book appointments",
+                        "Quote request",
+                        ...(showSeeMore ? ["Get directions", "Outbound click", "Contact"] : [])
+                      ].map((item, i) => (
+                        <label key={i} className="flex items-center gap-2 border border-gray-200 rounded-lg p-3 cursor-pointer hover:border-blue-400">
+                          <input type="radio" name="leads-goal-display" />
+                          <span className="text-xs font-medium text-gray-900">{item}</span>
+                        </label>
+                      ))}
+                    </div>
+                    <button onClick={() => setShowSeeMore(!showSeeMore)} className="text-sm text-blue-600 hover:underline mt-2">
+                      {showSeeMore ? "See less" : "See more"}
+                    </button>
+                  </div>
+                )}
+
+                {/* Website Traffic — Performance Max, Search, Display: Page view */}
+                {campaignForm.goal === "Website traffic" && (campaignForm.type === "Performance Max" || campaignForm.type === "Search" || campaignForm.type === "Display") && (
+                  <div className="border border-gray-200 rounded-xl p-4">
+                    <p className="text-sm font-semibold text-gray-900 mb-1">Choose your website traffic conversion goals</p>
+                    <p className="text-xs text-gray-500 mb-3">Pick the most important website traffic goals that you would like to focus on. Based on your selection, Smart Bidding will then optimize for delivering your ads to the right people to meet the goals. <span className="text-blue-600 cursor-pointer hover:underline">Learn more about smart bidding</span></p>
+                    <div className="grid grid-cols-4 gap-2">
+                      <label className="flex items-center gap-2 border border-gray-200 rounded-lg p-3 cursor-pointer hover:border-blue-400">
+                        <input type="radio" name="traffic-goal" />
+                        <span className="text-xs font-medium text-gray-900">Page view</span>
+                      </label>
+                    </div>
+                  </div>
+                )}
 
                {/* YouTube reach */}
                 {campaignForm.goal === "YouTube reach, views, and engagements" && campaignForm.type === "Video" && (
