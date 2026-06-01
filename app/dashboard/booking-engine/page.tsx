@@ -559,10 +559,10 @@ export default function BookingEnginePage() {
               </div>
             </div>
           )}
-        </div>
+          </div>
         )}
 
-        {activeTab === "photos" && (
+          {activeTab === "photos" && (
           <div className="space-y-6">
             <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
               <h3 className="text-lg font-semibold text-gray-800 mb-4">🛏️ Room Select Karo</h3>
@@ -631,6 +631,7 @@ export default function BookingEnginePage() {
         )}
 
         {activeTab === "cancellation" && (
+          <div className="space-y-6">
           <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
             <h3 className="text-lg font-semibold text-gray-800 mb-4">📋 Cancellation Policy</h3>
             <div className="flex gap-3 mb-6">
