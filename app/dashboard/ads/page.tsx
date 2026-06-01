@@ -790,7 +790,7 @@ export default function AdsPage() {
                </>
             )}
 
-            {campaignStep === 3 && (
+            {campaignStep === 3 && campaignForm.type === "Performance Max" && (campaignForm.goal === "Leads" || campaignForm.goal === "Website traffic" || campaignForm.goal === "Create a campaign without guidance") && (
               <div className="space-y-4">
 
                 {/* Bidding */}
@@ -995,7 +995,7 @@ export default function AdsPage() {
               </div>
             )}
 
-            {campaignStep === 4 && (
+            {campaignStep === 4 && campaignForm.type === "Performance Max" && (campaignForm.goal === "Leads" || campaignForm.goal === "Website traffic" || campaignForm.goal === "Create a campaign without guidance") && (
               <div className="space-y-4">
 
                 {/* Budget */}

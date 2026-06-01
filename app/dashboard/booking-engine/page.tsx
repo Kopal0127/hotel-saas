@@ -493,6 +493,7 @@ export default function BookingEnginePage() {
         )}
 
         {activeTab === "attractions" && (
+          <div className="space-y-6">
           <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
             <h3 className="text-lg font-semibold text-gray-800 mb-4">📍 Nearest Attractions</h3>
             <div className="grid grid-cols-2 gap-3 mb-4">
@@ -687,7 +688,7 @@ export default function BookingEnginePage() {
                 ))}
               </div>
             </div>
-          )}
+         )}
         </div>
         )}
       </div>
