@@ -855,43 +855,13 @@ export default function AdsPage() {
 
                           {/* Google Maps */}
                           {locationSearchType === "Google Maps" && (
-                            <div className="grid grid-cols-3 gap-2 h-48">
-                              <div className="col-span-1 bg-gray-100 rounded-lg flex items-center justify-center text-xs text-gray-400">
-                                🗺️ Map View
+                            <div className="space-y-2">
+                              <div className="flex items-center border border-gray-300 rounded-lg px-3 py-2">
+                                <span className="text-gray-400 mr-2">🔍</span>
+                                <input type="text" placeholder="Search location"
+                                  className="flex-1 text-sm focus:outline-none" />
                               </div>
-                              <div className="col-span-1 border border-gray-200 rounded-lg p-2 space-y-2">
-                                <div className="flex items-center border border-gray-300 rounded-lg px-2 py-1.5">
-                                  <input type="text" placeholder="Search location"
-                                    className="flex-1 text-sm focus:outline-none" />
-                                  <span className="text-gray-400 ml-1">×</span>
-                                </div>
-                                <div className="flex items-center gap-2">
-                                  <input type="checkbox" />
-                                  <span className="text-xs text-gray-700">Select all</span>
-                                </div>
-                                <div className="border border-blue-200 rounded-lg p-2 bg-blue-50">
-                                  <div className="flex items-center gap-2">
-                                    <input type="checkbox" defaultChecked className="accent-blue-600" />
-                                    <div>
-                                      <p className="text-xs font-medium text-gray-900">KT Web Creations</p>
-                                      <p className="text-xs text-gray-500">Shop No 5, Nashik, Maharashtra</p>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                              <div className="col-span-1 border border-gray-200 rounded-lg p-2">
-                                <div className="flex items-center justify-between mb-2">
-                                  <p className="text-xs font-medium text-gray-700">1 selected</p>
-                                  <button className="text-xs text-blue-600 hover:underline">Clear all</button>
-                                </div>
-                                <div className="flex items-start justify-between border border-gray-200 rounded-lg p-2">
-                                  <div>
-                                    <p className="text-xs font-medium text-gray-900">KT Web Creations</p>
-                                    <p className="text-xs text-gray-500">Shop No 5, Nashik</p>
-                                  </div>
-                                  <button className="text-gray-400 hover:text-gray-600">⊗</button>
-                                </div>
-                              </div>
+                              <p className="text-xs text-gray-400">Search for locations using Google Ads API</p>
                             </div>
                           )}
 
