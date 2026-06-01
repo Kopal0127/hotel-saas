@@ -807,31 +807,94 @@ export default function AdsPage() {
                       {showAdvancedSearch && (
                         <div className="mt-4 border border-gray-200 rounded-xl p-4 space-y-3">
                           <p className="text-sm font-semibold text-gray-900">Choose locations for your account</p>
-                          <div className="flex items-center gap-4">
+                          <div className="flex items-center gap-4 mb-3">
                             {["Google Business Profile", "Chain stores", "Google Maps"].map((opt, i) => (
                               <label key={i} className="flex items-center gap-2 cursor-pointer">
-                                <input type="radio" name="loc-account" defaultChecked={i === 0} />
+                                <input type="radio" name="loc-account"
+                                  defaultChecked={i === 0}
+                                  onChange={() => setLocationSearchType(opt)} />
                                 <span className="text-sm text-gray-700">{opt}</span>
                               </label>
                             ))}
                           </div>
-                          <div className="space-y-2">
-                            <label className="flex items-center gap-2 cursor-pointer">
-                              <input type="radio" name="bpm-account" defaultChecked />
-                              <span className="text-sm text-gray-700">Select a Business Profile Manager account ⓘ</span>
-                            </label>
-                            <select className="border border-gray-300 rounded-lg px-3 py-2 text-sm w-72 focus:outline-none ml-6">
-                              <option>ktwebcreations@gmail.com (0 locations)</option>
-                            </select>
-                            <label className="flex items-center gap-2 cursor-pointer">
-                              <input type="radio" name="bpm-account" />
-                              <span className="text-sm text-gray-700">Request access to another Business Profile Manager account ⓘ</span>
-                            </label>
-                            <label className="flex items-center gap-2 cursor-pointer">
-                              <input type="radio" name="bpm-account" />
-                              <span className="text-sm text-gray-700">Enter a domain to ask for access</span>
-                            </label>
-                          </div>
+
+                          {/* Google Business Profile */}
+                          {(locationSearchType === "Location" || locationSearchType === "Google Business Profile") && (
+                            <div className="space-y-2">
+                              <label className="flex items-center gap-2 cursor-pointer">
+                                <input type="radio" name="bpm-account" defaultChecked />
+                                <span className="text-sm text-gray-700">Select a Business Profile Manager account ⓘ</span>
+                              </label>
+                              <div className="ml-6 flex items-center border border-gray-300 rounded-lg px-3 py-2 w-72">
+                                <span className="text-gray-400 mr-2">🔍</span>
+                                <input type="text" placeholder="Search by email or profile name"
+                                  className="flex-1 text-sm focus:outline-none" />
+                              </div>
+                              <label className="flex items-center gap-2 cursor-pointer">
+                                <input type="radio" name="bpm-account" />
+                                <span className="text-sm text-gray-700">Request access to another Business Profile Manager account ⓘ</span>
+                              </label>
+                              <label className="flex items-center gap-2 cursor-pointer">
+                                <input type="radio" name="bpm-account" />
+                                <span className="text-sm text-gray-700">Enter a domain to ask for access</span>
+                              </label>
+                            </div>
+                          )}
+
+                          {/* Chain stores */}
+                          {locationSearchType === "Chain stores" && (
+                            <div className="space-y-2">
+                              <div className="flex items-center border border-gray-300 rounded-lg px-3 py-2">
+                                <span className="text-gray-400 mr-2">🔍</span>
+                                <input type="text" placeholder="Search chain stores"
+                                  className="flex-1 text-sm focus:outline-none" />
+                              </div>
+                              <p className="text-xs text-gray-400">Search for chain stores to add locations</p>
+                            </div>
+                          )}
+
+                          {/* Google Maps */}
+                          {locationSearchType === "Google Maps" && (
+                            <div className="grid grid-cols-3 gap-2 h-48">
+                              <div className="col-span-1 bg-gray-100 rounded-lg flex items-center justify-center text-xs text-gray-400">
+                                🗺️ Map View
+                              </div>
+                              <div className="col-span-1 border border-gray-200 rounded-lg p-2 space-y-2">
+                                <div className="flex items-center border border-gray-300 rounded-lg px-2 py-1.5">
+                                  <input type="text" placeholder="Search location"
+                                    className="flex-1 text-sm focus:outline-none" />
+                                  <span className="text-gray-400 ml-1">×</span>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                  <input type="checkbox" />
+                                  <span className="text-xs text-gray-700">Select all</span>
+                                </div>
+                                <div className="border border-blue-200 rounded-lg p-2 bg-blue-50">
+                                  <div className="flex items-center gap-2">
+                                    <input type="checkbox" defaultChecked className="accent-blue-600" />
+                                    <div>
+                                      <p className="text-xs font-medium text-gray-900">KT Web Creations</p>
+                                      <p className="text-xs text-gray-500">Shop No 5, Nashik, Maharashtra</p>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                              <div className="col-span-1 border border-gray-200 rounded-lg p-2">
+                                <div className="flex items-center justify-between mb-2">
+                                  <p className="text-xs font-medium text-gray-700">1 selected</p>
+                                  <button className="text-xs text-blue-600 hover:underline">Clear all</button>
+                                </div>
+                                <div className="flex items-start justify-between border border-gray-200 rounded-lg p-2">
+                                  <div>
+                                    <p className="text-xs font-medium text-gray-900">KT Web Creations</p>
+                                    <p className="text-xs text-gray-500">Shop No 5, Nashik</p>
+                                  </div>
+                                  <button className="text-gray-400 hover:text-gray-600">⊗</button>
+                                </div>
+                              </div>
+                            </div>
+                          )}
+
                           <div className="flex gap-3 justify-end">
                             <button onClick={() => setShowAdvancedSearch(false)}
                               className="text-sm text-gray-600 px-4 py-2 rounded-lg bg-gray-100 hover:bg-gray-200">Cancel</button>
