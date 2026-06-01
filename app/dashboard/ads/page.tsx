@@ -1498,9 +1498,15 @@ export default function AdsPage() {
                   🚀 Publish Campaign
                 </button>
               ) : (
-                <button onClick={() => setCampaignStep(campaignStep + 1)}
-                  className="flex-1 text-white py-2 rounded-lg text-sm font-medium hover:opacity-90"
-                  style={{ backgroundColor: primaryColor }}>
+                <button
+                  disabled={campaignStep === 1 && (!campaignForm.name || !campaignForm.goal || !campaignForm.type)}
+                  onClick={() => setCampaignStep(campaignStep + 1)}
+                  className={`flex-1 py-2 rounded-lg text-sm font-medium transition-all ${
+                    campaignStep === 1 && (!campaignForm.name || !campaignForm.goal || !campaignForm.type)
+                      ? "bg-gray-200 text-gray-400 cursor-not-allowed"
+                      : "text-white hover:opacity-90"
+                  }`}
+                  style={campaignStep === 1 && (!campaignForm.name || !campaignForm.goal || !campaignForm.type) ? {} : { backgroundColor: primaryColor }}>
                   {campaignStep === 4 ? "Review" : "Continue"}
                 </button>
               )}
