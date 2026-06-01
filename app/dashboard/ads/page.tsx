@@ -834,10 +834,10 @@ export default function AdsPage() {
                                 <input type="radio" name="bpm-account" />
                                 <span className="text-sm text-gray-700">Request access to another Business Profile Manager account ⓘ</span>
                               </label>
-                              <label className="flex items-center gap-2 cursor-pointer">
-                                <input type="radio" name="bpm-account" />
-                                <span className="text-sm text-gray-700">Enter a domain to ask for access</span>
-                              </label>
+                              <div className="ml-6">
+                                <input type="text" placeholder="Email address"
+                                  className="border border-gray-300 rounded-lg px-3 py-2 text-sm w-72 focus:outline-none" />
+                              </div>
                             </div>
                           )}
 
