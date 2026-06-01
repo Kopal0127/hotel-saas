@@ -761,6 +761,88 @@ export default function AdsPage() {
                     </div>
                   </div>
                 )}
+                {/* Local store visits + Performance Max */}
+                {campaignForm.goal === "Local store visits and promotions" && campaignForm.type === "Performance Max" && (
+                  <div className="space-y-4">
+                    {/* Conversion goals */}
+                    <div className="border border-gray-200 rounded-xl p-4">
+                      <p className="text-sm font-semibold text-gray-900 mb-1">Choose your local store visits and promotions conversion goals</p>
+                      <p className="text-xs text-gray-500 mb-3">Pick the most important local store visits and promotions goals that you would like to focus on. Based on your selection, Smart Bidding will then optimize for delivering your ads to the right people to meet the goals. <span className="text-blue-600 cursor-pointer hover:underline">Learn more about smart bidding</span></p>
+                      <div className="space-y-2">
+                        {[
+                          { icon: "👥", title: "Contact", desc: "Show your ads to people who are more likely to contact a business like yours" },
+                          { icon: "🔷", title: "Directions request", desc: "Show your ads to people who are more likely looking for directions to a business like yours" },
+                        ].map((item, i) => (
+                          <label key={i} className="flex items-center gap-3 border border-gray-200 rounded-lg p-3 cursor-pointer hover:border-blue-400">
+                            <span className="text-lg">{item.icon}</span>
+                            <div className="flex-1">
+                              <p className="text-sm font-medium text-gray-900">{item.title}</p>
+                              <p className="text-xs text-gray-500">{item.desc}</p>
+                            </div>
+                            <input type="radio" name="local-goal" />
+                          </label>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Campaign feeds */}
+                    <div className="border border-gray-200 rounded-xl p-4">
+                      <p className="text-sm font-semibold text-gray-900 mb-1">Campaign feeds</p>
+                      <p className="text-xs text-gray-500 mb-3">Expand available ad formats, power ad creatives, and improve targeting.</p>
+                      <p className="text-sm font-semibold text-gray-900 mb-2">Which store locations should your ads promote?</p>
+                      <div className="space-y-2 mb-3">
+                        {["Your business locations", "Affiliate locations"].map((opt, i) => (
+                          <label key={i} className="flex items-center gap-2 cursor-pointer">
+                            <input type="radio" name="store-location" defaultChecked={i === 0} />
+                            <span className="text-sm text-gray-700">{opt}</span>
+                          </label>
+                        ))}
+                      </div>
+                      <button
+                        onClick={() => setShowAdvancedSearch(!showAdvancedSearch)}
+                        className="text-sm text-blue-600 hover:underline font-medium">
+                        Link Account
+                      </button>
+
+                      {showAdvancedSearch && (
+                        <div className="mt-4 border border-gray-200 rounded-xl p-4 space-y-3">
+                          <p className="text-sm font-semibold text-gray-900">Choose locations for your account</p>
+                          <div className="flex items-center gap-4">
+                            {["Google Business Profile", "Chain stores", "Google Maps"].map((opt, i) => (
+                              <label key={i} className="flex items-center gap-2 cursor-pointer">
+                                <input type="radio" name="loc-account" defaultChecked={i === 0} />
+                                <span className="text-sm text-gray-700">{opt}</span>
+                              </label>
+                            ))}
+                          </div>
+                          <div className="space-y-2">
+                            <label className="flex items-center gap-2 cursor-pointer">
+                              <input type="radio" name="bpm-account" defaultChecked />
+                              <span className="text-sm text-gray-700">Select a Business Profile Manager account ⓘ</span>
+                            </label>
+                            <select className="border border-gray-300 rounded-lg px-3 py-2 text-sm w-72 focus:outline-none ml-6">
+                              <option>ktwebcreations@gmail.com (0 locations)</option>
+                            </select>
+                            <label className="flex items-center gap-2 cursor-pointer">
+                              <input type="radio" name="bpm-account" />
+                              <span className="text-sm text-gray-700">Request access to another Business Profile Manager account ⓘ</span>
+                            </label>
+                            <label className="flex items-center gap-2 cursor-pointer">
+                              <input type="radio" name="bpm-account" />
+                              <span className="text-sm text-gray-700">Enter a domain to ask for access</span>
+                            </label>
+                          </div>
+                          <div className="flex gap-3 justify-end">
+                            <button onClick={() => setShowAdvancedSearch(false)}
+                              className="text-sm text-gray-600 px-4 py-2 rounded-lg bg-gray-100 hover:bg-gray-200">Cancel</button>
+                            <button className="text-sm text-white px-4 py-2 rounded-lg hover:opacity-90"
+                              style={{ backgroundColor: primaryColor }}>Continue</button>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
 
                {/* YouTube reach */}
                 {campaignForm.goal === "YouTube reach, views, and engagements" && campaignForm.type === "Video" && (
