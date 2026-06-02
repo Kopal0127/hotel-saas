@@ -975,6 +975,182 @@ export default function AdsPage() {
                </>
             )}
 
+            {campaignStep === 3 && campaignForm.type === "Search" && (campaignForm.goal === "Leads" || campaignForm.goal === "Create a campaign without guidance") && (
+              <div className="space-y-4">
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900">Campaign settings</h3>
+                  <p className="text-xs text-gray-500 mt-1">To reach the right people, start by defining key settings for your campaign</p>
+                </div>
+
+                {/* Networks */}
+                <div className="border border-gray-200 rounded-xl overflow-hidden">
+                  <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200 bg-gray-50">
+                    <p className="text-sm font-semibold text-gray-900">Networks</p>
+                    <span className="text-gray-400">∧</span>
+                  </div>
+                  <div className="p-4 space-y-3">
+                    <label className="flex items-start gap-2 cursor-pointer">
+                      <input type="checkbox" className="w-4 h-4 mt-0.5 accent-blue-600" />
+                      <div>
+                        <p className="text-sm font-medium text-gray-900">Google Search Partners Network (recommended)</p>
+                        <p className="text-xs text-gray-500 mt-0.5">Ads can appear near Google Search results and on other <span className="text-blue-600 cursor-pointer hover:underline">Google Search Partners</span> websites when people search for terms that are relevant to your keywords. Search Partners can include hundreds of non-Google websites, Parked Domains, as well as YouTube and other Google sites.</p>
+                      </div>
+                    </label>
+                    <div className="flex items-center justify-between border border-orange-200 bg-orange-50 rounded-lg px-3 py-2">
+                      <div className="flex items-center gap-2">
+                        <span className="text-orange-500">🔍</span>
+                        <p className="text-xs text-gray-700"><span className="font-medium">Expand your reach with Google search partners:</span> Reach additional customers on partner sites ⓘ</p>
+                      </div>
+                      <button className="text-sm text-blue-600 font-medium hover:underline ml-4">Apply</button>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Locations */}
+                <div className="border border-gray-200 rounded-xl overflow-hidden">
+                  <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200 bg-gray-50">
+                    <p className="text-sm font-semibold text-gray-900">Locations</p>
+                    <span className="text-gray-400">∧</span>
+                  </div>
+                  <div className="p-4 space-y-2">
+                    <p className="text-xs text-gray-500">Select locations for this campaign ⓘ</p>
+                    {["All countries and territories", "India", "Custom locations"].map(opt => (
+                      <label key={opt} className="flex items-center gap-2 cursor-pointer">
+                        <input type="radio" name="search-location" value={opt}
+                          checked={locationOption === opt}
+                          onChange={() => { setLocationOption(opt); setShowAdvancedSearch(false); }} />
+                        <span className="text-sm text-gray-700">{opt}</span>
+                      </label>
+                    ))}
+
+                    {locationOption === "Custom locations" && (
+                      <div className="mt-2 space-y-2">
+                        <div className="flex items-center gap-3">
+                          <div className="flex items-center border border-gray-300 rounded-lg px-3 py-2 w-72">
+                            <span className="text-gray-400 mr-2">🔍</span>
+                            <input type="text" placeholder="Enter a location to include or exclude"
+                              className="flex-1 text-sm focus:outline-none" />
+                          </div>
+                          <button onClick={() => setShowAdvancedSearch(!showAdvancedSearch)}
+                            className="text-sm text-blue-600 hover:underline font-medium">
+                            Advanced search
+                          </button>
+                        </div>
+                        <p className="text-xs text-gray-400">For example, a country, city, region, or postal code</p>
+
+                        {showAdvancedSearch && (
+                          <div className="border border-gray-200 rounded-lg p-3 space-y-3">
+                            <div className="flex items-center gap-4">
+                              {["Location", "Radius"].map(type => (
+                                <label key={type} className="flex items-center gap-2 cursor-pointer">
+                                  <input type="radio" name="search-loc-type" value={type}
+                                    checked={locationSearchType === type}
+                                    onChange={() => setLocationSearchType(type)} />
+                                  <span className="text-sm text-gray-700">{type}</span>
+                                </label>
+                              ))}
+                            </div>
+                            {locationSearchType === "Location" && (
+                              <>
+                                <label className="flex items-center gap-2 cursor-pointer">
+                                  <input type="checkbox" className="w-4 h-4" />
+                                  <span className="text-sm text-gray-700">Add locations in bulk</span>
+                                </label>
+                                <div className="border border-gray-300 rounded-lg px-3 py-2">
+                                  <input type="text" placeholder="Enter a location to include or exclude"
+                                    className="w-full text-sm focus:outline-none" />
+                                </div>
+                                <p className="text-xs text-gray-400">For example, a country, city, region, or postal code</p>
+                              </>
+                            )}
+                            {locationSearchType === "Radius" && (
+                              <div className="flex items-center gap-2">
+                                <div className="border border-gray-300 rounded-lg px-3 py-2 flex-1">
+                                  <input type="text" placeholder="Enter a place name, address or coordinates"
+                                    className="w-full text-sm focus:outline-none" />
+                                </div>
+                                <input type="number" defaultValue={20}
+                                  className="border border-gray-300 rounded-lg px-3 py-2 text-sm w-16 focus:outline-none" />
+                                <select className="border border-gray-300 rounded-lg px-2 py-2 text-sm focus:outline-none">
+                                  <option>mi</option>
+                                  <option>km</option>
+                                </select>
+                              </div>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    )}
+
+                    <button className="text-sm text-blue-600 hover:underline mt-1 flex items-center gap-1"
+                      onClick={() => setShowLocationOptions(!showLocationOptions)}>
+                      {showLocationOptions ? "∧" : "∨"} Location options
+                    </button>
+                    {showLocationOptions && (
+                      <div className="space-y-2 mt-1">
+                        <p className="text-xs text-gray-500">Include ⓘ</p>
+                        {[
+                          "Presence or interest: People in, regularly in, or who've shown interest in your included locations (recommended)",
+                          "Presence: People in or regularly in your included locations"
+                        ].map((opt, i) => (
+                          <label key={i} className="flex items-start gap-2 cursor-pointer">
+                            <input type="radio" name="search-loc-include" defaultChecked={i === 0} className="mt-0.5" />
+                            <span className="text-xs text-gray-700">{opt}</span>
+                          </label>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Languages */}
+                <div className="border border-gray-200 rounded-xl overflow-hidden">
+                  <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200 bg-gray-50">
+                    <p className="text-sm font-semibold text-gray-900">Languages</p>
+                    <span className="text-gray-400">∧</span>
+                  </div>
+                  <div className="p-4 space-y-2">
+                    <p className="text-xs text-gray-500">Select the languages your customers speak. ⓘ</p>
+                    <div className="flex items-center border border-gray-300 rounded-lg px-3 py-2">
+                      <span className="text-gray-400 mr-2">🔍</span>
+                      <input type="text" placeholder="Start typing or select a language"
+                        className="flex-1 text-sm focus:outline-none" />
+                    </div>
+                    <div className="flex flex-wrap gap-2 mt-1">
+                      <span className="flex items-center gap-1 bg-gray-100 text-gray-700 text-xs px-2 py-1 rounded-full">
+                        English <button className="ml-1 text-gray-400 hover:text-gray-600">×</button>
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* EU Political Ads */}
+                <div className="border border-gray-200 rounded-xl overflow-hidden">
+                  <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200 bg-gray-50">
+                    <p className="text-sm font-semibold text-gray-900">EU political ads</p>
+                    <span className="text-gray-400">∧</span>
+                  </div>
+                  <div className="p-4 flex gap-6">
+                    <div className="flex-1 space-y-2">
+                      <p className="text-sm text-gray-700">Does your campaign have European Union political ads?</p>
+                      <p className="text-xs text-red-500">Required</p>
+                      {["Yes, this campaign has EU political ads", "No, this campaign doesn't have EU political ads"].map((opt, i) => (
+                        <label key={i} className="flex items-center gap-2 cursor-pointer">
+                          <input type="radio" name="search-eu-political" />
+                          <span className="text-sm text-gray-700">{opt}</span>
+                        </label>
+                      ))}
+                      <p className="text-xs text-blue-600 cursor-pointer hover:underline mt-1">Confirm if your campaign has EU political ads</p>
+                    </div>
+                    <div className="text-xs text-gray-500 max-w-xs">
+                      EU regulation requires Google to ask this question. <span className="text-blue-600 cursor-pointer hover:underline">Learn how an EU political ad is defined</span>
+                    </div>
+                  </div>
+                </div>
+
+              </div>
+            )}
+
             {campaignStep === 3 && campaignForm.type === "Performance Max" && (campaignForm.goal === "Leads" || campaignForm.goal === "Website traffic" || campaignForm.goal === "Create a campaign without guidance") && (
               <div className="space-y-4">
 
