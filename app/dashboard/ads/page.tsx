@@ -1356,6 +1356,301 @@ export default function AdsPage() {
               </div>
             )}
 
+           {campaignStep === 4 && campaignForm.type === "Search" && (campaignForm.goal === "Leads" || campaignForm.goal === "Create a campaign without guidance") && (
+              <div className="space-y-4">
+
+                {/* Bidding */}
+                <div className="border border-gray-200 rounded-xl overflow-hidden">
+                  <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200 bg-gray-50">
+                    <p className="text-sm font-semibold text-gray-900">Bidding</p>
+                    <span className="text-gray-400">∧</span>
+                  </div>
+                  <div className="p-4 space-y-3">
+                    <div>
+                      <p className="text-xs text-gray-500 mb-1">What do you want to focus on? ⓘ</p>
+                      <select value={bidFocus} onChange={(e) => setBidFocus(e.target.value)}
+                        className="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none">
+                        <optgroup label="Recommended">
+                          <option>Conversions</option>
+                          <option>Conversion value</option>
+                        </optgroup>
+                        <optgroup label="Other optimization options">
+                          <option>Clicks</option>
+                          <option>Impression share</option>
+                        </optgroup>
+                      </select>
+                    </div>
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <input type="checkbox" checked={targetCPA} onChange={(e) => setTargetCPA(e.target.checked)} className="w-4 h-4 accent-blue-600" />
+                      <span className="text-sm text-gray-700">Set a target cost per action (optional)</span>
+                    </label>
+                    {targetCPA && (
+                      <div>
+                        <p className="text-xs text-gray-500 mb-1">Target CPA ⓘ</p>
+                        <div className="flex items-center border border-gray-300 rounded-lg px-3 py-2 w-40">
+                          <span className="text-gray-500 mr-1">₹</span>
+                          <input type="number" className="flex-1 text-sm focus:outline-none" />
+                        </div>
+                      </div>
+                    )}
+                    <p className="text-xs text-gray-400">Alternative bid strategies like portfolios are available in settings after you create your campaign</p>
+                  </div>
+                </div>
+
+                {/* Keywords */}
+                <div className="border border-gray-200 rounded-xl overflow-hidden">
+                  <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200 bg-gray-50">
+                    <p className="text-sm font-semibold text-gray-900">Keywords</p>
+                    <span className="text-gray-400">∧</span>
+                  </div>
+                  <div className="p-4 space-y-4">
+                    <div>
+                      <p className="text-sm font-semibold text-gray-900">Get keyword suggestions (optional)</p>
+                      <p className="text-xs text-gray-500 mt-0.5">Google Ads can find keywords for you by scanning a web page or seeing what's working for similar products or services</p>
+                    </div>
+                    <div className="flex items-center border border-gray-300 rounded-lg px-3 py-2.5">
+                      <span className="text-gray-400 mr-2">🔗</span>
+                      <input type="text" placeholder="Final URL" className="flex-1 text-sm focus:outline-none" />
+                    </div>
+                    <div className="flex items-center border border-gray-300 rounded-lg px-3 py-2.5">
+                      <span className="text-gray-400 mr-2">🏪</span>
+                      <input type="text" placeholder="Enter products or services to advertise" className="flex-1 text-sm focus:outline-none" />
+                    </div>
+                    <button className="text-sm text-gray-400 cursor-not-allowed">Get keyword suggestions</button>
+                    <div>
+                      <p className="text-sm font-semibold text-gray-900">Enter keywords</p>
+                      <p className="text-xs text-gray-500 mt-0.5">Keywords are words or phrases that are used to match your ads with the terms people are searching for ⓘ</p>
+                      <textarea rows={6} placeholder="Enter or paste keywords. You can separate each keyword by commas or enter one per line."
+                        className="w-full mt-2 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none resize-none" />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Final URL + Display path */}
+                <div className="border border-gray-200 rounded-xl overflow-hidden">
+                  <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200 bg-gray-50">
+                    <p className="text-sm font-semibold text-gray-900">Final URL ⓘ</p>
+                    <span className="text-gray-400">∧</span>
+                  </div>
+                  <div className="p-4 space-y-3">
+                    <div>
+                      <input type="text" placeholder="Final URL"
+                        className="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none" />
+                      <p className="text-xs text-gray-400 mt-1">This will be used to suggest assets for your ad</p>
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-gray-700 mb-1">Display path ⓘ</p>
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm text-gray-500">www.example.com</span>
+                        <span className="text-gray-400">/</span>
+                        <div className="relative">
+                          <input type="text" maxLength={15}
+                            className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none w-32" />
+                          <span className="absolute right-2 bottom-1 text-xs text-gray-400">0/15</span>
+                        </div>
+                        <span className="text-gray-400">/</span>
+                        <div className="relative">
+                          <input type="text" maxLength={15}
+                            className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none w-32" />
+                          <span className="absolute right-2 bottom-1 text-xs text-gray-400">0/15</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Headlines + Descriptions — ek row mein 2 col */}
+                <div className="grid grid-cols-2 gap-4">
+
+                  {/* Headlines */}
+                  <div className="border border-gray-200 rounded-xl overflow-hidden">
+                    <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200 bg-gray-50">
+                      <div className="flex items-center gap-2">
+                        <span className="text-gray-600 font-bold text-sm">Tr</span>
+                        <p className="text-sm font-semibold text-gray-900">Headlines 0/15 ⓘ</p>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <button className="text-xs text-blue-600 hover:underline">View ideas</button>
+                        <span className="text-gray-400">∧</span>
+                      </div>
+                    </div>
+                    <div className="p-3 space-y-2">
+                      {[0,1,2,3,4,5,6].map(i => (
+                        <div key={i}>
+                          <div className="relative">
+                            <input type="text" placeholder="Headline"
+                              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none" />
+                            <span className="absolute right-2 top-2 text-xs text-gray-400">0/30</span>
+                          </div>
+                          {i < 3 && <p className="text-xs text-red-400">Required</p>}
+                        </div>
+                      ))}
+                      <button className="text-sm text-blue-600 hover:underline">+ Headline</button>
+                    </div>
+                  </div>
+
+                  {/* Descriptions */}
+                  <div className="border border-gray-200 rounded-xl overflow-hidden">
+                    <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200 bg-gray-50">
+                      <div className="flex items-center gap-2">
+                        <span className="text-gray-600 font-bold text-sm">Tr</span>
+                        <p className="text-sm font-semibold text-gray-900">Descriptions 0/4 ⓘ</p>
+                      </div>
+                      <span className="text-gray-400">∧</span>
+                    </div>
+                    <div className="p-3 space-y-2">
+                      {[0,1].map(i => (
+                        <div key={i}>
+                          <div className="relative">
+                            <input type="text" placeholder="Description"
+                              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none" />
+                            <span className="absolute right-2 top-2 text-xs text-gray-400">0/90</span>
+                          </div>
+                          <p className="text-xs text-red-400">Required</p>
+                        </div>
+                      ))}
+                      <button className="text-sm text-blue-600 hover:underline">+ Description</button>
+                    </div>
+                  </div>
+
+                </div>
+
+                {/* Business name and logos */}
+                <div className="border border-gray-200 rounded-xl overflow-hidden">
+                  <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200 bg-gray-50">
+                    <p className="text-sm font-semibold text-gray-900">Business name and logos</p>
+                    <span className="text-gray-400">∧</span>
+                  </div>
+                  <div className="p-4">
+                    <p className="text-xs text-gray-500 mb-3">If you don't add a name or logo, Google will use your URL to add them for you</p>
+                    <button className="flex items-center gap-2 text-sm text-blue-600 hover:underline">
+                      <span>🛡️</span> Get access
+                    </button>
+                  </div>
+                </div>
+
+                {/* Sitelinks */}
+                <div className="border border-gray-200 rounded-xl overflow-hidden">
+                  <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200 bg-gray-50">
+                    <p className="text-sm font-semibold text-gray-900">Sitelinks ⓘ</p>
+                    <span className="text-gray-400">∧</span>
+                  </div>
+                  <div className="p-4">
+                    <p className="text-xs text-gray-500 mb-3">Add links to your ads to take people to specific pages on your website.</p>
+                    <div className="grid grid-cols-2 gap-3 mb-3">
+                      {[1,2,3,4,5,6].map(i => (
+                        <div key={i} className="flex items-center justify-between border border-gray-200 rounded-lg px-4 py-3 hover:border-blue-400 cursor-pointer">
+                          <div>
+                            <p className="text-sm font-medium text-gray-900">Sitelink {i}</p>
+                            <p className="text-xs text-gray-400">Recommended</p>
+                          </div>
+                          <button className="text-blue-600 text-lg font-light hover:text-blue-800">+</button>
+                        </div>
+                      ))}
+                    </div>
+                    <button className="text-sm text-blue-600 hover:underline">+ Sitelinks</button>
+                  </div>
+                </div>
+
+                {/* Calls */}
+                <div className="border border-red-300 rounded-xl overflow-hidden">
+                  <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200 bg-gray-50">
+                    <div className="flex items-center gap-2">
+                      <span className="text-gray-600">📞</span>
+                      <p className="text-sm font-semibold text-gray-900">Calls ⓘ</p>
+                    </div>
+                    <span className="text-gray-400">∧</span>
+                  </div>
+                  <div className="p-4 space-y-3">
+                    <p className="text-xs text-gray-500">Add a phone number</p>
+                    <div className="border border-red-300 bg-red-50 rounded-lg p-3 flex items-start gap-2">
+                      <span className="text-red-500 mt-0.5">⚠️</span>
+                      <p className="text-xs text-red-700">Because you selected <strong>phone calls</strong> as a campaign goal, add a call asset to use with your ads.</p>
+                    </div>
+                    <button onClick={() => setShowMoreAssetTypes(!showMoreAssetTypes)}
+                      className="text-sm text-blue-600 hover:underline">+ Calls</button>
+                    {showMoreAssetTypes && (
+                      <div className="border border-gray-200 rounded-lg p-3 space-y-2">
+                        <p className="text-sm font-medium text-gray-900">Add new call</p>
+                        <div className="flex items-start gap-2">
+                          <select className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none">
+                            <option>India (+91)</option>
+                            <option>United States (+1)</option>
+                            <option>United Kingdom (+44)</option>
+                          </select>
+                          <div>
+                            <input type="text" placeholder="Phone number"
+                              className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none w-52" />
+                            <p className="text-xs text-gray-400 mt-1">Example: 98765 43210</p>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Budget */}
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900">Budget</h3>
+                  <p className="text-xs text-gray-500 mt-1">Decide how much you want to spend.</p>
+                </div>
+                <div className="border border-gray-200 rounded-xl overflow-hidden">
+                  <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200 bg-gray-50">
+                    <span className="text-gray-400">∧</span>
+                  </div>
+                  <div className="p-4 grid grid-cols-2 gap-6">
+                    <div className="space-y-4">
+                      <div className="bg-blue-50 border border-blue-100 rounded-lg p-3 flex items-start gap-2">
+                        <span className="text-blue-500 mt-0.5">ℹ️</span>
+                        <p className="text-xs text-gray-600">Your budget type (daily or campaign total) can't be changed once this campaign has started. You can change your budget amount at any time.</p>
+                      </div>
+                      <p className="text-sm font-semibold text-gray-900">Select budget type</p>
+                      <div className="space-y-4">
+                        <label className="flex items-start gap-2 cursor-pointer">
+                          <input type="radio" name="search-budget-type" defaultChecked className="mt-1" />
+                          <div className="space-y-2">
+                            <div>
+                              <p className="text-sm font-medium text-gray-900">Average daily budget</p>
+                              <p className="text-xs text-gray-500">Set your average daily budget for this campaign</p>
+                            </div>
+                            <div className="flex items-center border border-blue-400 rounded-lg px-3 py-2 w-40">
+                              <span className="text-gray-500 mr-1">₹</span>
+                              <input type="number" className="flex-1 text-sm focus:outline-none" />
+                            </div>
+                          </div>
+                        </label>
+                        <label className="flex items-start gap-2 cursor-pointer">
+                          <input type="radio" name="search-budget-type" className="mt-1" />
+                          <div className="space-y-2">
+                            <div>
+                              <p className="text-sm font-medium text-gray-900">Campaign total budget</p>
+                              <p className="text-xs text-gray-500">Set a budget for the duration of your campaign</p>
+                            </div>
+                            <div className="flex items-center border border-gray-300 rounded-lg px-3 py-2 w-40">
+                              <span className="text-gray-500 mr-1">₹</span>
+                              <input type="number" className="flex-1 text-sm focus:outline-none" />
+                            </div>
+                            <div className="flex items-center justify-between border border-gray-200 rounded-lg px-4 py-3 w-72">
+                              <div>
+                                <p className="text-xs text-gray-700">Start date: June 2, 2026</p>
+                                <p className="text-xs text-gray-700">End date: None</p>
+                              </div>
+                              <button className="text-sm text-blue-600 hover:underline">Edit</button>
+                            </div>
+                          </div>
+                        </label>
+                      </div>
+                    </div>
+                    <div className="text-xs text-gray-500 space-y-2">
+                      <p>For the month, you won't pay more than your daily budget times the average number of days in a month. Some days you might spend less than your daily budget, and on others you might spend up to twice as much.</p>
+                      <button className="text-blue-600 hover:underline text-xs">Learn more about average daily budget</button>
+                    </div>
+                  </div>
+                </div>
+
+              </div>
+            )}
+
             {campaignStep === 4 && campaignForm.type === "Performance Max" && (campaignForm.goal === "Leads" || campaignForm.goal === "Website traffic" || campaignForm.goal === "Create a campaign without guidance") && (
               <div className="space-y-4">
 
