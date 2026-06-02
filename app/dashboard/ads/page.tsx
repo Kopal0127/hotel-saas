@@ -975,7 +975,7 @@ export default function AdsPage() {
                </>
             )}
 
-            {campaignStep === 3 && campaignForm.type === "Search" && (campaignForm.goal === "Leads" || campaignForm.goal === "Create a campaign without guidance") && (
+            {campaignStep === 3 && campaignForm.type === "Search" && (campaignForm.goal === "Leads" || campaignForm.goal === "Website traffic" || campaignForm.goal === "Create a campaign without guidance") && (
               <div className="space-y-4">
                 <div>
                   <h3 className="text-lg font-semibold text-gray-900">Campaign settings</h3>
@@ -1356,7 +1356,7 @@ export default function AdsPage() {
               </div>
             )}
 
-           {campaignStep === 4 && campaignForm.type === "Search" && (campaignForm.goal === "Leads" || campaignForm.goal === "Create a campaign without guidance") && (
+           {campaignStep === 4 && campaignForm.type === "Search" && (campaignForm.goal === "Leads" || campaignForm.goal === "Website traffic" || campaignForm.goal === "Create a campaign without guidance") && (
               <div className="space-y-4">
 
                 {/* Bidding */}
