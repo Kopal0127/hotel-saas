@@ -618,16 +618,78 @@ export default function AdsPage() {
                 )}
 
                 {/* Search — Leads / Without guidance: Website visits, Store visits */}
-                {campaignForm.type === "Search" && (campaignForm.goal === "Leads" || campaignForm.goal === "Create a campaign without guidance") && (
+               {campaignForm.type === "Search" && (campaignForm.goal === "Leads" || campaignForm.goal === "Create a campaign without guidance") && (
                   <div className="border border-gray-200 rounded-xl p-4">
                     <p className="text-sm font-semibold text-gray-900 mb-3">Select the ways you'd like to reach your goal ⓘ</p>
-                    <div className="space-y-2">
-                      {["Website visits", "Store visits"].map(option => (
-                        <label key={option} className="flex items-center gap-2 cursor-pointer">
-                          <input type="checkbox" className="w-4 h-4" />
-                          <span className="text-sm text-gray-700">{option}</span>
+                    <div className="space-y-3">
+
+                      {/* Website visits */}
+                      <div>
+                        <label className="flex items-center gap-2 cursor-pointer">
+                          <input type="checkbox" className="w-4 h-4 accent-blue-600"
+                            checked={!!(campaignForm as any).searchGoals?.websiteVisits}
+                            onChange={(e) => setCampaignForm({ ...campaignForm, searchGoals: { ...(campaignForm as any).searchGoals, websiteVisits: e.target.checked } } as any)} />
+                          <span className="text-sm text-gray-700">Website visits</span>
                         </label>
-                      ))}
+                        {(campaignForm as any).searchGoals?.websiteVisits && (
+                          <div className="ml-6 mt-2 flex items-center border border-gray-300 rounded-lg px-3 py-2.5 w-80">
+                            <span className="text-gray-400 mr-2">🔗</span>
+                            <input type="text" placeholder="Your business's website" className="flex-1 text-sm focus:outline-none" />
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Phone calls */}
+                      <div>
+                        <label className="flex items-center gap-2 cursor-pointer">
+                          <input type="checkbox" className="w-4 h-4 accent-blue-600"
+                            checked={!!(campaignForm as any).searchGoals?.phoneCalls}
+                            onChange={(e) => setCampaignForm({ ...campaignForm, searchGoals: { ...(campaignForm as any).searchGoals, phoneCalls: e.target.checked } } as any)} />
+                          <span className="text-sm text-gray-700">Phone calls</span>
+                        </label>
+                        {(campaignForm as any).searchGoals?.phoneCalls && (
+                          <div className="ml-6 mt-2 flex items-center gap-2">
+                            <select className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none">
+                              <option>India (+91)</option>
+                              <option>United States (+1)</option>
+                              <option>United Kingdom (+44)</option>
+                              <option>Australia (+61)</option>
+                            </select>
+                            <div className="flex flex-col">
+                              <input type="text" placeholder="Phone number"
+                                className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none w-52" />
+                              <span className="text-xs text-gray-400 mt-1">Example: 98765 43210</span>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Store visits */}
+                      <div>
+                        <label className="flex items-center gap-2 cursor-pointer">
+                          <input type="checkbox" className="w-4 h-4 accent-blue-600"
+                            checked={!!(campaignForm as any).searchGoals?.storeVisits}
+                            onChange={(e) => setCampaignForm({ ...campaignForm, searchGoals: { ...(campaignForm as any).searchGoals, storeVisits: e.target.checked } } as any)} />
+                          <span className="text-sm text-gray-700">Store visits</span>
+                        </label>
+                        {(campaignForm as any).searchGoals?.storeVisits && (
+                          <p className="ml-6 mt-1 text-xs text-gray-500">Enter location on the next step</p>
+                        )}
+                      </div>
+
+                      {/* Lead form submissions */}
+                      <div>
+                        <label className="flex items-center gap-2 cursor-pointer">
+                          <input type="checkbox" className="w-4 h-4 accent-blue-600"
+                            checked={!!(campaignForm as any).searchGoals?.leadForm}
+                            onChange={(e) => setCampaignForm({ ...campaignForm, searchGoals: { ...(campaignForm as any).searchGoals, leadForm: e.target.checked } } as any)} />
+                          <span className="text-sm text-gray-700">Lead form submissions</span>
+                        </label>
+                        {(campaignForm as any).searchGoals?.leadForm && (
+                          <p className="ml-6 mt-1 text-xs text-gray-500">Add lead form on the next step</p>
+                        )}
+                      </div>
+
                     </div>
                   </div>
                 )}
