@@ -975,6 +975,154 @@ export default function AdsPage() {
                </>
             )}
 
+            {campaignStep === 3 && campaignForm.type === "Display" && (campaignForm.goal === "Leads" || campaignForm.goal === "Website traffic" || campaignForm.goal === "Create a campaign without guidance") && (
+              <div className="space-y-4">
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900">Campaign settings</h3>
+                </div>
+
+                {/* Locations */}
+                <div className="border border-gray-200 rounded-xl overflow-hidden">
+                  <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200 bg-gray-50">
+                    <p className="text-sm font-semibold text-gray-900">Locations</p>
+                    <span className="text-gray-400">∧</span>
+                  </div>
+                  <div className="p-4 space-y-2">
+                    <p className="text-xs text-gray-500">Select locations for this campaign ⓘ</p>
+                    {["All countries and territories", "India", "Enter another location"].map(opt => (
+                      <label key={opt} className="flex items-center gap-2 cursor-pointer">
+                        <input type="radio" name="display-location" value={opt}
+                          checked={locationOption === opt}
+                          onChange={() => { setLocationOption(opt); setShowAdvancedSearch(false); }} />
+                        <span className="text-sm text-gray-700">{opt}</span>
+                      </label>
+                    ))}
+
+                    {locationOption === "Enter another location" && (
+                      <div className="mt-2 space-y-2">
+                        <div className="flex items-center gap-3">
+                          <div className="flex items-center border border-gray-300 rounded-lg px-3 py-2 w-72">
+                            <span className="text-gray-400 mr-2">🔍</span>
+                            <input type="text" placeholder="Enter a location to include or exclude"
+                              className="flex-1 text-sm focus:outline-none" />
+                          </div>
+                          <button onClick={() => setShowAdvancedSearch(!showAdvancedSearch)}
+                            className="text-sm text-blue-600 hover:underline font-medium">
+                            Advanced search
+                          </button>
+                        </div>
+                        <p className="text-xs text-gray-400">For example, a country, city, region, or postal code</p>
+                        {showAdvancedSearch && (
+                          <div className="border border-gray-200 rounded-lg p-3 space-y-3">
+                            <div className="flex items-center gap-4">
+                              {["Location", "Radius"].map(type => (
+                                <label key={type} className="flex items-center gap-2 cursor-pointer">
+                                  <input type="radio" name="display-loc-type" value={type}
+                                    checked={locationSearchType === type}
+                                    onChange={() => setLocationSearchType(type)} />
+                                  <span className="text-sm text-gray-700">{type}</span>
+                                </label>
+                              ))}
+                            </div>
+                            {locationSearchType === "Location" && (
+                              <>
+                                <label className="flex items-center gap-2 cursor-pointer">
+                                  <input type="checkbox" className="w-4 h-4" />
+                                  <span className="text-sm text-gray-700">Add locations in bulk</span>
+                                </label>
+                                <div className="border border-gray-300 rounded-lg px-3 py-2">
+                                  <input type="text" placeholder="Enter a location to include or exclude"
+                                    className="w-full text-sm focus:outline-none" />
+                                </div>
+                                <p className="text-xs text-gray-400">For example, a country, city, region, or postal code</p>
+                              </>
+                            )}
+                            {locationSearchType === "Radius" && (
+                              <div className="flex items-center gap-2">
+                                <div className="border border-gray-300 rounded-lg px-3 py-2 flex-1">
+                                  <input type="text" placeholder="Enter a place name, address or coordinates"
+                                    className="w-full text-sm focus:outline-none" />
+                                </div>
+                                <input type="number" defaultValue={20}
+                                  className="border border-gray-300 rounded-lg px-3 py-2 text-sm w-16 focus:outline-none" />
+                                <select className="border border-gray-300 rounded-lg px-2 py-2 text-sm focus:outline-none">
+                                  <option>mi</option>
+                                  <option>km</option>
+                                </select>
+                              </div>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    )}
+
+                    <button className="text-sm text-blue-600 hover:underline mt-1 flex items-center gap-1"
+                      onClick={() => setShowLocationOptions(!showLocationOptions)}>
+                      {showLocationOptions ? "∧" : "∨"} Location options
+                    </button>
+                    {showLocationOptions && (
+                      <div className="space-y-2 mt-1">
+                        <p className="text-xs text-gray-500">Include ⓘ</p>
+                        {[
+                          "Presence or interest: People in, regularly in, or who've shown interest in your included locations (recommended)",
+                          "Presence: People in or regularly in your included locations"
+                        ].map((opt, i) => (
+                          <label key={i} className="flex items-start gap-2 cursor-pointer">
+                            <input type="radio" name="display-loc-include" defaultChecked={i === 0} className="mt-0.5" />
+                            <span className="text-xs text-gray-700">{opt}</span>
+                          </label>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Languages */}
+                <div className="border border-gray-200 rounded-xl overflow-hidden">
+                  <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200 bg-gray-50">
+                    <p className="text-sm font-semibold text-gray-900">Languages</p>
+                    <span className="text-gray-400">∧</span>
+                  </div>
+                  <div className="p-4 space-y-2">
+                    <p className="text-xs text-gray-500">Select the languages your customers speak. ⓘ</p>
+                    <div className="flex items-center border border-gray-300 rounded-lg px-3 py-2">
+                      <span className="text-gray-400 mr-2">🔍</span>
+                      <input type="text" placeholder="Start typing or select a language"
+                        className="flex-1 text-sm focus:outline-none" />
+                    </div>
+                    <div className="flex flex-wrap gap-2 mt-1">
+                      <span className="flex items-center gap-1 bg-gray-100 text-gray-700 text-xs px-2 py-1 rounded-full">
+                        English <button className="ml-1 text-gray-400 hover:text-gray-600">×</button>
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* EU Political Ads */}
+                <div className="border border-gray-200 rounded-xl overflow-hidden">
+                  <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200 bg-gray-50">
+                    <p className="text-sm font-semibold text-gray-900">EU political ads</p>
+                    <span className="text-gray-400">∧</span>
+                  </div>
+                  <div className="p-4 flex gap-6">
+                    <div className="flex-1 space-y-2">
+                      <p className="text-sm text-gray-700">Does your campaign have European Union political ads?</p>
+                      <p className="text-xs text-red-500">Required</p>
+                      {["Yes, this campaign has EU political ads", "No, this campaign doesn't have EU political ads"].map((opt, i) => (
+                        <label key={i} className="flex items-center gap-2 cursor-pointer">
+                          <input type="radio" name="display-eu-political" />
+                          <span className="text-sm text-gray-700">{opt}</span>
+                        </label>
+                      ))}
+                    </div>
+                    <div className="text-xs text-gray-500 max-w-xs">
+                      EU regulation requires Google to ask this question. <span className="text-blue-600 cursor-pointer hover:underline">Learn how an EU political ad is defined</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
             {campaignStep === 3 && campaignForm.type === "Search" && (campaignForm.goal === "Leads" || campaignForm.goal === "Website traffic" || campaignForm.goal === "Create a campaign without guidance") && (
               <div className="space-y-4">
                 <div>
@@ -1356,7 +1504,419 @@ export default function AdsPage() {
               </div>
             )}
 
-           {campaignStep === 4 && campaignForm.type === "Search" && (campaignForm.goal === "Leads" || campaignForm.goal === "Website traffic" || campaignForm.goal === "Create a campaign without guidance") && (
+           {campaignStep === 4 && campaignForm.type === "Display" && (campaignForm.goal === "Leads" || campaignForm.goal === "Website traffic" || campaignForm.goal === "Create a campaign without guidance") && (
+              <div className="space-y-4">
+
+                {/* Budget and Bidding */}
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900">Budget and bidding</h3>
+                </div>
+
+                {/* Budget */}
+                <div className="border border-gray-200 rounded-xl overflow-hidden">
+                  <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200 bg-gray-50">
+                    <p className="text-sm font-semibold text-gray-900">Budget</p>
+                    <span className="text-gray-400">∧</span>
+                  </div>
+                  <div className="p-4 grid grid-cols-2 gap-6">
+                    <div>
+                      <p className="text-sm text-gray-700 mb-2">Set your average daily budget for this campaign</p>
+                      <div className="flex items-center border border-blue-400 rounded-lg px-3 py-2 w-48">
+                        <span className="text-gray-500 mr-1">₹</span>
+                        <input type="number" className="flex-1 text-sm focus:outline-none" />
+                      </div>
+                    </div>
+                    <div className="text-xs text-gray-500">
+                      <p>The most you'll pay per month is your daily budget times 30.4 (the average number of days in a month). Some days you might spend more or less than your daily budget. <span className="text-blue-600 cursor-pointer hover:underline">Learn more</span></p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Bidding */}
+                <div className="border border-gray-200 rounded-xl overflow-hidden">
+                  <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200 bg-gray-50">
+                    <p className="text-sm font-semibold text-gray-900">Bidding</p>
+                    <span className="text-gray-400">∧</span>
+                  </div>
+                  <div className="p-4 space-y-3">
+                    <div>
+                      <p className="text-xs text-gray-500 mb-1">What do you want to focus on? ⓘ</p>
+                      <select value={bidFocus} onChange={(e) => setBidFocus(e.target.value)}
+                        className="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none">
+                        <optgroup label="Recommended">
+                          <option>Conversions</option>
+                          <option>Conversion value</option>
+                        </optgroup>
+                        <optgroup label="Other optimization options">
+                          <option>Viewable impressions</option>
+                        </optgroup>
+                      </select>
+                      <p className="text-xs text-gray-400 mt-1">Recommended for your campaign goal</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-gray-500 mb-1">How do you want to get conversions? ⓘ</p>
+                      <select className="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none"
+                        onChange={(e) => setCampaignForm({...campaignForm, targeting: e.target.value})}>
+                        <option>Automatically maximize conversions</option>
+                        <option>Manually set bids</option>
+                      </select>
+                    </div>
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <input type="checkbox" checked={targetCPA} onChange={(e) => setTargetCPA(e.target.checked)} className="w-4 h-4 accent-blue-600" />
+                      <span className="text-sm text-gray-700">Set a target cost per action</span>
+                    </label>
+                    {targetCPA && (
+                      <div className="space-y-3">
+                        <div>
+                          <p className="text-xs text-gray-500 mb-1">Target CPA ⓘ</p>
+                          <div className="flex items-center border border-gray-300 rounded-lg px-3 py-2 w-40">
+                            <span className="text-gray-500 mr-1">₹</span>
+                            <input type="number" className="flex-1 text-sm focus:outline-none" />
+                          </div>
+                        </div>
+                        <div>
+                          <p className="text-xs text-gray-500 mb-1">Pay for ⓘ</p>
+                          <select className="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none">
+                            <option>Interactions</option>
+                          </select>
+                        </div>
+                        <div className="flex items-center justify-between border border-blue-100 bg-blue-50 rounded-lg px-3 py-2">
+                          <div className="flex items-center gap-2">
+                            <span className="text-blue-500">ℹ️</span>
+                            <p className="text-xs text-gray-700">A typical target CPA for a Display campaign is <strong>₹100.00</strong></p>
+                          </div>
+                          <button className="text-sm text-blue-600 font-medium hover:underline">Apply</button>
+                        </div>
+                      </div>
+                    )}
+                    <div className="border border-green-200 bg-green-50 rounded-lg px-3 py-2 flex items-center gap-2">
+                      <span className="text-green-600">✅</span>
+                      <p className="text-xs text-gray-700">This campaign will use the <strong>Maximize conversions</strong> bid strategy to help you get the most conversions for your budget</p>
+                    </div>
+                    <button className="text-sm text-blue-600 hover:underline">Or, select a bid strategy directly (not recommended)</button>
+                  </div>
+                </div>
+
+                {/* Targeting */}
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900">Targeting</h3>
+                </div>
+
+                {/* Optimized targeting info card */}
+                <div className="border border-gray-200 rounded-xl p-4 flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-semibold text-gray-900 mb-1">Optimized targeting is set up for you</p>
+                    <p className="text-xs text-gray-500">Optimized targeting helps you get more conversions by using information such as your landing page and assets. You can opt out or speed up optimization by adding targeting first. <span className="text-blue-600 cursor-pointer hover:underline">Learn more</span></p>
+                  </div>
+                  <div className="ml-4 flex-shrink-0">
+                    <div className="w-24 h-16 bg-blue-50 rounded-lg flex items-center justify-center text-2xl">📊</div>
+                  </div>
+                </div>
+
+                {/* Add targeting rows */}
+                <div className="border border-gray-200 rounded-xl overflow-hidden">
+                  <div className="flex items-center gap-2 px-4 py-3 border-b border-gray-200">
+                    <span className="text-blue-600">⚙️</span>
+                    <button className="text-sm text-blue-600 font-medium hover:underline">Add targeting</button>
+                  </div>
+
+                  {/* Audience Segments */}
+                  <div className="border-b border-gray-100">
+                    <div className="flex items-center justify-between px-4 py-3 cursor-pointer hover:bg-gray-50"
+                      onClick={() => setShowAdditionalSignals(!showAdditionalSignals)}>
+                      <div>
+                        <p className="text-sm font-semibold text-gray-900">Audience Segments</p>
+                        <p className="text-xs text-gray-500">Suggest who should see your ads ⓘ</p>
+                      </div>
+                      <span className="text-gray-400">{showAdditionalSignals ? "∧" : "∨"}</span>
+                    </div>
+                    {showAdditionalSignals && (
+                      <div className="px-4 pb-4">
+                        <p className="text-xs text-gray-500 mb-2">Suggest who should see your ads. You can create new segments in <span className="text-blue-600 cursor-pointer hover:underline">Audience Manager.</span> ⓘ</p>
+                        <div className="border border-gray-200 rounded-xl overflow-hidden">
+                          <div className="bg-blue-600 px-4 py-2 flex items-center justify-between">
+                            <p className="text-sm font-semibold text-white">Edit targeted segments</p>
+                            <button className="text-sm text-white font-medium">Done</button>
+                          </div>
+                          <div className="grid grid-cols-2 divide-x divide-gray-200">
+                            <div className="p-3">
+                              <div className="flex gap-4 border-b border-gray-200 mb-2">
+                                <button className="text-sm font-medium text-blue-600 border-b-2 border-blue-600 pb-1">Search</button>
+                                <button className="text-sm text-gray-500 pb-1">Browse</button>
+                              </div>
+                              <div className="flex items-center border border-gray-300 rounded-lg px-3 py-2 mb-3">
+                                <span className="text-gray-400 mr-2">🔍</span>
+                                <input type="text" placeholder='Try "foodies"' className="flex-1 text-sm focus:outline-none" />
+                              </div>
+                              <div className="flex flex-col items-center justify-center py-8 text-center">
+                                <span className="text-3xl text-gray-300 mb-2">🔍</span>
+                                <p className="text-xs text-gray-400">You'll see recently selected segments and ideas here.</p>
+                                <p className="text-xs text-gray-400">Use search to start looking for a segment.</p>
+                              </div>
+                            </div>
+                            <div className="p-3">
+                              <div className="flex items-center justify-between mb-2">
+                                <p className="text-sm text-gray-500">None selected</p>
+                                <button className="text-sm text-blue-600 hover:underline">Clear all</button>
+                              </div>
+                              <p className="text-xs text-gray-400">Select one or more segments to target.</p>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Demographics */}
+                  <div className="border-b border-gray-100">
+                    <div className="flex items-center justify-between px-4 py-3 cursor-pointer hover:bg-gray-50"
+                      onClick={() => setShowYourData(!showYourData)}>
+                      <div>
+                        <p className="text-sm font-semibold text-gray-900">Demographics</p>
+                        <p className="text-xs text-gray-500">Suggest people based on age, gender, parental status, or household income ⓘ</p>
+                      </div>
+                      <span className="text-gray-400">{showYourData ? "∧" : "∨"}</span>
+                    </div>
+                    {showYourData && (
+                      <div className="px-4 pb-4">
+                        <p className="text-xs text-gray-500 mb-2">Suggest people based on age, gender, parental status, or household income ⓘ</p>
+                        <div className="border border-gray-200 rounded-xl overflow-hidden">
+                          <div className="bg-blue-600 px-4 py-2 flex items-center justify-between">
+                            <p className="text-sm font-semibold text-white">Edit targeted demographics</p>
+                            <button className="text-sm text-white font-medium">Done</button>
+                          </div>
+                          <div className="p-3 grid grid-cols-4 gap-4">
+                            {[
+                              { label: "Gender", options: ["Female", "Male", "Unknown"] },
+                              { label: "Age", options: ["18 - 24", "25 - 34", "35 - 44", "45 - 54", "55 - 64", "65+", "Unknown"] },
+                              { label: "Parental status", options: ["Not a parent", "Parent", "Unknown"] },
+                              { label: "Household income", options: ["Top 10%", "11 - 20%", "21 - 30%", "31 - 40%", "41 - 50%", "Lower 50%", "Unknown"] },
+                            ].map((col, i) => (
+                              <div key={i}>
+                                <p className="text-xs font-medium text-gray-600 mb-2">{col.label}</p>
+                                {col.options.map((opt, j) => (
+                                  <label key={j} className="flex items-center gap-2 mb-1 cursor-pointer">
+                                    <input type="checkbox" defaultChecked className="w-3.5 h-3.5 accent-blue-600" />
+                                    <span className="text-xs text-gray-700">{opt}</span>
+                                  </label>
+                                ))}
+                              </div>
+                            ))}
+                          </div>
+                          <div className="border-t border-yellow-200 bg-yellow-50 px-3 py-2 flex items-center gap-2">
+                            <span className="text-yellow-500">⚠️</span>
+                            <p className="text-xs text-gray-600">Note: Household income targeting is only available in select countries. <span className="text-blue-600 cursor-pointer hover:underline">Learn more</span></p>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Keywords */}
+                  <div className="border-b border-gray-100">
+                    <div className="flex items-center justify-between px-4 py-3 cursor-pointer hover:bg-gray-50"
+                      onClick={() => setShowSearchThemes(!showSearchThemes)}>
+                      <div>
+                        <p className="text-sm font-semibold text-gray-900">Keywords</p>
+                        <p className="text-xs text-gray-500">Suggest terms related to your products or services to target relevant websites ⓘ</p>
+                      </div>
+                      <span className="text-gray-400">{showSearchThemes ? "∧" : "∨"}</span>
+                    </div>
+                    {showSearchThemes && (
+                      <div className="px-4 pb-4">
+                        <div className="border border-gray-200 rounded-xl overflow-hidden">
+                          <div className="bg-blue-600 px-4 py-2 flex items-center justify-between">
+                            <p className="text-sm font-semibold text-white">Edit targeted keywords</p>
+                            <button className="text-sm text-white font-medium">Done</button>
+                          </div>
+                          <div className="grid grid-cols-2 divide-x divide-gray-200">
+                            <div className="p-3">
+                              <textarea rows={8} placeholder="Enter or paste keywords, one per line"
+                                className="w-full text-sm border border-gray-200 rounded-lg p-2 focus:outline-none resize-none" />
+                            </div>
+                            <div className="p-3">
+                              <p className="text-sm font-medium text-gray-900 mb-2">Get keyword ideas</p>
+                              <div className="flex items-center border border-gray-300 rounded-lg px-3 py-2 mb-2">
+                                <span className="text-gray-400 mr-2">🔗</span>
+                                <input type="text" placeholder="Enter a related website" className="flex-1 text-sm focus:outline-none" />
+                              </div>
+                              <div className="flex items-center border border-gray-300 rounded-lg px-3 py-2 mb-3">
+                                <span className="text-gray-400 mr-2">🏪</span>
+                                <input type="text" placeholder="Enter your product or service" className="flex-1 text-sm focus:outline-none" />
+                              </div>
+                              <div className="flex flex-col items-center justify-center py-4 text-center">
+                                <span className="text-3xl text-gray-300 mb-2">🔍</span>
+                                <p className="text-xs text-gray-400 max-w-xs">We only show keyword ideas that are relevant to your business. To get ideas, enter your landing page, a related website, or words or phrases that describe your product or service in the field above.</p>
+                              </div>
+                            </div>
+                          </div>
+                          <div className="border-t border-gray-200 p-3 space-y-2">
+                            <p className="text-xs font-medium text-gray-600">Keyword setting ⓘ</p>
+                            <label className="flex items-start gap-2 cursor-pointer opacity-50">
+                              <input type="radio" name="kw-setting" disabled className="mt-0.5" />
+                              <span className="text-xs text-gray-500">Audience: Show ads to people likely to be interested in these keywords and also on webpages, apps, and videos related to these keywords</span>
+                            </label>
+                            <label className="flex items-start gap-2 cursor-pointer">
+                              <input type="radio" name="kw-setting" defaultChecked className="mt-0.5" />
+                              <span className="text-xs text-gray-700">Content: Only show ads on webpages, apps, and videos related to these keywords</span>
+                            </label>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Placements */}
+                  <div>
+                    <div className="flex items-center justify-between px-4 py-3 cursor-pointer hover:bg-gray-50"
+                      onClick={() => setShowAudienceSignal(!showAudienceSignal)}>
+                      <div>
+                        <p className="text-sm font-semibold text-gray-900">Placements</p>
+                        <p className="text-xs text-gray-500">Suggest websites, videos, or apps where you'd like to show your ads ⓘ</p>
+                      </div>
+                      <span className="text-gray-400">{showAudienceSignal ? "∧" : "∨"}</span>
+                    </div>
+                    {showAudienceSignal && (
+                      <div className="px-4 pb-4">
+                        <div className="border border-gray-200 rounded-xl overflow-hidden">
+                          <div className="bg-blue-600 px-4 py-2 flex items-center justify-between">
+                            <p className="text-sm font-semibold text-white">Edit targeted placements</p>
+                            <button className="text-sm text-white font-medium">Done</button>
+                          </div>
+                          <div className="grid grid-cols-2 divide-x divide-gray-200">
+                            <div className="p-3">
+                              <div className="flex gap-4 border-b border-gray-200 mb-2">
+                                <button className="text-sm font-medium text-blue-600 border-b-2 border-blue-600 pb-1">Browse</button>
+                                <button className="text-sm text-gray-500 pb-1">Enter</button>
+                              </div>
+                              <div className="flex items-center border border-gray-300 rounded-lg px-3 py-2 mb-2">
+                                <input type="text" placeholder="Search by word, phrase, URL, or video ID" className="flex-1 text-sm focus:outline-none" />
+                                <span className="text-gray-400 ml-2">🔍</span>
+                              </div>
+                              {["Websites", "YouTube channels", "YouTube videos", "Apps", "App categories (141)"].map((item, i) => (
+                                <div key={i} className="flex items-center justify-between py-2 border-b border-gray-100 cursor-pointer hover:bg-gray-50 px-1">
+                                  <span className="text-sm text-gray-700">{item}</span>
+                                  <span className="text-gray-400">›</span>
+                                </div>
+                              ))}
+                            </div>
+                            <div className="p-3">
+                              <p className="text-sm text-gray-500 mb-2">None selected</p>
+                              <p className="text-xs text-gray-400">Your ad can appear on any YouTube or Display Network placements that match your other targeting. Add specific placements to narrow your targeting. If a specific website you target has an equivalent app, your ads can also show there.</p>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Create Ad */}
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900">Create ad</h3>
+                </div>
+                <div className="border border-gray-200 rounded-xl p-4 space-y-4">
+                  {/* Final URL */}
+                  <div>
+                    <p className="text-sm font-medium text-gray-700 mb-1">Final URL ⓘ <span className="text-red-500">*</span></p>
+                    <input type="text" placeholder="https://www.example.com"
+                      className="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-blue-500" />
+                    <p className="text-xs text-red-400 mt-0.5">Required</p>
+                  </div>
+
+                  {/* Row 1: Business name, Images, Logos */}
+                  <div className="grid grid-cols-3 gap-4">
+                    {/* Business name */}
+                    <div className="border border-gray-200 rounded-xl p-3">
+                      <p className="text-sm font-medium text-gray-900 mb-1">Business name ⓘ</p>
+                      <input type="text" placeholder="Business name"
+                        className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none" />
+                      <div className="flex justify-between mt-1">
+                        <p className="text-xs text-red-400">Required</p>
+                        <p className="text-xs text-gray-400">0/25</p>
+                      </div>
+                    </div>
+                    {/* Images */}
+                    <div className="border border-gray-200 rounded-xl p-3">
+                      <p className="text-sm font-medium text-gray-900 mb-1">Images ⓘ</p>
+                      <p className="text-xs text-gray-500 mb-2">Add up to 15 images <span className="text-blue-600 cursor-pointer hover:underline">Learn more</span></p>
+                      <div className="flex gap-2 mb-2">
+                        <button className="flex items-center gap-1 text-sm text-blue-600 hover:underline">+ Images</button>
+                        <button className="flex items-center gap-1 text-sm text-blue-600 hover:underline">🖼️ Generate images</button>
+                      </div>
+                      <p className="text-xs text-red-400">At least 1 landscape image is required</p>
+                      <p className="text-xs text-red-400">At least 1 square image is required</p>
+                    </div>
+                    {/* Logos */}
+                    <div className="border border-gray-200 rounded-xl p-3">
+                      <p className="text-sm font-medium text-gray-900 mb-1">Logos ⓘ</p>
+                      <p className="text-xs text-gray-500 mb-2">Add up to 5 logos</p>
+                      <button className="text-sm text-blue-600 hover:underline">+ Logos</button>
+                    </div>
+                  </div>
+
+                  {/* Row 2: Videos, Headlines, Long headline */}
+                  <div className="grid grid-cols-3 gap-4">
+                    {/* Videos */}
+                    <div className="border border-gray-200 rounded-xl p-3">
+                      <p className="text-sm font-medium text-gray-900 mb-1">Videos ⓘ</p>
+                      <p className="text-xs text-gray-500 mb-2">Optional (portrait and landscape around 30 seconds work best)</p>
+                      <button className="text-sm text-blue-600 hover:underline">+ Videos</button>
+                    </div>
+                    {/* Headlines */}
+                    <div className="border border-gray-200 rounded-xl p-3">
+                      <div className="flex items-center justify-between mb-1">
+                        <p className="text-sm font-medium text-gray-900">Headlines ⓘ</p>
+                        <button className="text-xs text-blue-600 hover:underline">More ideas</button>
+                      </div>
+                      <p className="text-xs text-gray-500 mb-2">Add up to 5 headlines</p>
+                      <p className="text-xs text-gray-400 mb-2">Suggested headlines</p>
+                      <p className="text-xs text-gray-400 mb-2">🔍 We don't have any suggestions right now.</p>
+                      <div className="relative mb-1">
+                        <input type="text" placeholder="Headline"
+                          className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none" />
+                        <span className="absolute right-2 top-2 text-xs text-gray-400">0/30</span>
+                      </div>
+                      <p className="text-xs text-red-400 mb-1">Required</p>
+                      <button className="text-sm text-blue-600 hover:underline">+ Headline</button>
+                    </div>
+                    {/* Long headline */}
+                    <div className="border border-gray-200 rounded-xl p-3">
+                      <p className="text-sm font-medium text-gray-900 mb-1">Long headline ⓘ</p>
+                      <div className="relative mb-1">
+                        <input type="text" placeholder="Long headline"
+                          className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none" />
+                        <span className="absolute right-2 top-2 text-xs text-gray-400">0/90</span>
+                      </div>
+                      <p className="text-xs text-red-400">Required</p>
+                    </div>
+                  </div>
+
+                  {/* Descriptions full width */}
+                  <div className="border border-gray-200 rounded-xl p-3">
+                    <div className="flex items-center justify-between mb-1">
+                      <p className="text-sm font-medium text-gray-900">Descriptions ⓘ</p>
+                      <button className="text-xs text-blue-600 hover:underline">More ideas</button>
+                    </div>
+                    <p className="text-xs text-gray-500 mb-2">Add up to 5 descriptions</p>
+                    <p className="text-xs text-gray-400 mb-2">Suggested descriptions</p>
+                    <p className="text-xs text-gray-400 mb-2">🔍 We don't have any suggestions right now.</p>
+                    <div className="relative mb-1">
+                      <input type="text" placeholder="Description"
+                        className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none" />
+                      <span className="absolute right-2 top-2 text-xs text-gray-400">0/90</span>
+                    </div>
+                    <p className="text-xs text-red-400 mb-1">Required</p>
+                    <button className="text-sm text-blue-600 hover:underline">+ Description</button>
+                  </div>
+
+                  <p className="text-xs text-gray-400">Your ads might not always include all your text and images. Some cropping or shortening may occur in some formats, and either of your custom colors may be used.</p>
+                </div>
+
+              </div>
+            )}
+
+            {campaignStep === 4 && campaignForm.type === "Search" && (campaignForm.goal === "Leads" || campaignForm.goal === "Website traffic" || campaignForm.goal === "Create a campaign without guidance") && (
               <div className="space-y-4">
 
                 {/* Bidding */}
