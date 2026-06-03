@@ -57,15 +57,18 @@ export async function GET(req: NextRequest) {
             finalPrice = room.price + (room.price * settings.nextDayMarkup) / 100;
           }
 
-          const existing = await prisma.ratePlan.findFirst({
-            where: { channelId: null, roomId: room.id, date: tomorrow }
+          // Sab existing ratePlans update karo is room aur date ke liye
+          const existingPlans = await prisma.ratePlan.findMany({
+            where: { roomId: room.id, date: tomorrow }
           });
 
-          if (existing) {
-            await prisma.ratePlan.update({
-              where: { id: existing.id },
-              data: { price: finalPrice, available: unsoldCount, isBlocked: false }
-            });
+          if (existingPlans.length > 0) {
+            await Promise.all(existingPlans.map(plan =>
+              prisma.ratePlan.update({
+                where: { id: plan.id },
+                data: { price: finalPrice, available: unsoldCount }
+              })
+            ));
           } else {
             await prisma.ratePlan.create({
               data: { channelId: null, roomId: room.id, date: tomorrow, price: finalPrice, available: unsoldCount, isBlocked: false }
