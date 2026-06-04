@@ -1614,9 +1614,12 @@ export default function AdsPage() {
                           <span className="text-green-600">✅</span>
                           <p className="text-xs text-gray-700">Based on the selections, this campaign will use the <strong>Manual CPC</strong> bid strategy</p>
                         </div>
-                        <div className="border border-gray-200 rounded-lg p-3 space-y-2">
+                        <div className="border border-gray-200 rounded-lg p-3 space-y-3">
                           <p className="text-xs text-gray-500">Select your bid strategy ⓘ</p>
-                          <select className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none">
+                          <select
+                            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none"
+                            value={bidFocus}
+                            onChange={(e) => setBidFocus(e.target.value)}>
                             <option>Target CPA</option>
                             <option>Target ROAS</option>
                             <option>Maximize clicks</option>
@@ -1625,6 +1628,59 @@ export default function AdsPage() {
                             <option>Viewable CPM</option>
                             <option>Manual CPC</option>
                           </select>
+
+                          {/* Target CPA */}
+                          {bidFocus === "Target CPA" && (
+                            <div>
+                              <p className="text-xs text-gray-700 mb-1">Target CPA</p>
+                              <div className="flex items-center border border-gray-300 rounded-lg px-3 py-2 w-48">
+                                <span className="text-gray-500 mr-1">₹</span>
+                                <input type="number" className="flex-1 text-sm focus:outline-none" />
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Target ROAS */}
+                          {bidFocus === "Target ROAS" && (
+                            <div>
+                              <p className="text-xs text-gray-700 mb-1">Target ROAS ⓘ</p>
+                              <div className="flex items-center border border-gray-300 rounded-lg px-3 py-2 w-48">
+                                <input type="number" className="flex-1 text-sm focus:outline-none text-right" />
+                                <span className="text-gray-500 ml-1">%</span>
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Maximize clicks */}
+                          {bidFocus === "Maximize clicks" && (
+                            <div className="space-y-2">
+                              <label className="flex items-center gap-2 cursor-pointer">
+                                <input type="checkbox" defaultChecked className="w-4 h-4 accent-blue-600"
+                                  onChange={(e) => setTargetCPA(e.target.checked)} />
+                                <span className="text-sm text-gray-700">Set a maximum cost per click bid limit</span>
+                              </label>
+                              {targetCPA && (
+                                <div>
+                                  <p className="text-xs text-gray-700 mb-1">Maximum CPC bid limit ⓘ</p>
+                                  <div className="flex items-center border border-gray-300 rounded-lg px-3 py-2 w-48">
+                                    <span className="text-gray-500 mr-1">₹</span>
+                                    <input type="number" className="flex-1 text-sm focus:outline-none" />
+                                  </div>
+                                </div>
+                              )}
+                            </div>
+                          )}
+
+                          {/* Viewable CPM */}
+                          {bidFocus === "Viewable CPM" && (
+                            <div>
+                              <p className="text-xs text-gray-700 mb-1">Enter your viewable CPM bid for this ad group ⓘ</p>
+                              <div className="flex items-center border border-gray-300 rounded-lg px-3 py-2 w-48">
+                                <span className="text-gray-500 mr-1">₹</span>
+                                <input type="number" className="flex-1 text-sm focus:outline-none" />
+                              </div>
+                            </div>
+                          )}
                         </div>
                       </>
                     )}
