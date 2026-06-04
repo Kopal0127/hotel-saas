@@ -1660,23 +1660,14 @@ export default function AdsPage() {
                             </div>
                           )}
 
-                          {/* Maximize clicks */}
+                         {/* Maximize clicks */}
                           {directBidStrategy === "Maximize clicks" && (
-                            <div className="space-y-2">
-                              <label className="flex items-center gap-2 cursor-pointer">
-                                <input type="checkbox" defaultChecked className="w-4 h-4 accent-blue-600"
-                                  onChange={(e) => setTargetCPA(e.target.checked)} />
-                                <span className="text-sm text-gray-700">Set a maximum cost per click bid limit</span>
-                              </label>
-                              {targetCPA && (
-                                <div>
-                                  <p className="text-xs text-gray-700 mb-1">Maximum CPC bid limit ⓘ</p>
-                                  <div className="flex items-center border border-gray-300 rounded-lg px-3 py-2 w-48">
-                                    <span className="text-gray-500 mr-1">₹</span>
-                                    <input type="number" className="flex-1 text-sm focus:outline-none" />
-                                  </div>
-                                </div>
-                              )}
+                            <div>
+                              <p className="text-xs text-gray-700 mb-1">Maximum CPC bid limit ⓘ</p>
+                              <div className="flex items-center border border-gray-300 rounded-lg px-3 py-2 w-48">
+                                <span className="text-gray-500 mr-1">₹</span>
+                                <input type="number" className="flex-1 text-sm focus:outline-none" />
+                              </div>
                             </div>
                           )}
 
