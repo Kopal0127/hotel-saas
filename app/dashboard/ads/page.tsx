@@ -1629,13 +1629,21 @@ export default function AdsPage() {
                             <option>Manual CPC</option>
                           </select>
 
-                          {/* Target CPA */}
+                         {/* Target CPA */}
                           {bidFocus === "Target CPA" && (
-                            <div>
-                              <p className="text-xs text-gray-700 mb-1">Target CPA</p>
-                              <div className="flex items-center border border-gray-300 rounded-lg px-3 py-2 w-48">
-                                <span className="text-gray-500 mr-1">₹</span>
-                                <input type="number" className="flex-1 text-sm focus:outline-none" />
+                            <div className="space-y-3">
+                              <div>
+                                <p className="text-xs text-gray-700 mb-1">Target CPA</p>
+                                <div className="flex items-center border border-gray-300 rounded-lg px-3 py-2 w-48">
+                                  <span className="text-gray-500 mr-1">₹</span>
+                                  <input type="number" className="flex-1 text-sm focus:outline-none" />
+                                </div>
+                              </div>
+                              <div>
+                                <p className="text-xs text-gray-700 mb-1">Pay for ⓘ</p>
+                                <select className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none w-48">
+                                  <option>Interactions</option>
+                                </select>
                               </div>
                             </div>
                           )}
