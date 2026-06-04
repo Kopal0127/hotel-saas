@@ -1553,53 +1553,67 @@ export default function AdsPage() {
                       </select>
                       <p className="text-xs text-gray-400 mt-1">Recommended for your campaign goal</p>
                     </div>
+                   {/* How do you want to get conversions */}
                     <div>
                       <p className="text-xs text-gray-500 mb-1">How do you want to get conversions? ⓘ</p>
-                      <select className="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none"
-                        onChange={(e) => setCampaignForm({...campaignForm, targeting: e.target.value})}>
-                        <option>Automatically maximize conversions</option>
-                        <option>Manually set bids</option>
+                      <select
+                        className="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none"
+                        value={campaignForm.targeting}
+                        onChange={(e) => {
+                          setCampaignForm({...campaignForm, targeting: e.target.value});
+                          setShowMoreAssetTypes(false);
+                          setTargetCPA(false);
+                        }}>
+                        <option value="Automatically maximize conversions">Automatically maximize conversions</option>
+                        <option value="Manually set bids">Manually set bids</option>
                       </select>
                     </div>
-                    <label className="flex items-center gap-2 cursor-pointer">
-                      <input type="checkbox" checked={targetCPA} onChange={(e) => setTargetCPA(e.target.checked)} className="w-4 h-4 accent-blue-600" />
-                      <span className="text-sm text-gray-700">Set a target cost per action</span>
-                    </label>
-                    {targetCPA && (
-                      <div className="space-y-3">
-                        <div>
-                          <p className="text-xs text-gray-500 mb-1">Target CPA ⓘ</p>
-                          <div className="flex items-center border border-gray-300 rounded-lg px-3 py-2 w-40">
-                            <span className="text-gray-500 mr-1">₹</span>
-                            <input type="number" className="flex-1 text-sm focus:outline-none" />
+
+                    {/* Automatically maximize conversions selected */}
+                    {campaignForm.targeting !== "Manually set bids" && (
+                      <>
+                        <label className="flex items-center gap-2 cursor-pointer">
+                          <input type="checkbox" checked={targetCPA} onChange={(e) => setTargetCPA(e.target.checked)} className="w-4 h-4 accent-blue-600" />
+                          <span className="text-sm text-gray-700">Set a target cost per action</span>
+                        </label>
+                        {targetCPA && (
+                          <div className="space-y-3">
+                            <div>
+                              <p className="text-xs text-gray-500 mb-1">Target CPA ⓘ</p>
+                              <div className="flex items-center border border-gray-300 rounded-lg px-3 py-2 w-40">
+                                <span className="text-gray-500 mr-1">₹</span>
+                                <input type="number" className="flex-1 text-sm focus:outline-none" />
+                              </div>
+                            </div>
+                            <div>
+                              <p className="text-xs text-gray-500 mb-1">Pay for ⓘ</p>
+                              <select className="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none">
+                                <option>Interactions</option>
+                              </select>
+                            </div>
+                            <div className="flex items-center justify-between border border-blue-100 bg-blue-50 rounded-lg px-3 py-2">
+                              <div className="flex items-center gap-2">
+                                <span className="text-blue-500">ℹ️</span>
+                                <p className="text-xs text-gray-700">A typical target CPA for a Display campaign is <strong>₹100.00</strong></p>
+                              </div>
+                              <button className="text-sm text-blue-600 font-medium hover:underline">Apply</button>
+                            </div>
                           </div>
+                        )}
+                        <div className="border border-green-200 bg-green-50 rounded-lg px-3 py-2 flex items-center gap-2">
+                          <span className="text-green-600">✅</span>
+                          <p className="text-xs text-gray-700">This campaign will use the <strong>Maximize conversions</strong> bid strategy to help you get the most conversions for your budget</p>
                         </div>
-                        <div>
-                          <p className="text-xs text-gray-500 mb-1">Pay for ⓘ</p>
-                          <select className="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none">
-                            <option>Interactions</option>
-                          </select>
-                        </div>
-                        <div className="flex items-center justify-between border border-blue-100 bg-blue-50 rounded-lg px-3 py-2">
-                          <div className="flex items-center gap-2">
-                            <span className="text-blue-500">ℹ️</span>
-                            <p className="text-xs text-gray-700">A typical target CPA for a Display campaign is <strong>₹100.00</strong></p>
-                          </div>
-                          <button className="text-sm text-blue-600 font-medium hover:underline">Apply</button>
-                        </div>
-                      </div>
+                      </>
                     )}
-                    <div className="border border-green-200 bg-green-50 rounded-lg px-3 py-2 flex items-center gap-2">
-                      <span className="text-green-600">✅</span>
-                      <p className="text-xs text-gray-700">
-                        {campaignForm.targeting === "Manually set bids"
-                          ? <>Based on the selections, this campaign will use the <strong>Manual CPC</strong> bid strategy</>
-                          : <>This campaign will use the <strong>Maximize conversions</strong> bid strategy to help you get the most conversions for your budget</>
-                        }
-                      </p>
-                    </div>
+
+                    {/* Manually set bids selected */}
                     {campaignForm.targeting === "Manually set bids" && (
-                      <div className="space-y-2">
+                      <>
+                        <div className="border border-green-200 bg-green-50 rounded-lg px-3 py-2 flex items-center gap-2">
+                          <span className="text-green-600">✅</span>
+                          <p className="text-xs text-gray-700">Based on the selections, this campaign will use the <strong>Manual CPC</strong> bid strategy</p>
+                        </div>
                         <button
                           onClick={() => setShowMoreAssetTypes(!showMoreAssetTypes)}
                           className="text-sm text-blue-600 hover:underline">
@@ -1618,12 +1632,12 @@ export default function AdsPage() {
                                 <option>Viewable CPM</option>
                               </optgroup>
                               <optgroup label="Manual bid strategies">
-                                <option selected>Manual CPC</option>
+                                <option>Manual CPC</option>
                               </optgroup>
                             </select>
                           </div>
                         )}
-                      </div>
+                      </>
                     )}
                   </div>
                 </div>
