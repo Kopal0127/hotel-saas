@@ -80,6 +80,7 @@ export default function AdsPage() {
   const [showAdvancedSearch, setShowAdvancedSearch] = useState(false);
   const [locationSearchType, setLocationSearchType] = useState("Location");
   const [bidFocus, setBidFocus] = useState("Conversions");
+  const [directBidStrategy, setDirectBidStrategy] = useState("Target CPA");
   const [targetCPA, setTargetCPA] = useState(false);
   const [showMoreAssetTypes, setShowMoreAssetTypes] = useState(false);
   const [showAdditionalSignals, setShowAdditionalSignals] = useState(false);
@@ -1616,11 +1617,11 @@ export default function AdsPage() {
                         </div>
                         <div className="border border-gray-200 rounded-lg p-3 space-y-3">
                           <p className="text-xs text-gray-500">Select your bid strategy ⓘ</p>
-                          <select
+                         <select
                             className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none"
-                            value={bidFocus}
-                            onChange={(e) => setBidFocus(e.target.value)}>
-                            <option>Target CPA</option>
+                            value={directBidStrategy}
+                            onChange={(e) => setDirectBidStrategy(e.target.value)}>
+                            <option value="Target CPA">Target CPA</option>
                             <option>Target ROAS</option>
                             <option>Maximize clicks</option>
                             <option>Maximize conversions</option>
@@ -1629,8 +1630,8 @@ export default function AdsPage() {
                             <option>Manual CPC</option>
                           </select>
 
-                         {/* Target CPA */}
-                          {bidFocus === "Target CPA" && (
+                        {/* Target CPA */}
+                          {directBidStrategy === "Target CPA" && (
                             <div className="space-y-3">
                               <div>
                                 <p className="text-xs text-gray-700 mb-1">Target CPA</p>
@@ -1649,7 +1650,7 @@ export default function AdsPage() {
                           )}
 
                           {/* Target ROAS */}
-                          {bidFocus === "Target ROAS" && (
+                          {directBidStrategy === "Target ROAS" && (
                             <div>
                               <p className="text-xs text-gray-700 mb-1">Target ROAS ⓘ</p>
                               <div className="flex items-center border border-gray-300 rounded-lg px-3 py-2 w-48">
@@ -1660,7 +1661,7 @@ export default function AdsPage() {
                           )}
 
                           {/* Maximize clicks */}
-                          {bidFocus === "Maximize clicks" && (
+                          {directBidStrategy === "Maximize clicks" && (
                             <div className="space-y-2">
                               <label className="flex items-center gap-2 cursor-pointer">
                                 <input type="checkbox" defaultChecked className="w-4 h-4 accent-blue-600"
@@ -1680,7 +1681,7 @@ export default function AdsPage() {
                           )}
 
                           {/* Viewable CPM */}
-                          {bidFocus === "Viewable CPM" && (
+                          {directBidStrategy === "Viewable CPM" && (
                             <div>
                               <p className="text-xs text-gray-700 mb-1">Enter your viewable CPM bid for this ad group ⓘ</p>
                               <div className="flex items-center border border-gray-300 rounded-lg px-3 py-2 w-48">
