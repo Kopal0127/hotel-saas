@@ -1620,20 +1620,16 @@ export default function AdsPage() {
                           Or, select a bid strategy directly (not recommended)
                         </button>
                         {showMoreAssetTypes && (
-                          <div className="border border-gray-200 rounded-lg p-3">
-                            <p className="text-xs text-gray-500 mb-2">Select your bid strategy ⓘ</p>
+                          <div className="border border-gray-200 rounded-lg p-3 space-y-2">
+                            <p className="text-xs text-gray-500">Select your bid strategy ⓘ</p>
                             <select className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none">
-                              <optgroup label="Automated bid strategies">
-                                <option>Target CPA</option>
-                                <option>Target ROAS</option>
-                                <option>Maximize clicks</option>
-                                <option>Maximize conversions</option>
-                                <option>Maximize conversion value</option>
-                                <option>Viewable CPM</option>
-                              </optgroup>
-                              <optgroup label="Manual bid strategies">
-                                <option>Manual CPC</option>
-                              </optgroup>
+                              <option>Target CPA</option>
+                              <option>Target ROAS</option>
+                              <option>Maximize clicks</option>
+                              <option>Maximize conversions</option>
+                              <option>Maximize conversion value</option>
+                              <option>Viewable CPM</option>
+                              <option>Manual CPC</option>
                             </select>
                           </div>
                         )}
