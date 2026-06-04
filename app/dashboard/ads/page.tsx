@@ -89,7 +89,7 @@ export default function AdsPage() {
   const [showAudienceSignal, setShowAudienceSignal] = useState(true);
   const [campaignForm, setCampaignForm] = useState({
     name: "", goal: "", type: "", budget: "", objective: "Conversions",
-    startDate: "", endDate: "", targeting: "",
+    startDate: "", endDate: "", targeting: "Automatically maximize conversions",
   });
 
   const isGoogle = activeTab === "google";
