@@ -1607,32 +1607,25 @@ export default function AdsPage() {
                       </>
                     )}
 
-                    {/* Manually set bids selected */}
+                   {/* Manually set bids selected */}
                     {campaignForm.targeting === "Manually set bids" && (
                       <>
                         <div className="border border-green-200 bg-green-50 rounded-lg px-3 py-2 flex items-center gap-2">
                           <span className="text-green-600">✅</span>
                           <p className="text-xs text-gray-700">Based on the selections, this campaign will use the <strong>Manual CPC</strong> bid strategy</p>
                         </div>
-                        <button
-                          onClick={() => setShowMoreAssetTypes(!showMoreAssetTypes)}
-                          className="text-sm text-blue-600 hover:underline">
-                          Or, select a bid strategy directly (not recommended)
-                        </button>
-                        {showMoreAssetTypes && (
-                          <div className="border border-gray-200 rounded-lg p-3 space-y-2">
-                            <p className="text-xs text-gray-500">Select your bid strategy ⓘ</p>
-                            <select className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none">
-                              <option>Target CPA</option>
-                              <option>Target ROAS</option>
-                              <option>Maximize clicks</option>
-                              <option>Maximize conversions</option>
-                              <option>Maximize conversion value</option>
-                              <option>Viewable CPM</option>
-                              <option>Manual CPC</option>
-                            </select>
-                          </div>
-                        )}
+                        <div className="border border-gray-200 rounded-lg p-3 space-y-2">
+                          <p className="text-xs text-gray-500">Select your bid strategy ⓘ</p>
+                          <select className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none">
+                            <option>Target CPA</option>
+                            <option>Target ROAS</option>
+                            <option>Maximize clicks</option>
+                            <option>Maximize conversions</option>
+                            <option>Maximize conversion value</option>
+                            <option>Viewable CPM</option>
+                            <option>Manual CPC</option>
+                          </select>
+                        </div>
                       </>
                     )}
                   </div>
