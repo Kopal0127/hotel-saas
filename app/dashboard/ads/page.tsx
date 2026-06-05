@@ -1326,28 +1326,23 @@ export default function AdsPage() {
                     <span className="text-gray-400">∧</span>
                   </div>
                   <div className="p-4">
-                    <div className="grid grid-cols-4 gap-3">
+                   <div className="grid grid-cols-4 gap-3">
                       {[
-                        { icon: "🏷️", title: "Conversions", desc: "Get more sales or other conversion actions with your audiences by using a conversion based bid strategy", active: true },
-                        { icon: "📡", title: "Clicks", desc: "Get more traffic or engagement with your ads using a cost-per-click based bid strategy", active: true },
+                        { icon: "🏷️", title: "Conversions", desc: "Get more sales or other conversion actions with your audiences by using a conversion based bid strategy" },
+                        { icon: "📡", title: "Clicks", desc: "Get more traffic or engagement with your ads using a cost-per-click based bid strategy" },
                         { icon: "↔️", title: "Conversion value", desc: "Get more sales or other conversion actions to get the most value or at a value you set", disabled: true },
-                        { icon: "▶️", title: "YouTube engagements", desc: "Get more YouTube subscriptions and engagements", active: true },
+                        { icon: "▶️", title: "YouTube engagements", desc: "Get more YouTube subscriptions and engagements" },
                       ].map((goal, i) => (
-                        <div key={i} className={`border-2 rounded-xl p-3 cursor-pointer transition-all ${
-                          goal.disabled ? "border-gray-100 opacity-40 cursor-not-allowed" :
-                          i === 0 ? "border-blue-500 bg-white" : "border-gray-200 hover:border-blue-300"
+                        <label key={i} className={`border-2 rounded-xl p-3 transition-all ${
+                          goal.disabled ? "border-gray-100 opacity-40 cursor-not-allowed" : "border-gray-200 hover:border-blue-300 cursor-pointer"
                         }`}>
-                          {i === 0 && (
-                            <div className="flex justify-end mb-1">
-                              <div className="w-5 h-5 rounded-full bg-blue-500 flex items-center justify-center">
-                                <span className="text-white text-xs">✓</span>
-                              </div>
-                            </div>
-                          )}
+                          <div className="flex justify-end mb-1">
+                            <input type="checkbox" disabled={goal.disabled} className="w-4 h-4 accent-blue-600" />
+                          </div>
                           <p className="text-lg mb-1">{goal.icon}</p>
-                          <p className={`text-sm font-semibold mb-1 ${i === 0 ? "text-blue-600" : goal.disabled ? "text-gray-400" : "text-gray-900"}`}>{goal.title}</p>
+                          <p className={`text-sm font-semibold mb-1 ${goal.disabled ? "text-gray-400" : "text-gray-900"}`}>{goal.title}</p>
                           <p className={`text-xs ${goal.disabled ? "text-gray-300" : "text-gray-500"}`}>{goal.desc}</p>
-                        </div>
+                        </label>
                       ))}
                     </div>
                   </div>
