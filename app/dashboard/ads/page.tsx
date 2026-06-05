@@ -1300,6 +1300,197 @@ export default function AdsPage() {
               </div>
             )}
 
+            {campaignStep === 3 && campaignForm.type === "Video" && (campaignForm.goal === "Leads" || campaignForm.goal === "Website traffic" || campaignForm.goal === "Create a campaign without guidance") && (
+              <div className="space-y-4">
+
+                {/* Campaign name */}
+                <div className="border border-gray-200 rounded-xl overflow-hidden">
+                  <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200 bg-gray-50">
+                    <p className="text-sm font-semibold text-gray-900">Campaign name</p>
+                    <span className="text-gray-400">∧</span>
+                  </div>
+                  <div className="p-4">
+                    <div className="relative">
+                      <input type="text" defaultValue={`Demand Gen - ${new Date().toISOString().split('T')[0]}`}
+                        maxLength={256}
+                        className="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-blue-500" />
+                      <span className="absolute right-2 bottom-2 text-xs text-gray-400">23 / 256</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Campaign goal */}
+                <div className="border border-gray-200 rounded-xl overflow-hidden">
+                  <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200 bg-gray-50">
+                    <p className="text-sm font-semibold text-gray-900">Campaign goal</p>
+                    <span className="text-gray-400">∧</span>
+                  </div>
+                  <div className="p-4">
+                    <div className="grid grid-cols-4 gap-3">
+                      {[
+                        { icon: "🏷️", title: "Conversions", desc: "Get more sales or other conversion actions with your audiences by using a conversion based bid strategy", active: true },
+                        { icon: "📡", title: "Clicks", desc: "Get more traffic or engagement with your ads using a cost-per-click based bid strategy", active: true },
+                        { icon: "↔️", title: "Conversion value", desc: "Get more sales or other conversion actions to get the most value or at a value you set", disabled: true },
+                        { icon: "▶️", title: "YouTube engagements", desc: "Get more YouTube subscriptions and engagements", active: true },
+                      ].map((goal, i) => (
+                        <div key={i} className={`border-2 rounded-xl p-3 cursor-pointer transition-all ${
+                          goal.disabled ? "border-gray-100 opacity-40 cursor-not-allowed" :
+                          i === 0 ? "border-blue-500 bg-white" : "border-gray-200 hover:border-blue-300"
+                        }`}>
+                          {i === 0 && (
+                            <div className="flex justify-end mb-1">
+                              <div className="w-5 h-5 rounded-full bg-blue-500 flex items-center justify-center">
+                                <span className="text-white text-xs">✓</span>
+                              </div>
+                            </div>
+                          )}
+                          <p className="text-lg mb-1">{goal.icon}</p>
+                          <p className={`text-sm font-semibold mb-1 ${i === 0 ? "text-blue-600" : goal.disabled ? "text-gray-400" : "text-gray-900"}`}>{goal.title}</p>
+                          <p className={`text-xs ${goal.disabled ? "text-gray-300" : "text-gray-500"}`}>{goal.desc}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Conversion goals table */}
+                <div className="border border-gray-200 rounded-xl overflow-hidden">
+                  <div className="px-4 py-3 border-b border-gray-200 bg-gray-50">
+                    <p className="text-sm font-semibold text-gray-900">Use these conversion goals to improve Leads</p>
+                    <p className="text-xs text-gray-500 mt-1">Review your goals for this campaign</p>
+                  </div>
+                  <div className="p-4">
+                    <div className="grid grid-cols-3 gap-2 mb-2 px-2">
+                      <p className="text-xs text-gray-500">Conversion Goals</p>
+                      <p className="text-xs text-gray-500">Conversion Source</p>
+                      <p className="text-xs text-gray-500">Conversion Actions</p>
+                    </div>
+                    {[
+                      { icon: "📞", title: "Phone call leads", sub: "(account default)", source: "Call from Ads" },
+                      { icon: "📋", title: "Submit lead forms", sub: "", source: "Google hosted" },
+                    ].map((item, i) => (
+                      <div key={i} className="grid grid-cols-3 gap-2 items-center border-t border-gray-100 py-3 px-2">
+                        <div className="flex items-center gap-2">
+                          <input type="checkbox" className="w-4 h-4 accent-blue-600" />
+                          <span className="text-sm">{item.icon}</span>
+                          <p className="text-sm font-medium text-gray-900">{item.title} <span className="text-gray-400 font-normal text-xs">{item.sub}</span></p>
+                        </div>
+                        <p className="text-sm text-gray-600 underline decoration-dotted cursor-pointer">{item.source}</p>
+                        <div className="flex items-center gap-1">
+                          <span className="text-orange-500">⚠️</span>
+                          <p className="text-sm text-orange-600 underline cursor-pointer">1 action</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Target cost per action */}
+                <div className="border border-gray-200 rounded-xl overflow-hidden">
+                  <div className="px-4 py-3 border-b border-gray-200 bg-gray-50">
+                    <p className="text-sm font-semibold text-gray-900">Target cost per action</p>
+                  </div>
+                  <div className="p-4 space-y-3">
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <input type="checkbox" className="w-4 h-4 accent-blue-600"
+                        checked={targetCPA}
+                        onChange={(e) => setTargetCPA(e.target.checked)} />
+                      <span className="text-sm text-gray-700">Set a target cost per action (optional)</span>
+                    </label>
+                    {targetCPA && (
+                      <div className="flex items-center border border-gray-300 rounded-lg px-3 py-2 w-48">
+                        <span className="text-gray-500 mr-1">₹</span>
+                        <input type="number" defaultValue="0.00" className="flex-1 text-sm focus:outline-none text-right" />
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Budget and dates */}
+                <div className="border border-gray-200 rounded-xl overflow-hidden">
+                  <div className="px-4 py-3 border-b border-gray-200 bg-gray-50">
+                    <p className="text-sm font-semibold text-gray-900">Budget and dates</p>
+                  </div>
+                  <div className="p-4 space-y-4">
+                    <p className="text-sm text-gray-700">Enter budget type and amount</p>
+                    <div className="flex items-start gap-3">
+                      <select className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none">
+                        <option>Daily</option>
+                        <option>Weekly</option>
+                        <option>Monthly</option>
+                      </select>
+                      <div>
+                        <div className="flex items-center border border-gray-300 rounded-lg px-3 py-2 w-48">
+                          <span className="text-gray-500 mr-1">₹</span>
+                          <input type="number" className="flex-1 text-sm focus:outline-none" />
+                        </div>
+                        <p className="text-xs text-red-500 mt-1">Required</p>
+                      </div>
+                    </div>
+                    <div className="border border-gray-200 rounded-lg p-4 space-y-4">
+                      <div>
+                        <p className="text-sm text-gray-700 mb-2">Start date</p>
+                        <select className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none">
+                          <option>{new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</option>
+                        </select>
+                      </div>
+                      <div>
+                        <p className="text-sm text-gray-700 mb-2">End date</p>
+                        <label className="flex items-center gap-2 cursor-pointer mb-2">
+                          <input type="radio" name="video-end-date" defaultChecked />
+                          <span className="text-sm text-gray-700">None</span>
+                        </label>
+                        <label className="flex items-center gap-2 cursor-pointer">
+                          <input type="radio" name="video-end-date" />
+                          <select className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none ml-1">
+                            <option>Select a date</option>
+                          </select>
+                        </label>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* EU Political Ads */}
+                <div className="border border-gray-200 rounded-xl overflow-hidden">
+                  <div className="px-4 py-3 border-b border-gray-200 bg-gray-50">
+                    <p className="text-sm font-semibold text-gray-900">EU political ads</p>
+                  </div>
+                  <div className="p-4 space-y-2">
+                    <p className="text-sm text-gray-700">Does your campaign have European Union political ads?</p>
+                    <p className="text-xs text-red-500">Required</p>
+                    {["Yes, this campaign has EU political ads", "No, this campaign doesn't have EU political ads"].map((opt, i) => (
+                      <label key={i} className="flex items-center gap-2 cursor-pointer">
+                        <input type="radio" name="video-eu-political" />
+                        <span className="text-sm text-gray-700">{opt}</span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Additional settings */}
+                <div className="border border-gray-200 rounded-xl overflow-hidden">
+                  {[
+                    { label: "Location and language", value: "Set at ad group, include people with presence in locations" },
+                    { label: "Devices", value: "All eligible devices (computers, mobile, tablet, and TV screens)" },
+                    { label: "Ad schedule", value: "All day" },
+                    { label: "Third-party measurement", value: "None" },
+                    { label: "Campaign URL options", value: "No options set" },
+                    { label: "IP exclusions", value: "No exclusions set" },
+                  ].map((item, i) => (
+                    <div key={i} className={`flex items-center justify-between px-4 py-3 cursor-pointer hover:bg-gray-50 ${i !== 5 ? "border-b border-gray-100" : ""} bg-gray-50`}>
+                      <p className="text-sm font-medium text-gray-700">{item.label}</p>
+                      <div className="flex items-center gap-3">
+                        <p className="text-sm text-gray-500">{item.value}</p>
+                        <span className="text-gray-400">∨</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+              </div>
+            )}
+
             {campaignStep === 3 && campaignForm.type === "Performance Max" && (campaignForm.goal === "Leads" || campaignForm.goal === "Website traffic" || campaignForm.goal === "Create a campaign without guidance") && (
               <div className="space-y-4">
 
