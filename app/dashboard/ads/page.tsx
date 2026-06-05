@@ -1408,11 +1408,10 @@ export default function AdsPage() {
                   </div>
                   <div className="p-4 space-y-4">
                     <p className="text-sm text-gray-700">Enter budget type and amount</p>
-                    <div className="flex items-start gap-3">
+                   <div className="flex items-start gap-3">
                       <select className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none">
                         <option>Daily</option>
-                        <option>Weekly</option>
-                        <option>Monthly</option>
+                        <option>Campaign total</option>
                       </select>
                       <div>
                         <div className="flex items-center border border-gray-300 rounded-lg px-3 py-2 w-48">
@@ -1422,25 +1421,31 @@ export default function AdsPage() {
                         <p className="text-xs text-red-500 mt-1">Required</p>
                       </div>
                     </div>
-                    <div className="border border-gray-200 rounded-lg p-4 space-y-4">
+                   <div className="border border-gray-200 rounded-lg p-4 space-y-4">
                       <div>
                         <p className="text-sm text-gray-700 mb-2">Start date</p>
-                        <select className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none">
-                          <option>{new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</option>
-                        </select>
+                        <input type="date"
+                          defaultValue={new Date().toISOString().split('T')[0]}
+                          className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-500" />
                       </div>
                       <div>
                         <p className="text-sm text-gray-700 mb-2">End date</p>
                         <label className="flex items-center gap-2 cursor-pointer mb-2">
-                          <input type="radio" name="video-end-date" defaultChecked />
+                          <input type="radio" name="video-end-date" defaultChecked
+                            onChange={() => setShowAdvancedSearch(false)} />
                           <span className="text-sm text-gray-700">None</span>
                         </label>
                         <label className="flex items-center gap-2 cursor-pointer">
-                          <input type="radio" name="video-end-date" />
-                          <select className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none ml-1">
-                            <option>Select a date</option>
-                          </select>
+                          <input type="radio" name="video-end-date"
+                            onChange={() => setShowAdvancedSearch(true)} />
+                          <span className="text-sm text-gray-700">Select a date</span>
                         </label>
+                        {showAdvancedSearch && (
+                          <div className="mt-2 ml-6">
+                            <input type="date"
+                              className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-500" />
+                          </div>
+                        )}
                       </div>
                     </div>
                   </div>
