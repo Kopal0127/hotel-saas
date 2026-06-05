@@ -81,6 +81,10 @@ export default function AdsPage() {
   const [locationSearchType, setLocationSearchType] = useState("Location");
   const [bidFocus, setBidFocus] = useState("Conversions");
   const [directBidStrategy, setDirectBidStrategy] = useState("Target CPA");
+  const [showVideoSettings, setShowVideoSettings] = useState<string | null>(null);
+  const [videoDeviceType, setVideoDeviceType] = useState("all");
+  const [selectedOS, setSelectedOS] = useState<string[]>([]);
+  const [showOSPopup, setShowOSPopup] = useState(false);
   const [targetCPA, setTargetCPA] = useState(false);
   const [showMoreAssetTypes, setShowMoreAssetTypes] = useState(false);
   const [showAdditionalSignals, setShowAdditionalSignals] = useState(false);
@@ -1468,25 +1472,140 @@ export default function AdsPage() {
                   </div>
                 </div>
 
-                {/* Additional settings */}
+               {/* Additional settings */}
                 <div className="border border-gray-200 rounded-xl overflow-hidden">
                   {[
-                    { label: "Location and language", value: "Set at ad group, include people with presence in locations" },
-                    { label: "Devices", value: "All eligible devices (computers, mobile, tablet, and TV screens)" },
-                    { label: "Ad schedule", value: "All day" },
-                    { label: "Third-party measurement", value: "None" },
-                    { label: "Campaign URL options", value: "No options set" },
-                    { label: "IP exclusions", value: "No exclusions set" },
+                    { key: "location", label: "Location and language", value: "Set at ad group, include people with presence in locations" },
+                    { key: "devices", label: "Devices", value: "All eligible devices (computers, mobile, tablet, and TV screens)" },
+                    { key: "schedule", label: "Ad schedule", value: "All day" },
+                    { key: "measurement", label: "Third-party measurement", value: "None" },
+                    { key: "url", label: "Campaign URL options", value: "No options set" },
+                    { key: "ip", label: "IP exclusions", value: "No exclusions set" },
                   ].map((item, i) => (
-                    <div key={i} className={`flex items-center justify-between px-4 py-3 cursor-pointer hover:bg-gray-50 ${i !== 5 ? "border-b border-gray-100" : ""} bg-gray-50`}>
-                      <p className="text-sm font-medium text-gray-700">{item.label}</p>
-                      <div className="flex items-center gap-3">
-                        <p className="text-sm text-gray-500">{item.value}</p>
-                        <span className="text-gray-400">∨</span>
+                    <div key={i}>
+                      <div
+                        className={`flex items-center justify-between px-4 py-3 cursor-pointer hover:bg-gray-50 ${i !== 5 ? "border-b border-gray-100" : ""} bg-gray-50`}
+                        onClick={() => setShowVideoSettings(showVideoSettings === item.key ? null : item.key)}>
+                        <p className="text-sm font-medium text-gray-700">{item.label}</p>
+                        <div className="flex items-center gap-3">
+                          <p className="text-sm text-gray-500">{item.value}</p>
+                          <span className="text-gray-400">{showVideoSettings === item.key ? "∧" : "∨"}</span>
+                        </div>
                       </div>
+
+                      {/* Location and language expand */}
+                      {showVideoSettings === "location" && item.key === "location" && (
+                        <div className="border-t border-gray-100 p-4 space-y-4 bg-white">
+                          <p className="text-xs text-gray-500">You can set campaign location and language settings to overwrite ad group settings. The level can't be changed once the campaign is published.</p>
+                          <label className="flex items-center gap-2 cursor-pointer">
+                            <div className="relative">
+                              <input type="checkbox" className="sr-only peer" />
+                              <div className="w-10 h-5 bg-gray-200 peer-checked:bg-blue-500 rounded-full transition-colors"></div>
+                              <div className="absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full shadow peer-checked:translate-x-5 transition-transform"></div>
+                            </div>
+                            <span className="text-sm text-gray-700">Use campaign location and language settings</span>
+                          </label>
+                          <hr className="border-gray-100" />
+                          <p className="text-sm text-gray-700">For any selected locations, use</p>
+                          <label className="flex items-start gap-2 cursor-pointer">
+                            <input type="radio" name="video-location-use" className="mt-0.5" />
+                            <span className="text-sm text-gray-700">Presence or interest: People in, regularly in, or who've shown interest in your included locations (recommended)</span>
+                          </label>
+                          <label className="flex items-start gap-2 cursor-pointer">
+                            <input type="radio" name="video-location-use" defaultChecked className="mt-0.5" />
+                            <span className="text-sm text-gray-700">Presence: People in or regularly in your included location</span>
+                          </label>
+                        </div>
+                      )}
+
+                      {/* Devices expand */}
+                      {showVideoSettings === "devices" && item.key === "devices" && (
+                        <div className="border-t border-gray-100 p-4 bg-white">
+                          <div className="grid grid-cols-2 gap-6">
+                            <div className="space-y-3">
+                              <label className="flex items-center gap-2 cursor-pointer">
+                                <input type="radio" name="video-devices" value="all"
+                                  checked={videoDeviceType === "all"}
+                                  onChange={() => setVideoDeviceType("all")} />
+                                <span className="text-sm text-gray-700">Show on all eligible devices (computers, mobile, tablet, and TV screens)</span>
+                              </label>
+                              <label className="flex items-center gap-2 cursor-pointer">
+                                <input type="radio" name="video-devices" value="specific"
+                                  checked={videoDeviceType === "specific"}
+                                  onChange={() => setVideoDeviceType("specific")} />
+                                <span className="text-sm text-gray-700">Set specific targeting for devices</span>
+                              </label>
+                              {videoDeviceType === "specific" && (
+                                <div className="ml-6 space-y-2">
+                                  {["Computers", "Mobile phones", "Tablets", "TV screens"].map((device, j) => (
+                                    <label key={j} className="flex items-center gap-2 cursor-pointer">
+                                      <input type="checkbox" className="w-4 h-4 accent-blue-600" />
+                                      <span className="text-sm text-gray-700">{device}</span>
+                                    </label>
+                                  ))}
+                                  <p className="text-xs text-gray-500 mt-2">Advanced targeting for devices</p>
+                                  <div className="space-y-2 mt-2">
+                                    {[
+                                      { label: "Operating Systems", sub: "All operating systems" },
+                                      { label: "Device Models", sub: "All device models" },
+                                      { label: "Networks", sub: "All networks" },
+                                    ].map((adv, k) => (
+                                      <div key={k} className="bg-gray-50 rounded-lg p-3 cursor-pointer hover:bg-gray-100"
+                                        onClick={() => adv.label === "Operating Systems" && setShowOSPopup(true)}>
+                                        <p className="text-sm font-semibold text-gray-900">{adv.label}</p>
+                                        <p className="text-sm text-blue-600 hover:underline">{adv.sub}</p>
+                                      </div>
+                                    ))}
+                                  </div>
+                                </div>
+                              )}
+                            </div>
+                            <div className="text-xs text-gray-500">
+                              <p>Showing ads on all devices helps expand your reach. To focus your reach on specific devices, set device targeting.</p>
+                              <span className="text-blue-600 cursor-pointer hover:underline">Learn more</span>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+
                     </div>
                   ))}
                 </div>
+
+                {/* OS Popup */}
+                {showOSPopup && (
+                  <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-50">
+                    <div className="bg-white rounded-xl shadow-xl w-[600px] max-h-[80vh] overflow-hidden">
+                      <div className="px-6 py-4 border-b border-gray-200">
+                        <p className="text-lg font-semibold text-gray-900">Choose operating systems</p>
+                      </div>
+                      <div className="grid grid-cols-2 divide-x divide-gray-200" style={{ minHeight: "350px" }}>
+                        <div className="p-4 space-y-3 overflow-y-auto">
+                          {["Android", "BlackBerry", "iOS", "Linux", "MacOS", "webOS", "Windows10", "Windows11", "Windows Phone"].map((os, i) => (
+                            <label key={i} className="flex items-center gap-3 cursor-pointer">
+                              <input type="checkbox" className="w-4 h-4 accent-blue-600"
+                                checked={selectedOS.includes(os)}
+                                onChange={(e) => {
+                                  if (e.target.checked) setSelectedOS([...selectedOS, os]);
+                                  else setSelectedOS(selectedOS.filter(s => s !== os));
+                                }} />
+                              <span className="text-sm text-gray-700">{os}</span>
+                            </label>
+                          ))}
+                        </div>
+                        <div className="p-4">
+                          <p className="text-sm text-gray-400">{selectedOS.length === 0 ? "None selected" : selectedOS.join(", ")}</p>
+                        </div>
+                      </div>
+                      <div className="flex justify-end gap-4 px-6 py-4 border-t border-gray-200">
+                        <button onClick={() => setShowOSPopup(false)}
+                          className="text-sm text-gray-600 hover:underline">Cancel</button>
+                        <button onClick={() => setShowOSPopup(false)}
+                          className="text-sm text-blue-600 font-medium hover:underline">Done</button>
+                      </div>
+                    </div>
+                  </div>
+                )}
 
               </div>
             )}
