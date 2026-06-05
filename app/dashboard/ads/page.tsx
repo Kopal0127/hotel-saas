@@ -1477,8 +1477,7 @@ export default function AdsPage() {
                   {[
                     { key: "location", label: "Location and language", value: "Set at ad group, include people with presence in locations" },
                     { key: "devices", label: "Devices", value: "All eligible devices (computers, mobile, tablet, and TV screens)" },
-                    { key: "schedule", label: "Ad schedule", value: "All day" },
-                    { key: "measurement", label: "Third-party measurement", value: "None" },
+                   { key: "schedule", label: "Ad schedule", value: "All day" },
                     { key: "url", label: "Campaign URL options", value: "No options set" },
                     { key: "ip", label: "IP exclusions", value: "No exclusions set" },
                   ].map((item, i) => (
@@ -1518,7 +1517,7 @@ export default function AdsPage() {
                         </div>
                       )}
 
-                      {/* Devices expand */}
+                     {/* Devices expand */}
                       {showVideoSettings === "devices" && item.key === "devices" && (
                         <div className="border-t border-gray-100 p-4 bg-white">
                           <div className="grid grid-cols-2 gap-6">
@@ -1546,12 +1545,12 @@ export default function AdsPage() {
                                   <p className="text-xs text-gray-500 mt-2">Advanced targeting for devices</p>
                                   <div className="space-y-2 mt-2">
                                     {[
-                                      { label: "Operating Systems", sub: "All operating systems" },
-                                      { label: "Device Models", sub: "All device models" },
-                                      { label: "Networks", sub: "All networks" },
+                                      { label: "Operating Systems", sub: "All operating systems", action: () => setShowOSPopup(true) },
+                                      { label: "Device Models", sub: "All device models", action: () => {} },
+                                      { label: "Networks", sub: "All networks", action: () => {} },
                                     ].map((adv, k) => (
                                       <div key={k} className="bg-gray-50 rounded-lg p-3 cursor-pointer hover:bg-gray-100"
-                                        onClick={() => adv.label === "Operating Systems" && setShowOSPopup(true)}>
+                                        onClick={adv.action}>
                                         <p className="text-sm font-semibold text-gray-900">{adv.label}</p>
                                         <p className="text-sm text-blue-600 hover:underline">{adv.sub}</p>
                                       </div>
@@ -1563,6 +1562,96 @@ export default function AdsPage() {
                             <div className="text-xs text-gray-500">
                               <p>Showing ads on all devices helps expand your reach. To focus your reach on specific devices, set device targeting.</p>
                               <span className="text-blue-600 cursor-pointer hover:underline">Learn more</span>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Ad schedule expand */}
+                      {showVideoSettings === "schedule" && item.key === "schedule" && (
+                        <div className="border-t border-gray-100 p-4 bg-white">
+                          <div className="grid grid-cols-2 gap-6">
+                            <div className="space-y-3">
+                              <div className="flex items-center gap-3">
+                                <select className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none">
+                                  <option>All days</option>
+                                  <option>Mondays - Fridays</option>
+                                  <option>Saturdays - Sundays</option>
+                                  <option>Mondays</option>
+                                  <option>Tuesdays</option>
+                                  <option>Wednesdays</option>
+                                  <option>Thursdays</option>
+                                  <option>Fridays</option>
+                                </select>
+                                <input type="time" defaultValue="00:00"
+                                  className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none" />
+                                <span className="text-sm text-gray-500">to</span>
+                                <input type="time" defaultValue="00:00"
+                                  className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none" />
+                              </div>
+                              <button className="text-sm text-blue-600 hover:underline font-medium">Add</button>
+                              <p className="text-xs text-gray-500">Based on account time zone: (GMT+05:30) India Standard Time</p>
+                            </div>
+                            <div className="text-xs text-gray-500">
+                              <p>To limit when your ads can run, set an ad schedule. Keep in mind that your ads will only run during these times.</p>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Campaign URL options expand */}
+                      {showVideoSettings === "url" && item.key === "url" && (
+                        <div className="border-t border-gray-100 p-4 bg-white space-y-4">
+                          <div>
+                            <div className="flex items-center border border-gray-300 rounded-lg px-3 py-2.5">
+                              <input type="text" placeholder="Tracking Template"
+                                className="flex-1 text-sm focus:outline-none" />
+                              <span className="text-gray-400 ml-2">ⓘ</span>
+                            </div>
+                            <p className="text-xs text-gray-400 mt-1">Example: https://www.trackingtemplate.foo/?url={'{lpurl}'}&id=5</p>
+                          </div>
+                          <div>
+                            <div className="flex items-center border border-gray-300 rounded-lg px-3 py-2.5">
+                              <input type="text" placeholder="Final URL suffix"
+                                className="flex-1 text-sm focus:outline-none" />
+                              <span className="text-gray-400 ml-2">ⓘ</span>
+                            </div>
+                            <p className="text-xs text-gray-400 mt-1">Example: param1=value1&param2=value2</p>
+                          </div>
+                          <div>
+                            <p className="text-sm font-medium text-gray-700 mb-2">Custom Parameters ⓘ</p>
+                            <div className="flex items-center gap-2">
+                              <div className="flex items-center border border-gray-300 rounded-lg px-3 py-2 w-40">
+                                <span className="text-gray-400 text-sm">{'{_'} Name {'}'}</span>
+                              </div>
+                              <span className="text-gray-500">=</span>
+                              <input type="text" placeholder="Value"
+                                className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none w-40" />
+                              <button className="w-7 h-7 rounded-full bg-blue-500 text-white flex items-center justify-center text-lg hover:bg-blue-600">+</button>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* IP exclusions expand */}
+                      {showVideoSettings === "ip" && item.key === "ip" && (
+                        <div className="border-t border-gray-100 p-4 bg-white">
+                          <div className="grid grid-cols-2 gap-6">
+                            <div>
+                              <p className="text-sm text-gray-700 mb-2">Enter the Internet Protocol (IP) addresses to exclude from seeing your ads ⓘ</p>
+                              <textarea rows={6}
+                                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none resize-none" />
+                            </div>
+                            <div className="text-xs text-gray-500 space-y-2">
+                              <p>To indicate a set of addresses, replace the last 3 digits with an asterisk (*)</p>
+                              <p>Examples:</p>
+                              <ul className="space-y-1 list-disc list-inside">
+                                <li>123.4.5.67</li>
+                                <li>123.4.5.*</li>
+                                <li>123.4.0.0/16</li>
+                                <li>2620:0:1003:1011:fa1e:dfff:fee6:2711</li>
+                                <li>2620:0:1003:1011:fa1e:dfff:0:0/96</li>
+                              </ul>
                             </div>
                           </div>
                         </div>
