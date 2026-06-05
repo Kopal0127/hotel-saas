@@ -1333,11 +1333,11 @@ export default function AdsPage() {
                         { icon: "↔️", title: "Conversion value", desc: "Get more sales or other conversion actions to get the most value or at a value you set", disabled: true },
                         { icon: "▶️", title: "YouTube engagements", desc: "Get more YouTube subscriptions and engagements" },
                       ].map((goal, i) => (
-                        <label key={i} className={`border-2 rounded-xl p-3 transition-all ${
+                       <label key={i} className={`border-2 rounded-xl p-3 transition-all ${
                           goal.disabled ? "border-gray-100 opacity-40 cursor-not-allowed" : "border-gray-200 hover:border-blue-300 cursor-pointer"
                         }`}>
                           <div className="flex justify-end mb-1">
-                            <input type="checkbox" disabled={goal.disabled} className="w-4 h-4 accent-blue-600" />
+                            <input type="radio" name="video-campaign-goal" disabled={goal.disabled} className="w-4 h-4 accent-blue-600" />
                           </div>
                           <p className="text-lg mb-1">{goal.icon}</p>
                           <p className={`text-sm font-semibold mb-1 ${goal.disabled ? "text-gray-400" : "text-gray-900"}`}>{goal.title}</p>
