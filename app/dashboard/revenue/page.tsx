@@ -13,6 +13,7 @@ export default function RevenuePage() {
   const [activeTab, setActiveTab] = useState('revenue')
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
+  const [runningSlot, setRunningSlot] = useState<string | null>(null)
   const [settings, setSettings] = useState({
     isActive: false,
     nextDayDiscount: 0, nextDayUnsold: 80, nextDayMarkup: 0, nextDayBooked: 40,
@@ -103,6 +104,21 @@ export default function RevenuePage() {
       body: JSON.stringify({ hotelId, ...settings, isActive: newActive })
     })
     showToast(newActive ? '✅ Revenue Manager Activate ho gaya!' : '⏸ Revenue Manager Deactivate ho gaya!', newActive ? 'success' : 'info')
+  }
+
+  async function runSlot(slotKey: string) {
+    const endpointMap: any = {
+      nextDay: '/api/cron/revenue/nextday',
+      first12: '/api/cron/revenue/first12',
+      middle: '/api/cron/revenue/middle',
+      last: '/api/cron/revenue/last',
+    }
+    setRunningSlot(slotKey)
+    const res = await fetch(endpointMap[slotKey])
+    const data = await res.json()
+    if (data.success) showToast('✅ Slot run ho gaya! Rates update ho gayi.', 'success')
+    else showToast('❌ Run nahi ho saka!', 'error')
+    setRunningSlot(null)
   }
 
   async function saveSerpKey() {
@@ -273,7 +289,12 @@ export default function RevenuePage() {
                               <p className="text-white/80 text-xs">{slot.time}</p>
                             </div>
                           </div>
-                          <span className="bg-white/20 text-white text-xs px-3 py-1 rounded-full">Aaj ke liye</span>
+                          <button
+                            onClick={() => runSlot(slot.key)}
+                            disabled={runningSlot === slot.key}
+                            className="bg-white/20 hover:bg-white/30 text-white text-xs px-3 py-1.5 rounded-full font-semibold disabled:opacity-50 transition-all">
+                            {runningSlot === slot.key ? '⏳ Running...' : '▶ Run Now'}
+                          </button>
                         </div>
                         <div className={`${c.bg} px-6 py-5`}>
                           <div className="mb-5">
