@@ -72,7 +72,8 @@ export default function AdsPage() {
   const [activeTab, setActiveTab] = useState<"google" | "meta">("google");
   const [activePage, setActivePage] = useState<"overview" | "campaigns" | "adgroups" | "keywords" | "billing">("overview");
   const [dateRange, setDateRange] = useState("Last 14 days");
-  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [showGoogleModal, setShowGoogleModal] = useState(false);
+  const [showMetaModal, setShowMetaModal] = useState(false);
   const [campaignStep, setCampaignStep] = useState(1);
   const [showSeeMore, setShowSeeMore] = useState(false);
   const [locationOption, setLocationOption] = useState("All countries and territories");
@@ -196,7 +197,7 @@ export default function AdsPage() {
               <option>This month</option>
               <option>Last month</option>
             </select>
-            <button onClick={() => setShowCreateModal(true)}
+            <button onClick={() => isGoogle ? setShowGoogleModal(true) : setShowMetaModal(true)}
               className="text-white px-4 py-2 rounded-lg text-sm font-medium hover:opacity-90"
               style={{ backgroundColor: primaryColor }}>
               + New Campaign
@@ -337,7 +338,7 @@ export default function AdsPage() {
           <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
             <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
               <h3 className="font-semibold text-gray-900">All Campaigns</h3>
-              <button onClick={() => setShowCreateModal(true)}
+              <button onClick={() => isGoogle ? setShowGoogleModal(true) : setShowMetaModal(true)}
                 className="text-white px-3 py-1.5 rounded-lg text-xs font-medium hover:opacity-90"
                 style={{ backgroundColor: primaryColor }}>
                 + New Campaign
@@ -565,7 +566,7 @@ export default function AdsPage() {
       </div>
 
       {/* Create Campaign Modal */}
-      {showCreateModal && (
+      {showGoogleModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 px-4">
           <div className="bg-white rounded-2xl p-6 w-full max-w-6xl shadow-xl max-h-[90vh] overflow-y-auto">
             <div className="flex items-center gap-3 mb-5">
@@ -3081,14 +3082,14 @@ export default function AdsPage() {
             )}
            </div>
            <div className="flex gap-3 mt-4">
-              <button onClick={() => { setShowCreateModal(false); setCampaignStep(1); }}
+              <button onClick={() => { setShowGoogleModal(false); setCampaignStep(1); }}
                 className="flex-1 bg-gray-100 text-gray-600 py-2 rounded-lg text-sm hover:bg-gray-200">Cancel</button>
               {campaignStep > 1 && (
                 <button onClick={() => setCampaignStep(campaignStep - 1)}
                   className="flex-1 bg-gray-100 text-gray-700 py-2 rounded-lg text-sm font-medium hover:bg-gray-200">← Back</button>
               )}
               {campaignStep === 5 ? (
-                <button onClick={() => { alert("Campaign published!"); setShowCreateModal(false); setCampaignStep(1); }}
+                <button onClick={() => { alert("Campaign published!"); setShowGoogleModal(false); setCampaignStep(1); }}
                   className="flex-1 text-white py-2 rounded-lg text-sm font-medium hover:opacity-90 bg-green-600">
                   🚀 Publish Campaign
                 </button>
@@ -3106,6 +3107,20 @@ export default function AdsPage() {
                 </button>
               )}
             </div>
+          </div>
+        </div>
+     )}
+
+      {showMetaModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 px-4">
+          <div className="bg-white rounded-2xl p-8 w-full max-w-md shadow-xl text-center">
+            <div className="w-14 h-14 rounded-2xl bg-[#1877F2] flex items-center justify-center text-white text-2xl mx-auto mb-4">f</div>
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">Meta Ads Campaign</h3>
+            <p className="text-sm text-gray-500 mb-6">Meta Ads campaign creation <span className="font-semibold text-[#1877F2]">coming soon</span> hai.</p>
+            <button onClick={() => setShowMetaModal(false)}
+              className="bg-[#1877F2] text-white px-6 py-2.5 rounded-lg text-sm font-medium hover:opacity-90">
+              Theek Hai
+            </button>
           </div>
         </div>
       )}
