@@ -3113,14 +3113,227 @@ export default function AdsPage() {
 
       {showMetaModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 px-4">
-          <div className="bg-white rounded-2xl p-8 w-full max-w-md shadow-xl text-center">
-            <div className="w-14 h-14 rounded-2xl bg-[#1877F2] flex items-center justify-center text-white text-2xl mx-auto mb-4">f</div>
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">Meta Ads Campaign</h3>
-            <p className="text-sm text-gray-500 mb-6">Meta Ads campaign creation <span className="font-semibold text-[#1877F2]">coming soon</span> hai.</p>
-            <button onClick={() => setShowMetaModal(false)}
-              className="bg-[#1877F2] text-white px-6 py-2.5 rounded-lg text-sm font-medium hover:opacity-90">
-              Theek Hai
-            </button>
+          <div className="bg-white rounded-2xl p-6 w-full max-w-6xl shadow-xl max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center gap-3 mb-5">
+              <div className="w-10 h-10 rounded-xl flex items-center justify-center text-white font-bold text-lg"
+                style={{ backgroundColor: "#1877F2" }}>f</div>
+              <h3 className="text-lg font-semibold text-gray-900">New Meta Campaign</h3>
+            </div>
+
+            <div className="space-y-5">
+
+              {/* Row 1: Buying Type + Campaign Name */}
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="text-xs font-medium text-gray-500 mb-1.5 flex items-center gap-1 block">
+                    Choose a buying type
+                    <span className="w-3.5 h-3.5 rounded-full border border-gray-300 text-gray-400 text-[9px] flex items-center justify-center cursor-default flex-shrink-0">i</span>
+                  </label>
+                  <div className="relative">
+                    <select
+                      value={(campaignForm as any).metaBuyingType || "Auction"}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        const curObj = (campaignForm as any).metaObjective || "Awareness";
+                        const newObj = val === "Reservation" && !["Awareness","Engagement"].includes(curObj) ? "Awareness" : curObj;
+                        setCampaignForm({ ...campaignForm, name: `New ${newObj} campaign`, metaBuyingType: val, metaObjective: newObj } as any);
+                      }}
+                      className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-500 appearance-none bg-white">
+                      <option>Auction</option>
+                      <option>Reservation</option>
+                    </select>
+                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none text-xs">▼</span>
+                  </div>
+                </div>
+                <div>
+                  <label className="text-xs font-medium text-gray-500 mb-1.5 block">Campaign name</label>
+                  <div className="relative">
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-green-500 text-sm">✓</span>
+                    <input
+                      type="text"
+                      value={campaignForm.name || `New ${(campaignForm as any).metaObjective || "Awareness"} campaign`}
+                      onChange={(e) => setCampaignForm({ ...campaignForm, name: e.target.value })}
+                      className="w-full border border-gray-200 rounded-lg pl-8 pr-3 py-2 text-sm focus:outline-none focus:border-blue-500" />
+                  </div>
+                </div>
+              </div>
+
+              {/* Campaign Objective */}
+              <div>
+                <p className="text-xs font-medium text-gray-500 mb-2">Choose a campaign objective</p>
+                <div className="space-y-1.5">
+                  {[
+                    { key: "Awareness", icon: "📢", auctionOnly: false },
+                    { key: "Traffic", icon: "🖱️", auctionOnly: true },
+                    { key: "Engagement", icon: "💬", auctionOnly: false },
+                    { key: "Leads", icon: "🎯", auctionOnly: true },
+                    { key: "App promotion", icon: "📱", auctionOnly: true },
+                    { key: "Sales", icon: "🛍️", auctionOnly: true },
+                  ]
+                    .filter(o => (campaignForm as any).metaBuyingType === "Reservation" ? !o.auctionOnly : true)
+                    .map((obj) => {
+                      const selected = ((campaignForm as any).metaObjective || "Awareness") === obj.key;
+                      return (
+                        <div key={obj.key}
+                          onClick={() => setCampaignForm({ ...campaignForm, name: `New ${obj.key} campaign`, metaObjective: obj.key } as any)}
+                          className={`flex items-center gap-3 px-3 py-2.5 rounded-lg border cursor-pointer transition-all ${selected ? "border-blue-500 bg-blue-50" : "border-gray-100 hover:border-gray-200 hover:bg-gray-50"}`}>
+                          <div className={`w-2 h-2 rounded-full border-2 flex-shrink-0 ${selected ? "border-blue-500 bg-blue-500" : "border-gray-300"}`} />
+                          <div className={`w-8 h-8 rounded-lg flex items-center justify-center text-sm flex-shrink-0 ${selected ? "bg-blue-500" : "bg-gray-100"}`}>
+                            <span>{obj.icon}</span>
+                          </div>
+                          <span className="text-sm font-medium text-gray-800">{obj.key}</span>
+                        </div>
+                      );
+                    })}
+                </div>
+              </div>
+
+              {/* Budget + Bid Strategy */}
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="text-xs font-medium text-gray-500 mb-1.5 flex items-center gap-1 block">
+                    Budget
+                    <span className="w-3.5 h-3.5 rounded-full border border-gray-300 text-gray-400 text-[9px] flex items-center justify-center cursor-default flex-shrink-0">i</span>
+                  </label>
+                  <div className="flex gap-2">
+                    <div className="relative flex-1">
+                      <select
+                        value={(campaignForm as any).metaBudgetType || "Daily budget"}
+                        onChange={(e) => setCampaignForm({ ...campaignForm, metaBudgetType: e.target.value } as any)}
+                        className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-500 appearance-none bg-white">
+                        <option>Daily budget</option>
+                        <option>Lifetime budget</option>
+                      </select>
+                      <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none text-xs">▼</span>
+                    </div>
+                    <div className="flex items-center border border-gray-200 rounded-lg px-3 gap-1 min-w-[110px]">
+                      <span className="text-xs text-gray-500">₹</span>
+                      <input type="number" defaultValue={200}
+                        className="w-full text-sm focus:outline-none text-right bg-transparent" />
+                      <span className="text-xs text-gray-400">INR</span>
+                    </div>
+                  </div>
+                  <p className="text-xs text-gray-400 mt-1.5 leading-relaxed">
+                    You'll spend an average of ₹200.00 per day. Max daily ₹350.00, weekly ₹1,400.00.
+                  </p>
+                  <button className="text-xs text-blue-500 mt-1 hover:underline">About daily budget</button>
+                </div>
+                <div>
+                  <label className="text-xs font-medium text-gray-500 mb-1.5 flex items-center gap-1 block">
+                    Campaign bid strategy
+                    <span className="w-3.5 h-3.5 rounded-full border border-gray-300 text-gray-400 text-[9px] flex items-center justify-center cursor-default flex-shrink-0">i</span>
+                  </label>
+                  <div className="relative">
+                    <select
+                      value={(campaignForm as any).metaBidStrategy || "Highest volume"}
+                      onChange={(e) => setCampaignForm({ ...campaignForm, metaBidStrategy: e.target.value } as any)}
+                      className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-500 appearance-none bg-white">
+                      <option>Highest volume</option>
+                      <option>Cost per result goal</option>
+                      <option>Bid cap</option>
+                    </select>
+                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none text-xs">▼</span>
+                  </div>
+                  <p className="text-xs text-gray-400 mt-1.5">
+                    {((campaignForm as any).metaBidStrategy || "Highest volume") === "Highest volume"
+                      ? "Get the most results for your budget."
+                      : (campaignForm as any).metaBidStrategy === "Cost per result goal"
+                      ? "Aim for a certain cost per result while maximising volume."
+                      : "Set a maximum bid across all auctions."}
+                  </p>
+                </div>
+              </div>
+
+              {/* Show/Hide Options */}
+              <div>
+                <button
+                  onClick={() => setShowMoreAssetTypes(!showMoreAssetTypes)}
+                  className="text-xs text-blue-500 hover:underline flex items-center gap-1">
+                  {showMoreAssetTypes ? "▲ Hide options" : "▼ Show options"}
+                </button>
+                {showMoreAssetTypes && (
+                  <div className="mt-3 border border-gray-100 rounded-xl p-4 space-y-4">
+                    <div>
+                      <p className="text-xs font-medium text-gray-700 mb-0.5 flex items-center gap-1">
+                        Budget scheduling
+                        <span className="w-3.5 h-3.5 rounded-full border border-gray-300 text-gray-400 text-[9px] flex items-center justify-center flex-shrink-0">i</span>
+                      </p>
+                      <p className="text-xs text-gray-400 mb-2">Increase your budget during specific days or times.</p>
+                      <div className="flex items-center justify-between">
+                        <label className="flex items-center gap-2 cursor-pointer">
+                          <input type="checkbox"
+                            checked={!!(campaignForm as any).metaScheduleBudget}
+                            onChange={(e) => setCampaignForm({ ...campaignForm, metaScheduleBudget: e.target.checked } as any)}
+                            className="w-3.5 h-3.5 accent-blue-500" />
+                          <span className="text-xs text-gray-700">Schedule budget increases</span>
+                        </label>
+                        <button className="text-xs border border-gray-200 rounded px-2 py-1 text-gray-500">View ▼</button>
+                      </div>
+                      {(campaignForm as any).metaScheduleBudget && (
+                        <div className="mt-3 border border-gray-200 rounded-lg p-3 space-y-3">
+                          <p className="text-xs font-medium text-gray-700">Time period for budget increase</p>
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <div>
+                              <p className="text-xs text-gray-400 mb-1">Starts on</p>
+                              <div className="flex items-center gap-1">
+                                <input type="date" className="border border-gray-200 rounded px-2 py-1.5 text-xs focus:outline-none" defaultValue="2026-06-05" />
+                                <input type="time" className="border border-gray-200 rounded px-2 py-1.5 text-xs focus:outline-none" defaultValue="00:00" />
+                              </div>
+                            </div>
+                            <span className="text-gray-400 mt-4">—</span>
+                            <div>
+                              <p className="text-xs text-gray-400 mb-1">Ends</p>
+                              <div className="flex items-center gap-1">
+                                <input type="date" className="border border-gray-200 rounded px-2 py-1.5 text-xs focus:outline-none" defaultValue="2026-06-06" />
+                                <input type="time" className="border border-gray-200 rounded px-2 py-1.5 text-xs focus:outline-none" defaultValue="00:00" />
+                              </div>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <div className="relative flex-1">
+                              <select
+                                value={(campaignForm as any).metaBudgetIncreaseType || "value"}
+                                onChange={(e) => setCampaignForm({ ...campaignForm, metaBudgetIncreaseType: e.target.value } as any)}
+                                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-xs focus:outline-none appearance-none bg-white">
+                                <option value="value">Increase daily budget by value amount (₹)</option>
+                                <option value="percent">Increase daily budget by a percentage (%)</option>
+                              </select>
+                              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none text-xs">▼</span>
+                            </div>
+                            <div className="flex items-center border border-gray-200 rounded-lg px-2 py-2 gap-1 min-w-[80px]">
+                              <span className="text-xs text-gray-500">{(campaignForm as any).metaBudgetIncreaseType === "percent" ? "" : "₹"}</span>
+                              <input type="number" defaultValue={(campaignForm as any).metaBudgetIncreaseType === "percent" ? 25 : 5}
+                                className="w-12 text-xs focus:outline-none text-right bg-transparent" />
+                              <span className="text-xs text-gray-400">{(campaignForm as any).metaBudgetIncreaseType === "percent" ? "%" : "INR"}</span>
+                            </div>
+                          </div>
+                          <p className="text-xs text-gray-400">Meta will aim to spend an average of ₹25 a day (a ₹5 increase) from 5 Jun to 6 Jun.</p>
+                          <button className="text-xs text-gray-500 border border-gray-200 rounded px-3 py-1.5 flex items-center gap-1">🗑️ Remove this period</button>
+                        </div>
+                      )}
+                    </div>
+                    <div className="border-t border-gray-100 pt-3">
+                      <p className="text-xs font-medium text-gray-700 mb-0.5 flex items-center gap-1">
+                        Ad scheduling
+                        <span className="w-3.5 h-3.5 rounded-full border border-gray-300 text-gray-400 text-[9px] flex items-center justify-center flex-shrink-0">i</span>
+                      </p>
+                      <p className="text-xs text-gray-400">Run ads all the time</p>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div className="flex gap-3 mt-4">
+              <button onClick={() => { setShowMetaModal(false); setCampaignStep(1); }}
+                className="flex-1 bg-gray-100 text-gray-600 py-2 rounded-lg text-sm hover:bg-gray-200">Cancel</button>
+              <button
+                onClick={() => { alert("Meta Campaign published!"); setShowMetaModal(false); setCampaignStep(1); }}
+                className="flex-1 text-white py-2 rounded-lg text-sm font-medium hover:opacity-90"
+                style={{ backgroundColor: "#1877F2" }}>
+                🚀 Publish Campaign
+              </button>
+            </div>
           </div>
         </div>
       )}
