@@ -98,13 +98,18 @@ export default function AdsPage() {
   });
 
   const isGoogle = activeTab === "google";
-  const goalTypeMap: Record<string, string[]> = {
+  const googleGoalTypeMap: Record<string, string[]> = {
      "Leads": ["Performance Max", "Search", "Display", "Video"],
     "Website traffic": ["Performance Max", "Search", "Display", "Video"],
     "YouTube reach, views, and engagements": ["Video"],
     "Local store visits and promotions": ["Performance Max"],
     "Create a campaign without guidance": ["Performance Max", "Search", "Display", "Video"],
   };
+  const metaGoalTypeMap: Record<string, string[]> = {
+    "Leads": ["Lead Ads", "Messenger Ads"],
+    "Website traffic": ["Traffic Ads", "Retargeting"],
+  };
+  const goalTypeMap = isGoogle ? googleGoalTypeMap : metaGoalTypeMap;
   const allowedTypes = campaignForm.goal ? goalTypeMap[campaignForm.goal] : [];
   const primaryColor = isGoogle ? "#4285F4" : "#1877F2";
   const data = OVERVIEW_DATA;
