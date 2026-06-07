@@ -585,9 +585,9 @@ export default function AdsPage() {
                    <option value="">Select Goal</option>
                     <option>Leads</option>
                     <option>Website traffic</option>
-                    <option>YouTube reach, views, and engagements</option>
-                    <option>Local store visits and promotions</option>
-                    <option>Create a campaign without guidance</option>
+                    {isGoogle && <option>YouTube reach, views, and engagements</option>}
+                    {isGoogle && <option>Local store visits and promotions</option>}
+                    {isGoogle && <option>Create a campaign without guidance</option>}
                   </select>
                 </div>
                 <div>
@@ -601,7 +601,7 @@ export default function AdsPage() {
                   </select>
                 </div>
               </div>
-             {campaignStep === 2 && (
+             {campaignStep === 2 && isGoogle && (
               <>
                 {/* Performance Max */}
                 {campaignForm.type === "Performance Max" && (
@@ -980,7 +980,7 @@ export default function AdsPage() {
                </>
             )}
 
-            {campaignStep === 3 && campaignForm.type === "Display" && (campaignForm.goal === "Leads" || campaignForm.goal === "Website traffic" || campaignForm.goal === "Create a campaign without guidance") && (
+            {campaignStep === 3 && isGoogle && campaignForm.type === "Display" && (campaignForm.goal === "Leads" || campaignForm.goal === "Website traffic" || campaignForm.goal === "Create a campaign without guidance") && (
               <div className="space-y-4">
                 <div>
                   <h3 className="text-lg font-semibold text-gray-900">Campaign settings</h3>
@@ -1853,7 +1853,7 @@ export default function AdsPage() {
 
               </div>
            )}
-           {campaignStep === 5 && (
+           {campaignStep === 5 && isGoogle && (
               <div className="space-y-4">
                 <div>
                   <h3 className="text-lg font-semibold text-gray-900">Review Campaign</h3>
@@ -1904,7 +1904,7 @@ export default function AdsPage() {
               </div>
             )}
 
-           {campaignStep === 4 && campaignForm.type === "Display" && (campaignForm.goal === "Leads" || campaignForm.goal === "Website traffic" || campaignForm.goal === "Create a campaign without guidance") && (
+           {campaignStep === 4 && isGoogle && campaignForm.type === "Display" && (campaignForm.goal === "Leads" || campaignForm.goal === "Website traffic" || campaignForm.goal === "Create a campaign without guidance") && (
               <div className="space-y-4">
 
                 {/* Budget and Bidding */}
