@@ -3422,38 +3422,10 @@ export default function AdsPage() {
                   </div>
                 )}
 
-                {/* ===== AUCTION - TRAFFIC ===== */}
+               {/* ===== AUCTION - TRAFFIC ===== */}
                 {(campaignForm as any).metaBuyingType !== "Reservation" && (campaignForm as any).metaObjective === "Traffic" && (
-                  <div className="border border-gray-200 rounded-xl p-4 space-y-4">
-                    <div className="flex items-center gap-2">
-                      <span className="text-green-500 text-lg">✅</span>
-                      <p className="text-sm font-semibold text-gray-900">Traffic</p>
-                    </div>
-                    <div>
-                      <p className="text-sm font-semibold text-gray-900 mb-0.5">Performance goal</p>
-                      <p className="text-xs text-gray-500 mb-2">How you measure success for your ads. <span className="text-blue-500 cursor-pointer hover:underline">About performance goals</span></p>
-                      <div className="relative">
-                        <select className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none appearance-none bg-white">
-                          <option>Maximise number of link clicks</option>
-                          <option>Maximise landing page views</option>
-                          <option>Maximise daily unique reach</option>
-                          <option>Maximise impressions</option>
-                        </select>
-                        <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none text-xs">▼</span>
-                      </div>
-                    </div>
-                    <div>
-                      <p className="text-sm font-semibold text-gray-900 mb-0.5">Conversion location</p>
-                      <p className="text-xs text-gray-500 mb-2">Where do you want to drive traffic?</p>
-                      <div className="grid grid-cols-3 gap-2">
-                        {[{ icon: "🌐", label: "Website" }, { icon: "📱", label: "App" }, { icon: "💬", label: "Messenger" }].map((loc) => (
-                          <div key={loc.label} className="border border-gray-200 rounded-lg p-3 flex flex-col items-center gap-1 cursor-pointer hover:border-blue-400">
-                            <span className="text-xl">{loc.icon}</span>
-                            <span className="text-xs text-gray-700">{loc.label}</span>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
+                  <div className="border border-gray-200 rounded-xl p-4">
+                    <p className="text-sm text-gray-500 text-center py-4">🚧 Coming Soon</p>
                   </div>
                 )}
 
