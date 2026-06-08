@@ -3324,11 +3324,11 @@ export default function AdsPage() {
               </div>
             </div>
 
-            {/* ==================== STEP 2 ==================== */}
+           {/* ==================== STEP 2 ==================== */}
             {campaignStep === 2 && (
               <div className="space-y-5 mt-5 border-t border-gray-100 pt-5">
 
-                {/* Ad Set Name */}
+                {/* Ad Set Name — SABKE LIYE COMMON */}
                 <div className="border border-gray-200 rounded-xl p-4">
                   <div className="flex items-center gap-2 mb-3">
                     <span className="text-green-500 text-lg">✅</span>
@@ -3344,108 +3344,318 @@ export default function AdsPage() {
                   </div>
                 </div>
 
-                {/* Awareness + Performance Goal + Facebook Page */}
-                <div className="border border-gray-200 rounded-xl p-4 space-y-4">
-                  <div className="flex items-center gap-2">
-                    <span className="text-green-500 text-lg">✅</span>
-                    <p className="text-sm font-semibold text-gray-900">{(campaignForm as any).metaObjective || "Awareness"}</p>
+                {/* ===== AUCTION - AWARENESS ===== */}
+                {((campaignForm as any).metaBuyingType !== "Reservation") && ((campaignForm as any).metaObjective === "Awareness" || !(campaignForm as any).metaObjective) && (
+                  <div className="space-y-4">
+                    <div className="border border-gray-200 rounded-xl p-4 space-y-4">
+                      <div className="flex items-center gap-2">
+                        <span className="text-green-500 text-lg">✅</span>
+                        <p className="text-sm font-semibold text-gray-900">Awareness</p>
+                      </div>
+                      <div>
+                        <p className="text-sm font-semibold text-gray-900 mb-0.5">Performance goal</p>
+                        <p className="text-xs text-gray-500 mb-2">How you measure success for your ads. <span className="text-blue-500 cursor-pointer hover:underline">About performance goals</span></p>
+                        <div className="relative">
+                          <select value={(campaignForm as any).metaPerformanceGoal || "Maximise reach of ads"}
+                            onChange={(e) => setCampaignForm({ ...campaignForm, metaPerformanceGoal: e.target.value } as any)}
+                            className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none appearance-none bg-white">
+                            <optgroup label="Awareness goals">
+                              <option>Maximise reach of ads</option>
+                              <option>Maximise number of impressions</option>
+                              <option>Maximise ad recall lift</option>
+                            </optgroup>
+                            <optgroup label="Video view goals">
+                              <option>Maximise ThruPlay views</option>
+                              <option>Maximise 2-second continuous video plays</option>
+                            </optgroup>
+                          </select>
+                          <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none text-xs">▼</span>
+                        </div>
+                        <p className="text-xs text-gray-400 mt-1.5">
+                          {((campaignForm as any).metaPerformanceGoal || "Maximise reach of ads") === "Maximise reach of ads" ? "To help us improve delivery, we may survey a small section of your audience."
+                            : (campaignForm as any).metaPerformanceGoal === "Maximise number of impressions" ? "We'll try to show your ads to people as many times as possible."
+                            : (campaignForm as any).metaPerformanceGoal === "Maximise ad recall lift" ? "We'll try to show your ads to people who are likely to remember seeing them."
+                            : (campaignForm as any).metaPerformanceGoal === "Maximise ThruPlay views" ? "We'll show your video ads to people likely to watch the entire video."
+                            : "We'll show your video ads to people likely to watch 2 continuous seconds or more."}
+                        </p>
+                      </div>
+                      <div>
+                        <div className="flex items-center gap-1 mb-0.5">
+                          <p className="text-sm font-semibold text-gray-900">Facebook Page</p>
+                          <span className="w-4 h-4 rounded-full border border-gray-400 text-gray-400 text-[9px] flex items-center justify-center">i</span>
+                        </div>
+                        <p className="text-xs text-gray-500 mb-2">Choose the Page that you want to promote.</p>
+                        <div className="relative">
+                          <select className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none appearance-none bg-white">
+                            <option value="">Select Page</option>
+                            <option>HotelPro Official</option>
+                            <option>HotelPro Deals</option>
+                          </select>
+                          <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none text-xs">▼</span>
+                        </div>
+                        <div className="flex items-center border border-gray-200 rounded-lg px-3 py-2 mt-2 gap-2">
+                          <span className="text-gray-400 text-sm">🔍</span>
+                          <input type="text" placeholder="Search by Page name or ID" className="flex-1 text-sm focus:outline-none" />
+                        </div>
+                      </div>
+                    </div>
+                    <div className="border border-gray-200 rounded-xl p-4 space-y-3">
+                      <div className="flex items-center gap-1">
+                        <p className="text-sm font-semibold text-gray-900">Frequency control</p>
+                        <span className="w-4 h-4 rounded-full border border-gray-400 text-gray-400 text-[9px] flex items-center justify-center">i</span>
+                      </div>
+                      {[{ key: "Target", desc: "The average number of times that you want people to see your ads" }, { key: "Cap", desc: "The maximum number of times that you want people to see your ads" }].map((opt) => (
+                        <label key={opt.key} className="flex items-start gap-3 cursor-pointer">
+                          <input type="radio" name="freq-control" checked={((campaignForm as any).metaFreqControl || "Cap") === opt.key}
+                            onChange={() => setCampaignForm({ ...campaignForm, metaFreqControl: opt.key } as any)} className="mt-1 accent-blue-500" />
+                          <div><p className="text-sm font-medium text-gray-900">{opt.key}</p><p className="text-xs text-gray-500">{opt.desc}</p></div>
+                        </label>
+                      ))}
+                      <div className="flex items-center gap-2 mt-2">
+                        <input type="number" defaultValue={2} min={1} className="border border-gray-200 rounded-lg px-3 py-2 text-sm w-20 focus:outline-none text-center" />
+                        <span className="text-sm text-gray-600">times every</span>
+                        <input type="number" defaultValue={7} min={1} className="border border-gray-200 rounded-lg px-3 py-2 text-sm w-20 focus:outline-none text-center" />
+                        <span className="text-sm text-gray-600">days</span>
+                      </div>
+                      <p className="text-xs text-gray-400">As a maximum, we'll aim to stay under 2 impressions every 7 days.</p>
+                    </div>
                   </div>
+                )}
 
-                  {/* Performance Goal */}
-                  <div>
-                    <p className="text-sm font-semibold text-gray-900 mb-0.5">Performance goal</p>
-                    <p className="text-xs text-gray-500 mb-2">How you measure success for your ads. <span className="text-blue-500 cursor-pointer hover:underline">About performance goals</span></p>
-                    <div className="relative">
-                      <select
-                        value={(campaignForm as any).metaPerformanceGoal || "Maximise reach of ads"}
-                        onChange={(e) => setCampaignForm({ ...campaignForm, metaPerformanceGoal: e.target.value } as any)}
-                        className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-500 appearance-none bg-white">
-                        <optgroup label="Awareness goals">
-                          <option>Maximise reach of ads</option>
-                          <option>Maximise number of impressions</option>
-                          <option>Maximise ad recall lift</option>
-                        </optgroup>
-                        <optgroup label="Video view goals">
+                {/* ===== AUCTION - TRAFFIC ===== */}
+                {(campaignForm as any).metaBuyingType !== "Reservation" && (campaignForm as any).metaObjective === "Traffic" && (
+                  <div className="border border-gray-200 rounded-xl p-4 space-y-4">
+                    <div className="flex items-center gap-2">
+                      <span className="text-green-500 text-lg">✅</span>
+                      <p className="text-sm font-semibold text-gray-900">Traffic</p>
+                    </div>
+                    <div>
+                      <p className="text-sm font-semibold text-gray-900 mb-0.5">Performance goal</p>
+                      <p className="text-xs text-gray-500 mb-2">How you measure success for your ads. <span className="text-blue-500 cursor-pointer hover:underline">About performance goals</span></p>
+                      <div className="relative">
+                        <select className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none appearance-none bg-white">
+                          <option>Maximise number of link clicks</option>
+                          <option>Maximise landing page views</option>
+                          <option>Maximise daily unique reach</option>
+                          <option>Maximise impressions</option>
+                        </select>
+                        <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none text-xs">▼</span>
+                      </div>
+                    </div>
+                    <div>
+                      <p className="text-sm font-semibold text-gray-900 mb-0.5">Conversion location</p>
+                      <p className="text-xs text-gray-500 mb-2">Where do you want to drive traffic?</p>
+                      <div className="grid grid-cols-3 gap-2">
+                        {[{ icon: "🌐", label: "Website" }, { icon: "📱", label: "App" }, { icon: "💬", label: "Messenger" }].map((loc) => (
+                          <div key={loc.label} className="border border-gray-200 rounded-lg p-3 flex flex-col items-center gap-1 cursor-pointer hover:border-blue-400">
+                            <span className="text-xl">{loc.icon}</span>
+                            <span className="text-xs text-gray-700">{loc.label}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* ===== AUCTION - ENGAGEMENT ===== */}
+                {(campaignForm as any).metaBuyingType !== "Reservation" && (campaignForm as any).metaObjective === "Engagement" && (
+                  <div className="border border-gray-200 rounded-xl p-4 space-y-4">
+                    <div className="flex items-center gap-2">
+                      <span className="text-green-500 text-lg">✅</span>
+                      <p className="text-sm font-semibold text-gray-900">Engagement</p>
+                    </div>
+                    <div>
+                      <p className="text-sm font-semibold text-gray-900 mb-0.5">Performance goal</p>
+                      <p className="text-xs text-gray-500 mb-2">How you measure success for your ads. <span className="text-blue-500 cursor-pointer hover:underline">About performance goals</span></p>
+                      <div className="relative">
+                        <select className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none appearance-none bg-white">
+                          <option>Maximise post engagement</option>
                           <option>Maximise ThruPlay views</option>
                           <option>Maximise 2-second continuous video plays</option>
-                        </optgroup>
-                      </select>
-                      <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none text-xs">▼</span>
+                          <option>Maximise daily unique reach</option>
+                          <option>Maximise impressions</option>
+                        </select>
+                        <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none text-xs">▼</span>
+                      </div>
                     </div>
-                    <p className="text-xs text-gray-400 mt-1.5">
-                      {((campaignForm as any).metaPerformanceGoal || "Maximise reach of ads") === "Maximise reach of ads"
-                        ? "To help us improve delivery, we may survey a small section of your audience."
-                        : ((campaignForm as any).metaPerformanceGoal) === "Maximise number of impressions"
-                        ? "We'll try to show your ads to people as many times as possible."
-                        : ((campaignForm as any).metaPerformanceGoal) === "Maximise ad recall lift"
-                        ? "We'll try to show your ads to people who are likely to remember seeing them."
-                        : ((campaignForm as any).metaPerformanceGoal) === "Maximise ThruPlay views"
-                        ? "We'll try to show your video ads to people who will watch the entire video when it's shorter than 15 seconds."
-                        : "We'll try to show your video ads to people who are likely to watch 2 continuous seconds or more."}
-                    </p>
+                    <div>
+                      <div className="flex items-center gap-1 mb-0.5">
+                        <p className="text-sm font-semibold text-gray-900">Facebook Page</p>
+                        <span className="w-4 h-4 rounded-full border border-gray-400 text-gray-400 text-[9px] flex items-center justify-center">i</span>
+                      </div>
+                      <p className="text-xs text-gray-500 mb-2">Choose the Page that you want to promote.</p>
+                      <div className="relative">
+                        <select className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none appearance-none bg-white">
+                          <option value="">Select Page</option>
+                          <option>HotelPro Official</option>
+                          <option>HotelPro Deals</option>
+                        </select>
+                        <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none text-xs">▼</span>
+                      </div>
+                      <div className="flex items-center border border-gray-200 rounded-lg px-3 py-2 mt-2 gap-2">
+                        <span className="text-gray-400 text-sm">🔍</span>
+                        <input type="text" placeholder="Search by Page name or ID" className="flex-1 text-sm focus:outline-none" />
+                      </div>
+                    </div>
                   </div>
+                )}
 
-                  {/* Facebook Page */}
-                  <div>
-                    <div className="flex items-center gap-1 mb-0.5">
-                      <p className="text-sm font-semibold text-gray-900">Facebook Page</p>
-                      <span className="w-4 h-4 rounded-full border border-gray-400 text-gray-400 text-[9px] flex items-center justify-center cursor-default">i</span>
+                {/* ===== AUCTION - LEADS ===== */}
+                {(campaignForm as any).metaBuyingType !== "Reservation" && (campaignForm as any).metaObjective === "Leads" && (
+                  <div className="border border-gray-200 rounded-xl p-4 space-y-4">
+                    <div className="flex items-center gap-2">
+                      <span className="text-green-500 text-lg">✅</span>
+                      <p className="text-sm font-semibold text-gray-900">Leads</p>
                     </div>
-                    <p className="text-xs text-gray-500 mb-2">Choose the Page that you want to promote.</p>
-                    <div className="relative">
-                      <select className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-500 appearance-none bg-white">
-                        <option value="">Select Page</option>
-                        <option>HotelPro Official</option>
-                        <option>HotelPro Deals</option>
-                      </select>
-                      <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none text-xs">▼</span>
+                    <div>
+                      <p className="text-sm font-semibold text-gray-900 mb-0.5">Performance goal</p>
+                      <p className="text-xs text-gray-500 mb-2">How you measure success for your ads. <span className="text-blue-500 cursor-pointer hover:underline">About performance goals</span></p>
+                      <div className="relative">
+                        <select className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none appearance-none bg-white">
+                          <option>Maximise number of leads</option>
+                          <option>Maximise number of conversions</option>
+                          <option>Maximise conversion leads</option>
+                        </select>
+                        <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none text-xs">▼</span>
+                      </div>
                     </div>
-                    <div className="flex items-center border border-gray-200 rounded-lg px-3 py-2 mt-2 gap-2">
-                      <span className="text-gray-400 text-sm">🔍</span>
-                      <input type="text" placeholder="Search by Page name or ID"
-                        className="flex-1 text-sm focus:outline-none" />
-                    </div>
-                  </div>
-                </div>
-
-                {/* Frequency Control */}
-                <div className="border border-gray-200 rounded-xl p-4 space-y-3">
-                  <div className="flex items-center gap-1">
-                    <p className="text-sm font-semibold text-gray-900">Frequency control</p>
-                    <span className="w-4 h-4 rounded-full border border-gray-400 text-gray-400 text-[9px] flex items-center justify-center cursor-default">i</span>
-                  </div>
-                  <div className="space-y-2">
-                    {[
-                      { key: "Target", desc: "The average number of times that you want people to see your ads" },
-                      { key: "Cap", desc: "The maximum number of times that you want people to see your ads" },
-                    ].map((opt) => {
-                      const selected = ((campaignForm as any).metaFreqControl || "Cap") === opt.key;
-                      return (
-                        <label key={opt.key} className="flex items-start gap-3 cursor-pointer">
-                          <input type="radio" name="freq-control"
-                            checked={selected}
-                            onChange={() => setCampaignForm({ ...campaignForm, metaFreqControl: opt.key } as any)}
-                            className="mt-1 accent-blue-500" />
-                          <div>
-                            <p className="text-sm font-medium text-gray-900">{opt.key}</p>
-                            <p className="text-xs text-gray-500">{opt.desc}</p>
+                    <div>
+                      <p className="text-sm font-semibold text-gray-900 mb-0.5">Conversion location</p>
+                      <p className="text-xs text-gray-500 mb-2">Where do you want to collect leads?</p>
+                      <div className="grid grid-cols-3 gap-2">
+                        {[{ icon: "📋", label: "Instant forms" }, { icon: "🌐", label: "Website" }, { icon: "💬", label: "Messenger" }].map((loc) => (
+                          <div key={loc.label} className="border border-gray-200 rounded-lg p-3 flex flex-col items-center gap-1 cursor-pointer hover:border-blue-400">
+                            <span className="text-xl">{loc.icon}</span>
+                            <span className="text-xs text-gray-700">{loc.label}</span>
                           </div>
-                        </label>
-                      );
-                    })}
+                        ))}
+                      </div>
+                    </div>
                   </div>
-                  <div className="flex items-center gap-2 mt-2">
-                    <input type="number" defaultValue={2} min={1}
-                      className="border border-gray-200 rounded-lg px-3 py-2 text-sm w-20 focus:outline-none text-center" />
-                    <span className="text-sm text-gray-600">times every</span>
-                    <input type="number" defaultValue={7} min={1}
-                      className="border border-gray-200 rounded-lg px-3 py-2 text-sm w-20 focus:outline-none text-center" />
-                    <span className="text-sm text-gray-600">days</span>
+                )}
+
+                {/* ===== AUCTION - SALES ===== */}
+                {(campaignForm as any).metaBuyingType !== "Reservation" && (campaignForm as any).metaObjective === "Sales" && (
+                  <div className="border border-gray-200 rounded-xl p-4 space-y-4">
+                    <div className="flex items-center gap-2">
+                      <span className="text-green-500 text-lg">✅</span>
+                      <p className="text-sm font-semibold text-gray-900">Sales</p>
+                    </div>
+                    <div>
+                      <p className="text-sm font-semibold text-gray-900 mb-0.5">Performance goal</p>
+                      <p className="text-xs text-gray-500 mb-2">How you measure success for your ads. <span className="text-blue-500 cursor-pointer hover:underline">About performance goals</span></p>
+                      <div className="relative">
+                        <select className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none appearance-none bg-white">
+                          <option>Maximise number of conversions</option>
+                          <option>Maximise conversion value</option>
+                          <option>Maximise number of link clicks</option>
+                        </select>
+                        <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none text-xs">▼</span>
+                      </div>
+                    </div>
+                    <div>
+                      <p className="text-sm font-semibold text-gray-900 mb-0.5">Conversion location</p>
+                      <p className="text-xs text-gray-500 mb-2">Where do you want to drive sales?</p>
+                      <div className="grid grid-cols-3 gap-2">
+                        {[{ icon: "🌐", label: "Website" }, { icon: "📱", label: "App" }, { icon: "📋", label: "Messenger" }].map((loc) => (
+                          <div key={loc.label} className="border border-gray-200 rounded-lg p-3 flex flex-col items-center gap-1 cursor-pointer hover:border-blue-400">
+                            <span className="text-xl">{loc.icon}</span>
+                            <span className="text-xs text-gray-700">{loc.label}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
                   </div>
-                  <p className="text-xs text-gray-400">
-                    As a maximum, we'll aim to stay under 2 impressions every 7 days.
-                  </p>
-                </div>
+                )}
+
+                {/* ===== RESERVATION - AWARENESS ===== */}
+                {(campaignForm as any).metaBuyingType === "Reservation" && ((campaignForm as any).metaObjective === "Awareness" || !(campaignForm as any).metaObjective) && (
+                  <div className="space-y-4">
+                    <div className="border border-gray-200 rounded-xl p-4 space-y-4">
+                      <div className="flex items-center gap-2">
+                        <span className="text-green-500 text-lg">✅</span>
+                        <p className="text-sm font-semibold text-gray-900">Awareness (Reservation)</p>
+                      </div>
+                      <div>
+                        <p className="text-sm font-semibold text-gray-900 mb-0.5">Performance goal</p>
+                        <p className="text-xs text-gray-500 mb-2">How you measure success for your ads. <span className="text-blue-500 cursor-pointer hover:underline">About performance goals</span></p>
+                        <div className="relative">
+                          <select className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none appearance-none bg-white">
+                            <option>Maximise reach of ads</option>
+                            <option>Maximise number of impressions</option>
+                          </select>
+                          <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none text-xs">▼</span>
+                        </div>
+                      </div>
+                      <div>
+                        <div className="flex items-center gap-1 mb-0.5">
+                          <p className="text-sm font-semibold text-gray-900">Facebook Page</p>
+                          <span className="w-4 h-4 rounded-full border border-gray-400 text-gray-400 text-[9px] flex items-center justify-center">i</span>
+                        </div>
+                        <p className="text-xs text-gray-500 mb-2">Choose the Page that you want to promote.</p>
+                        <div className="relative">
+                          <select className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none appearance-none bg-white">
+                            <option value="">Select Page</option>
+                            <option>HotelPro Official</option>
+                            <option>HotelPro Deals</option>
+                          </select>
+                          <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none text-xs">▼</span>
+                        </div>
+                        <div className="flex items-center border border-gray-200 rounded-lg px-3 py-2 mt-2 gap-2">
+                          <span className="text-gray-400 text-sm">🔍</span>
+                          <input type="text" placeholder="Search by Page name or ID" className="flex-1 text-sm focus:outline-none" />
+                        </div>
+                      </div>
+                    </div>
+                    <div className="border border-blue-100 bg-blue-50 rounded-xl p-4">
+                      <p className="text-xs text-blue-700">ℹ️ Reservation campaigns use fixed CPM pricing. Reach guarantee available.</p>
+                    </div>
+                  </div>
+                )}
+
+                {/* ===== RESERVATION - ENGAGEMENT ===== */}
+                {(campaignForm as any).metaBuyingType === "Reservation" && (campaignForm as any).metaObjective === "Engagement" && (
+                  <div className="border border-gray-200 rounded-xl p-4 space-y-4">
+                    <div className="flex items-center gap-2">
+                      <span className="text-green-500 text-lg">✅</span>
+                      <p className="text-sm font-semibold text-gray-900">Engagement (Reservation)</p>
+                    </div>
+                    <div>
+                      <p className="text-sm font-semibold text-gray-900 mb-0.5">Performance goal</p>
+                      <p className="text-xs text-gray-500 mb-2">How you measure success for your ads. <span className="text-blue-500 cursor-pointer hover:underline">About performance goals</span></p>
+                      <div className="relative">
+                        <select className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none appearance-none bg-white">
+                          <option>Maximise ThruPlay views</option>
+                          <option>Maximise 2-second continuous video plays</option>
+                          <option>Maximise post engagement</option>
+                        </select>
+                        <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none text-xs">▼</span>
+                      </div>
+                    </div>
+                    <div>
+                      <div className="flex items-center gap-1 mb-0.5">
+                        <p className="text-sm font-semibold text-gray-900">Facebook Page</p>
+                        <span className="w-4 h-4 rounded-full border border-gray-400 text-gray-400 text-[9px] flex items-center justify-center">i</span>
+                      </div>
+                      <p className="text-xs text-gray-500 mb-2">Choose the Page that you want to promote.</p>
+                      <div className="relative">
+                        <select className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none appearance-none bg-white">
+                          <option value="">Select Page</option>
+                          <option>HotelPro Official</option>
+                          <option>HotelPro Deals</option>
+                        </select>
+                        <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none text-xs">▼</span>
+                      </div>
+                      <div className="flex items-center border border-gray-200 rounded-lg px-3 py-2 mt-2 gap-2">
+                        <span className="text-gray-400 text-sm">🔍</span>
+                        <input type="text" placeholder="Search by Page name or ID" className="flex-1 text-sm focus:outline-none" />
+                      </div>
+                    </div>
+                    <div className="border border-blue-100 bg-blue-50 rounded-xl p-4">
+                      <p className="text-xs text-blue-700">ℹ️ Reservation campaigns use fixed CPM pricing. Reach guarantee available.</p>
+                    </div>
+                  </div>
+                )}
 
               </div>
             )}
