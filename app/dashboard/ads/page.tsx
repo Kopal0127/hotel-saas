@@ -86,6 +86,9 @@ export default function AdsPage() {
   const [videoDeviceType, setVideoDeviceType] = useState("all");
   const [selectedOS, setSelectedOS] = useState<string[]>([]);
   const [showOSPopup, setShowOSPopup] = useState(false);
+  const [showDeviceModelPopup, setShowDeviceModelPopup] = useState(false);
+  const [expandedDeviceCategory, setExpandedDeviceCategory] = useState<string | null>(null);
+  const [selectedDeviceModels, setSelectedDeviceModels] = useState<string[]>([]);
   const [targetCPA, setTargetCPA] = useState(false);
   const [showMoreAssetTypes, setShowMoreAssetTypes] = useState(false);
   const [showAdditionalSignals, setShowAdditionalSignals] = useState(false);
@@ -1552,7 +1555,7 @@ export default function AdsPage() {
                                   <div className="space-y-2 mt-2">
                                     {[
                                       { label: "Operating Systems", sub: "All operating systems", action: () => setShowOSPopup(true) },
-                                      { label: "Device Models", sub: "All device models", action: () => {} },
+                                      { label: "Device Models", sub: "All device models", action: () => setShowDeviceModelPopup(true) },
                                       { label: "Networks", sub: "All networks", action: () => {} },
                                     ].map((adv, k) => (
                                       <div key={k} className="bg-gray-50 rounded-lg p-3 cursor-pointer hover:bg-gray-100"
@@ -1666,6 +1669,97 @@ export default function AdsPage() {
                     </div>
                   ))}
                 </div>
+
+                {/* Device Models Popup */}
+                {showDeviceModelPopup && (
+                  <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-50">
+                    <div className="bg-white rounded-xl shadow-xl w-[700px] max-h-[80vh] overflow-hidden flex flex-col">
+                      <div className="px-6 py-4 border-b border-gray-200">
+                        <p className="text-lg font-semibold text-gray-900">Choose device models</p>
+                      </div>
+                      <div className="grid grid-cols-2 divide-x divide-gray-200 flex-1 overflow-hidden">
+                        {/* Left panel */}
+                        <div className="overflow-y-auto p-4 space-y-1">
+                          {[
+                            {
+                              category: "Android",
+                              items: ["Amazon","Asus","Bbm","bq","Cloud Mobile","DoCoMo","Fcnt","Feiteng","Flexymove","Fujitsu","General Mobile","Google","H96","Hk1","Honor","HTC","HUAWEI","Infinix","Intel","Itel","Izoom","Karbonn","Khadas","Lenovo","LG","Lipa","Loop","Micromax","Minix","Motorola","Mxq","Nokia","Nothing","OnePlus","OPPO","Pivos","Poco","RCA","Realme","Rockchip","Samsung","Scishion","Sharp","Skyworth","Sony","SonyEricsson","Swosh","Tanix","TCL","Tecno","Tesco","T-Mobile","Tonbux","Tox","Ugoos","Vivo","Vodafone","Vontar","Wiko","X88","Xiaomi","Yu","ZTE"],
+                              expandable: false,
+                            },
+                            {
+                              category: "iOS",
+                              items: ["Apple"],
+                              expandable: true,
+                            },
+                            {
+                              category: "Other/Unknown",
+                              items: ["Microsoft","Nokia"],
+                              expandable: true,
+                            },
+                            {
+                              category: "Unknown",
+                              items: ["Apple","Lyf","Opera"],
+                              expandable: true,
+                            },
+                            {
+                              category: "Windows Phone",
+                              items: ["Microsoft","Nokia"],
+                              expandable: false,
+                            },
+                          ].map((cat) => (
+                            <div key={cat.category}>
+                              <div
+                                className="flex items-center justify-between py-2 px-1 cursor-pointer hover:bg-gray-50 rounded"
+                                onClick={() => setExpandedDeviceCategory(expandedDeviceCategory === cat.category ? null : cat.category)}>
+                                <span className="text-sm font-medium text-gray-900">{cat.category}</span>
+                                <span className="text-gray-400 text-xs">{expandedDeviceCategory === cat.category ? "∧" : "∨"}</span>
+                              </div>
+                              {expandedDeviceCategory === cat.category && (
+                                <div className="ml-4 grid grid-cols-3 gap-x-4 gap-y-2 py-2">
+                                  {cat.items.map((item) => (
+                                    <label key={item} className="flex items-center gap-2 cursor-pointer">
+                                      <input type="checkbox" className="w-4 h-4 accent-blue-600"
+                                        checked={selectedDeviceModels.includes(`${cat.category}-${item}`)}
+                                        onChange={(e) => {
+                                          const key = `${cat.category}-${item}`;
+                                          if (e.target.checked) setSelectedDeviceModels([...selectedDeviceModels, key]);
+                                          else setSelectedDeviceModels(selectedDeviceModels.filter(s => s !== key));
+                                        }} />
+                                      <span className="text-sm text-gray-700">{item}</span>
+                                      {cat.expandable && <span className="text-gray-400 text-xs ml-auto">∨</span>}
+                                    </label>
+                                  ))}
+                                </div>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                        {/* Right panel */}
+                        <div className="p-4 overflow-y-auto">
+                          {selectedDeviceModels.length === 0 ? (
+                            <p className="text-sm text-gray-400">None selected</p>
+                          ) : (
+                            <div className="space-y-1">
+                              {selectedDeviceModels.map((m) => (
+                                <div key={m} className="flex items-center justify-between">
+                                  <span className="text-sm text-gray-700">{m.split("-").slice(1).join("-")}</span>
+                                  <button className="text-gray-400 hover:text-gray-600 text-xs"
+                                    onClick={() => setSelectedDeviceModels(selectedDeviceModels.filter(s => s !== m))}>×</button>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                      <div className="flex justify-end gap-4 px-6 py-4 border-t border-gray-200">
+                        <button onClick={() => { setShowDeviceModelPopup(false); setExpandedDeviceCategory(null); }}
+                          className="text-sm text-gray-600 hover:underline">Cancel</button>
+                        <button onClick={() => { setShowDeviceModelPopup(false); setExpandedDeviceCategory(null); }}
+                          className="text-sm text-blue-600 font-medium hover:underline">Done</button>
+                      </div>
+                    </div>
+                  </div>
+                )}
 
                 {/* OS Popup */}
                 {showOSPopup && (
@@ -3431,7 +3525,10 @@ export default function AdsPage() {
 
                 {/* ===== AUCTION - ENGAGEMENT ===== */}
                 {(campaignForm as any).metaBuyingType !== "Reservation" && (campaignForm as any).metaObjective === "Engagement" && (
-                  <div className="border border-gray-200 rounded-xl p-4 space-y-4">
+                  <div className="border border-gray-200 rounded-xl p-4">
+                    <p className="text-sm text-gray-500 text-center py-4">🚧 Coming Soon</p>
+                  </div>
+                )}
                     <div className="flex items-center gap-2">
                       <span className="text-green-500 text-lg">✅</span>
                       <p className="text-sm font-semibold text-gray-900">Engagement</p>
@@ -3474,7 +3571,10 @@ export default function AdsPage() {
 
                 {/* ===== AUCTION - LEADS ===== */}
                 {(campaignForm as any).metaBuyingType !== "Reservation" && (campaignForm as any).metaObjective === "Leads" && (
-                  <div className="border border-gray-200 rounded-xl p-4 space-y-4">
+                  <div className="border border-gray-200 rounded-xl p-4">
+                    <p className="text-sm text-gray-500 text-center py-4">🚧 Coming Soon</p>
+                  </div>
+                )}
                     <div className="flex items-center gap-2">
                       <span className="text-green-500 text-lg">✅</span>
                       <p className="text-sm font-semibold text-gray-900">Leads</p>
