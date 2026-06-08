@@ -3523,49 +3523,10 @@ export default function AdsPage() {
                   </div>
                 )}
 
-                {/* ===== AUCTION - ENGAGEMENT ===== */}
+               {/* ===== AUCTION - ENGAGEMENT ===== */}
                 {(campaignForm as any).metaBuyingType !== "Reservation" && (campaignForm as any).metaObjective === "Engagement" && (
                   <div className="border border-gray-200 rounded-xl p-4">
                     <p className="text-sm text-gray-500 text-center py-4">🚧 Coming Soon</p>
-                  </div>
-                )}
-                    <div className="flex items-center gap-2">
-                      <span className="text-green-500 text-lg">✅</span>
-                      <p className="text-sm font-semibold text-gray-900">Engagement</p>
-                    </div>
-                    <div>
-                      <p className="text-sm font-semibold text-gray-900 mb-0.5">Performance goal</p>
-                      <p className="text-xs text-gray-500 mb-2">How you measure success for your ads. <span className="text-blue-500 cursor-pointer hover:underline">About performance goals</span></p>
-                      <div className="relative">
-                        <select className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none appearance-none bg-white">
-                          <option>Maximise post engagement</option>
-                          <option>Maximise ThruPlay views</option>
-                          <option>Maximise 2-second continuous video plays</option>
-                          <option>Maximise daily unique reach</option>
-                          <option>Maximise impressions</option>
-                        </select>
-                        <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none text-xs">▼</span>
-                      </div>
-                    </div>
-                    <div>
-                      <div className="flex items-center gap-1 mb-0.5">
-                        <p className="text-sm font-semibold text-gray-900">Facebook Page</p>
-                        <span className="w-4 h-4 rounded-full border border-gray-400 text-gray-400 text-[9px] flex items-center justify-center">i</span>
-                      </div>
-                      <p className="text-xs text-gray-500 mb-2">Choose the Page that you want to promote.</p>
-                      <div className="relative">
-                        <select className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none appearance-none bg-white">
-                          <option value="">Select Page</option>
-                          <option>HotelPro Official</option>
-                          <option>HotelPro Deals</option>
-                        </select>
-                        <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none text-xs">▼</span>
-                      </div>
-                      <div className="flex items-center border border-gray-200 rounded-lg px-3 py-2 mt-2 gap-2">
-                        <span className="text-gray-400 text-sm">🔍</span>
-                        <input type="text" placeholder="Search by Page name or ID" className="flex-1 text-sm focus:outline-none" />
-                      </div>
-                    </div>
                   </div>
                 )}
 
@@ -3573,36 +3534,6 @@ export default function AdsPage() {
                 {(campaignForm as any).metaBuyingType !== "Reservation" && (campaignForm as any).metaObjective === "Leads" && (
                   <div className="border border-gray-200 rounded-xl p-4">
                     <p className="text-sm text-gray-500 text-center py-4">🚧 Coming Soon</p>
-                  </div>
-                )}
-                    <div className="flex items-center gap-2">
-                      <span className="text-green-500 text-lg">✅</span>
-                      <p className="text-sm font-semibold text-gray-900">Leads</p>
-                    </div>
-                    <div>
-                      <p className="text-sm font-semibold text-gray-900 mb-0.5">Performance goal</p>
-                      <p className="text-xs text-gray-500 mb-2">How you measure success for your ads. <span className="text-blue-500 cursor-pointer hover:underline">About performance goals</span></p>
-                      <div className="relative">
-                        <select className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none appearance-none bg-white">
-                          <option>Maximise number of leads</option>
-                          <option>Maximise number of conversions</option>
-                          <option>Maximise conversion leads</option>
-                        </select>
-                        <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none text-xs">▼</span>
-                      </div>
-                    </div>
-                    <div>
-                      <p className="text-sm font-semibold text-gray-900 mb-0.5">Conversion location</p>
-                      <p className="text-xs text-gray-500 mb-2">Where do you want to collect leads?</p>
-                      <div className="grid grid-cols-3 gap-2">
-                        {[{ icon: "📋", label: "Instant forms" }, { icon: "🌐", label: "Website" }, { icon: "💬", label: "Messenger" }].map((loc) => (
-                          <div key={loc.label} className="border border-gray-200 rounded-lg p-3 flex flex-col items-center gap-1 cursor-pointer hover:border-blue-400">
-                            <span className="text-xl">{loc.icon}</span>
-                            <span className="text-xs text-gray-700">{loc.label}</span>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
                   </div>
                 )}
 
