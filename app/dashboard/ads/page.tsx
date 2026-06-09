@@ -1556,7 +1556,6 @@ export default function AdsPage() {
                                     {[
                                       { label: "Operating Systems", sub: "All operating systems", action: () => setShowOSPopup(true) },
                                       { label: "Device Models", sub: "All device models", action: () => setShowDeviceModelPopup(true) },
-                                      { label: "Networks", sub: "All networks", action: () => {} },
                                     ].map((adv, k) => (
                                       <div key={k} className="bg-gray-50 rounded-lg p-3 cursor-pointer hover:bg-gray-100"
                                         onClick={adv.action}>
