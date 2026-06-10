@@ -1313,7 +1313,7 @@ export default function AdsPage() {
               </div>
             )}
 
-            {campaignStep === 3 && isGoogle && campaignForm.type === "Video" && (campaignForm.goal === "Leads" || campaignForm.goal === "Website traffic" || campaignForm.goal === "Create a campaign without guidance") && (
+            {campaignStep === 3 && isGoogle && campaignForm.type === "Video" && (campaignForm.goal === "Leads" || campaignForm.goal === "Website traffic") && (
               <div className="space-y-4">
 
                 {/* Campaign name */}
@@ -3181,7 +3181,7 @@ export default function AdsPage() {
                 <button onClick={() => setCampaignStep(campaignStep - 1)}
                   className="flex-1 bg-gray-100 text-gray-700 py-2 rounded-lg text-sm font-medium hover:bg-gray-200">← Back</button>
               )}
-              {campaignStep === 5 ? (
+              {campaignStep === 5 || (campaignStep === 4 && campaignForm.type === "Video" && (campaignForm.goal === "Leads" || campaignForm.goal === "Website traffic")) ? (
                 <button onClick={() => { alert("Campaign published!"); setShowGoogleModal(false); setCampaignStep(1); }}
                   className="flex-1 text-white py-2 rounded-lg text-sm font-medium hover:opacity-90 bg-green-600">
                   🚀 Publish Campaign
@@ -3196,7 +3196,7 @@ export default function AdsPage() {
                       : "text-white hover:opacity-90"
                   }`}
                   style={campaignStep === 1 && (!campaignForm.name || !campaignForm.goal || !campaignForm.type) ? {} : { backgroundColor: primaryColor }}>
-                  {campaignStep === 4 ? "Review" : "Continue"}
+                  {campaignStep === 4 || (campaignStep === 3 && campaignForm.type === "Video" && (campaignForm.goal === "Leads" || campaignForm.goal === "Website traffic")) ? "Review" : "Continue"}
                 </button>
               )}
             </div>
