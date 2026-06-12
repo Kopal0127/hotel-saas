@@ -11,14 +11,10 @@ export async function GET(req: NextRequest) {
       const settings = await prisma.revenueSettings.findUnique({ where: { hotelId: hotel.id } });
       if (!settings || !settings.isActive) continue;
 
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
-      const tomorrow = new Date(today);
-      tomorrow.setDate(tomorrow.getDate() + 1);
-      const tomorrowEnd = new Date(tomorrow);
-      tomorrowEnd.setHours(23, 59, 59, 999);
-      const dayAfter = new Date(tomorrow);
-      dayAfter.setDate(dayAfter.getDate() + 1);
+      const now = new Date();
+const tomorrow = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() + 1));
+const tomorrowEnd = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() + 1, 23, 59, 59, 999));
+const today = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
 
       const rooms = await prisma.room.findMany({ where: { hotelId: hotel.id } });
       const roomTypes = [...new Set(rooms.map(r => r.type))];
