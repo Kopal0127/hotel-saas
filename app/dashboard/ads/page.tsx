@@ -3198,18 +3198,8 @@ export default function AdsPage() {
 
                     </div>
 
-                    {/* Row 3: Business name, Videos, Sitelinks, Call to action */}
-                    <div className="grid grid-cols-4 gap-4">
-                      {/* Business name */}
-                      <div className="border border-gray-200 rounded-xl overflow-hidden">
-                        <div className="flex items-center justify-between px-3 py-2 border-b border-gray-200">
-                          <div className="flex items-center gap-2">
-                            <input type="radio" name="business" />
-                            <p className="text-xs font-medium text-gray-900">Business name ⓘ</p>
-                          </div>
-                          <span className="text-gray-400">∨</span>
-                        </div>
-                      </div>
+                   {/* Row 3: Videos, Sitelinks, Call to action */}
+                    <div className="grid grid-cols-3 gap-4">
 
                      {/* Videos */}
                       <div className="border border-gray-200 rounded-xl overflow-hidden">
@@ -3220,28 +3210,114 @@ export default function AdsPage() {
                           </div>
                           <span className="text-gray-400">∨</span>
                         </div>
+                        <div className="p-3 space-y-2">
+                          <label className="flex items-center gap-2 cursor-pointer border border-dashed border-gray-300 rounded-lg px-3 py-2 hover:border-blue-400 hover:bg-blue-50 transition-all">
+                            <span className="text-gray-400">📎</span>
+                            <span className="text-sm text-blue-600">+ Videos</span>
+                            <input type="file" accept="video/*" multiple className="hidden"
+                              onChange={(e) => {
+                                const files = Array.from(e.target.files || []);
+                                const names = files.map(f => f.name);
+                                setCampaignForm({ ...campaignForm, uploadedVideos: [...((campaignForm as any).uploadedVideos || []), ...names] } as any);
+                              }} />
+                          </label>
+                          {((campaignForm as any).uploadedVideos || []).map((name: string, i: number) => (
+                            <div key={i} className="flex items-center justify-between border border-gray-200 rounded-lg px-3 py-2">
+                              <div className="flex items-center gap-2">
+                                <span className="text-gray-400">🎬</span>
+                                <span className="text-xs text-gray-700 truncate max-w-[120px]">{name}</span>
+                              </div>
+                              <button
+                                onClick={() => {
+                                  const updated = ((campaignForm as any).uploadedVideos || []).filter((_: string, idx: number) => idx !== i);
+                                  setCampaignForm({ ...campaignForm, uploadedVideos: updated } as any);
+                                }}
+                                className="text-gray-400 hover:text-red-500 text-xs">×</button>
+                            </div>
+                          ))}
+                        </div>
                       </div>
 
-                      {/* Sitelinks */}
+                     {/* Sitelinks */}
                       <div className="border border-gray-200 rounded-xl overflow-hidden">
-                        <div className="flex items-center justify-between px-3 py-2 border-b border-gray-200">
+                        <div className="flex items-center justify-between px-3 py-2 border-b border-gray-200 cursor-pointer"
+                          onClick={() => setCampaignForm({ ...campaignForm, showSitelinks: !(campaignForm as any).showSitelinks } as any)}>
                           <div className="flex items-center gap-2">
                             <input type="radio" name="sitelinks" />
                             <p className="text-xs font-medium text-gray-900">Sitelinks ⓘ</p>
                           </div>
-                          <span className="text-gray-400">∨</span>
+                          <span className="text-gray-400">{(campaignForm as any).showSitelinks ? "∧" : "∨"}</span>
                         </div>
+                        {(campaignForm as any).showSitelinks && (
+                          <div className="p-3 space-y-2">
+                            {[1, 2, 3].map((num) => (
+                              <div key={num} className="border border-gray-200 rounded-lg overflow-hidden">
+                                <div className="flex items-center justify-between px-3 py-2 bg-gray-50 cursor-pointer"
+                                  onClick={() => setCampaignForm({ ...campaignForm, expandedSitelink: (campaignForm as any).expandedSitelink === num ? null : num } as any)}>
+                                  <div>
+                                    <p className="text-sm font-medium text-gray-900">Sitelink {num}</p>
+                                    <p className="text-xs text-gray-400">Recommended</p>
+                                  </div>
+                                  <span className="text-gray-400 text-lg font-light">
+                                    {(campaignForm as any).expandedSitelink === num ? "∧" : "+"}
+                                  </span>
+                                </div>
+                                {(campaignForm as any).expandedSitelink === num && (
+                                  <div className="p-3 space-y-2">
+                                    <div>
+                                      <input type="text" placeholder="Sitelink text" maxLength={25}
+                                        className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none" />
+                                      <p className="text-xs text-gray-400 text-right mt-0.5">0 / 25</p>
+                                    </div>
+                                    <div>
+                                      <input type="text" placeholder="Description line 1 (recommended)" maxLength={35}
+                                        className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none" />
+                                      <p className="text-xs text-gray-400 text-right mt-0.5">0 / 35</p>
+                                    </div>
+                                    <div>
+                                      <input type="text" placeholder="Description line 2 (recommended)" maxLength={35}
+                                        className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none" />
+                                      <p className="text-xs text-gray-400 text-right mt-0.5">0 / 35</p>
+                                    </div>
+                                    <div>
+                                      <input type="text" placeholder="Final URL"
+                                        className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none" />
+                                    </div>
+                                  </div>
+                                )}
+                              </div>
+                            ))}
+                          </div>
+                        )}
                       </div>
 
                       {/* Call to action */}
                       <div className="border border-gray-200 rounded-xl overflow-hidden">
-                        <div className="flex items-center justify-between px-3 py-2 border-b border-gray-200">
+                        <div className="flex items-center justify-between px-3 py-2 border-b border-gray-200 cursor-pointer"
+                          onClick={() => setCampaignForm({ ...campaignForm, showCallToAction: !(campaignForm as any).showCallToAction } as any)}>
                           <div className="flex items-center gap-2">
                             <input type="checkbox" className="w-4 h-4 accent-blue-600" defaultChecked />
                             <p className="text-xs font-medium text-gray-900">Call to action ⓘ</p>
                           </div>
-                          <span className="text-gray-400">∨</span>
+                          <span className="text-gray-400">{(campaignForm as any).showCallToAction ? "∧" : "∨"}</span>
                         </div>
+                        {(campaignForm as any).showCallToAction && (
+                          <div className="p-3">
+                            <div className="relative">
+                              <select className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none appearance-none bg-white">
+                                <option>Automated (recommended)</option>
+                                <option>Learn more</option>
+                                <option>Get quote</option>
+                                <option>Apply now</option>
+                                <option>Sign up</option>
+                                <option>Contact us</option>
+                                <option>Subscribe</option>
+                                <option>Download</option>
+                              </select>
+                              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none text-xs">▼</span>
+                            </div>
+                          </div>
+                        )}
                       </div>
                     </div>
 
