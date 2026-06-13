@@ -3075,28 +3075,33 @@ export default function AdsPage() {
                       </div>
                     </div>
 
-                    {/* Descriptions */}
-                    <div className="border border-gray-200 rounded-xl overflow-hidden">
-                      <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200">
-                        <div className="flex items-center gap-2">
-                          <input type="radio" name="descriptions" />
-                          <p className="text-sm font-medium text-gray-900">Descriptions (0) ⓘ</p>
-                        </div>
-                        <span className="text-gray-400">∧</span>
-                      </div>
-                      <div className="p-3 space-y-2">
-                        {[0, 1].map(i => (
-                          <div key={i} className="relative">
-                            <input type="text" placeholder="Description" className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none" />
-                            <span className="absolute right-2 top-2 text-xs text-gray-400">0/90</span>
-                            </div>
-                        ))}
-                        <button className="text-sm text-blue-600 hover:underline">+ Description</button>
-                      </div>
-                    </div>
+                    {/* Row: Descriptions + Images + Logos — 3 col */}
+                    <div className="grid grid-cols-3 gap-4">
 
-                    {/* Row 2: Images + Logos */}
-                    <div className="grid grid-cols-2 gap-4">
+                      {/* Descriptions */}
+                      <div className="border border-gray-200 rounded-xl overflow-hidden">
+                        <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200">
+                          <div className="flex items-center gap-2">
+                            <input type="radio" name="descriptions" />
+                            <p className="text-sm font-medium text-gray-900">Descriptions (0) ⓘ</p>
+                          </div>
+                          <span className="text-gray-400">∧</span>
+                        </div>
+                        <div className="p-3 space-y-2">
+                          {[0, 1, 2, 3].map(i => (
+                            <div key={i} className="relative">
+                              <input type="text" placeholder="Description" maxLength={90}
+                                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none pr-14"
+                                onChange={(e) => {
+                                  const counter = e.target.nextElementSibling;
+                                  if (counter) counter.textContent = `${e.target.value.length}/90`;
+                                }} />
+                              <span className="absolute right-2 top-2 text-xs text-gray-400">0/90</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+
                       {/* Images */}
                       <div className="border border-gray-200 rounded-xl overflow-hidden">
                         <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200">
@@ -3107,12 +3112,29 @@ export default function AdsPage() {
                           <span className="text-gray-400">∧</span>
                         </div>
                         <div className="p-3 space-y-2">
-                          <button className="text-sm text-blue-600 hover:underline">+ Images</button>
-                          <p className="text-xs text-gray-500">Suggested Images ⓘ</p>
-                          <div className="grid grid-cols-2 gap-2">
-                            <div className="bg-gray-100 rounded-lg h-20 flex items-center justify-center text-xs text-gray-400">Generated</div>
-                            <div className="bg-gray-100 rounded-lg h-20 flex items-center justify-center text-xs text-gray-400">Enhanced from URL</div>
-                          </div>
+                          <label className="text-sm text-blue-600 hover:underline cursor-pointer">
+                            + Images
+                            <input type="file" accept="image/*" multiple className="hidden"
+                              onChange={(e) => {
+                                const files = Array.from(e.target.files || []);
+                                const urls = files.map(f => URL.createObjectURL(f));
+                                setCampaignForm({ ...campaignForm, uploadedImages: [...((campaignForm as any).uploadedImages || []), ...urls] } as any);
+                              }} />
+                          </label>
+                          {((campaignForm as any).uploadedImages || []).length > 0 && (
+                            <>
+                              <p className="text-xs text-gray-500">Suggested Images ⓘ</p>
+                              <div className="grid grid-cols-2 gap-2">
+                                {((campaignForm as any).uploadedImages || []).map((url: string, i: number) => (
+                                  <div key={i}
+                                    onClick={() => setCampaignForm({ ...campaignForm, selectedImage: url } as any)}
+                                    className={`rounded-lg h-20 overflow-hidden cursor-pointer border-2 transition-all ${(campaignForm as any).selectedImage === url ? "border-blue-500" : "border-transparent"}`}>
+                                    <img src={url} alt={`img-${i}`} className="w-full h-full object-cover" />
+                                  </div>
+                                ))}
+                              </div>
+                            </>
+                          )}
                         </div>
                       </div>
 
@@ -3126,14 +3148,32 @@ export default function AdsPage() {
                           <span className="text-gray-400">∧</span>
                         </div>
                         <div className="p-3 space-y-2">
-                          <button className="text-sm text-blue-600 hover:underline">+ Logos</button>
-                          <p className="text-xs text-gray-500">Suggested logos ⓘ</p>
-                          <div className="grid grid-cols-2 gap-2">
-                            <div className="bg-gray-100 rounded-lg h-20 flex items-center justify-center text-xs text-gray-400">From your URL</div>
-                            <div className="bg-gray-100 rounded-lg h-20 flex items-center justify-center text-xs text-gray-400">From your URL</div>
-                          </div>
+                          <label className="text-sm text-blue-600 hover:underline cursor-pointer">
+                            + Logos
+                            <input type="file" accept="image/*" multiple className="hidden"
+                              onChange={(e) => {
+                                const files = Array.from(e.target.files || []);
+                                const urls = files.map(f => URL.createObjectURL(f));
+                                setCampaignForm({ ...campaignForm, uploadedLogos: [...((campaignForm as any).uploadedLogos || []), ...urls] } as any);
+                              }} />
+                          </label>
+                          {((campaignForm as any).uploadedLogos || []).length > 0 && (
+                            <>
+                              <p className="text-xs text-gray-500">Suggested logos ⓘ</p>
+                              <div className="grid grid-cols-2 gap-2">
+                                {((campaignForm as any).uploadedLogos || []).map((url: string, i: number) => (
+                                  <div key={i}
+                                    onClick={() => setCampaignForm({ ...campaignForm, selectedLogo: url } as any)}
+                                    className={`rounded-lg h-20 overflow-hidden cursor-pointer border-2 transition-all ${(campaignForm as any).selectedLogo === url ? "border-blue-500" : "border-transparent"}`}>
+                                    <img src={url} alt={`logo-${i}`} className="w-full h-full object-cover" />
+                                  </div>
+                                ))}
+                              </div>
+                            </>
+                          )}
                         </div>
                       </div>
+
                     </div>
 
                     {/* Row 3: Business name, Videos, Sitelinks, Call to action */}
