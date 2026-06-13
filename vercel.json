@@ -1,3 +1,6 @@
-{
-  "crons": []
-}
+https://www.nightstays.in/api/cron/revenue/nextday?secret=hotelpro-cron-2026
+https://www.nightstays.in/api/cron/revenue/first12?secret=hotelpro-cron-2026
+https://www.nightstays.in/api/cron/revenue/middle?secret=hotelpro-cron-2026
+https://www.nightstays.in/api/cron/revenue/last?secret=hotelpro-cron-2026
+https://www.nightstays.in/api/cron/rate-tracker?secret=hotelpro-cron-2026
+https://www.nightstays.in/api/cron?secret=hotelpro-cron-2026
