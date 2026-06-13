@@ -3313,9 +3313,8 @@ export default function AdsPage() {
                 </div>
 
                 {/* Signals */}
-                <div>
+               <div>
                   <h3 className="text-lg font-semibold text-gray-900">Signals</h3>
-                  <p className="text-xs text-gray-500 mt-1">Signals provide valuable information about the people you want to reach. They help guide who sees your ads on Google Search, YouTube, and more.</p>
                 </div>
 
                 {/* Search themes */}
@@ -3326,18 +3325,14 @@ export default function AdsPage() {
                   </div>
                   {showSearchThemes && (
                     <div className="p-4">
-                      <p className="text-xs text-gray-500 mb-2">What are some words or phrases people use when searching for your products or services? ⓘ</p>
+                      <p className="text-xs text-gray-500 mb-2">Add your business related keywords ⓘ</p>
                       <input type="text" placeholder="Add search themes (up to 50)"
                         className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none" />
                     </div>
                   )}
                 </div>
 
-               <div className="flex items-center justify-between pt-2">
-                  <p className="text-xs text-gray-400">© Google, 2026. <span className="text-blue-600 cursor-pointer hover:underline">Leave feedback</span></p>
-                </div>
-
-              </div>
+                 </div>
             )}
            </div>
            <div className="flex gap-3 mt-4">
