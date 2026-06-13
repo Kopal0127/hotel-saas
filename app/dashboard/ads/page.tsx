@@ -3241,14 +3241,14 @@ export default function AdsPage() {
                      {/* Sitelinks */}
                       <div className="border border-gray-200 rounded-xl overflow-hidden">
                         <div className="flex items-center justify-between px-3 py-2 border-b border-gray-200 cursor-pointer"
-                          onClick={() => setCampaignForm({ ...campaignForm, showSitelinks: !(campaignForm as any).showSitelinks } as any)}>
+                         onClick={() => setCampaignForm({ ...campaignForm, showSitelinks: (campaignForm as any).showSitelinks === false ? true : false } as any)}>
                           <div className="flex items-center gap-2">
                             <input type="radio" name="sitelinks" />
                             <p className="text-xs font-medium text-gray-900">Sitelinks ⓘ</p>
                           </div>
                           <span className="text-gray-400">{(campaignForm as any).showSitelinks ? "∧" : "∨"}</span>
                         </div>
-                        {(campaignForm as any).showSitelinks && (
+                        {(campaignForm as any).showSitelinks !== false && (
                           <div className="p-3 space-y-2">
                             {[1, 2, 3].map((num) => (
                               <div key={num} className="border border-gray-200 rounded-lg overflow-hidden">
@@ -3294,14 +3294,14 @@ export default function AdsPage() {
                       {/* Call to action */}
                       <div className="border border-gray-200 rounded-xl overflow-hidden">
                         <div className="flex items-center justify-between px-3 py-2 border-b border-gray-200 cursor-pointer"
-                          onClick={() => setCampaignForm({ ...campaignForm, showCallToAction: !(campaignForm as any).showCallToAction } as any)}>
+                         onClick={() => setCampaignForm({ ...campaignForm, showCallToAction: (campaignForm as any).showCallToAction === false ? true : false } as any)}>
                           <div className="flex items-center gap-2">
                             <input type="checkbox" className="w-4 h-4 accent-blue-600" defaultChecked />
                             <p className="text-xs font-medium text-gray-900">Call to action ⓘ</p>
                           </div>
                           <span className="text-gray-400">{(campaignForm as any).showCallToAction ? "∧" : "∨"}</span>
                         </div>
-                        {(campaignForm as any).showCallToAction && (
+                        {(campaignForm as any).showCallToAction !== false && (
                           <div className="p-3">
                             <div className="relative">
                               <select className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none appearance-none bg-white">
