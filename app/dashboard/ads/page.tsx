@@ -3121,15 +3121,26 @@ export default function AdsPage() {
                                 setCampaignForm({ ...campaignForm, uploadedImages: [...((campaignForm as any).uploadedImages || []), ...urls] } as any);
                               }} />
                           </label>
-                          {((campaignForm as any).uploadedImages || []).length > 0 && (
+                         {((campaignForm as any).uploadedImages || []).length > 0 && (
                             <>
                               <p className="text-xs text-gray-500">Suggested Images ⓘ</p>
                               <div className="grid grid-cols-2 gap-2">
                                 {((campaignForm as any).uploadedImages || []).map((url: string, i: number) => (
-                                  <div key={i}
-                                    onClick={() => setCampaignForm({ ...campaignForm, selectedImage: url } as any)}
-                                    className={`rounded-lg h-20 overflow-hidden cursor-pointer border-2 transition-all ${(campaignForm as any).selectedImage === url ? "border-blue-500" : "border-transparent"}`}>
-                                    <img src={url} alt={`img-${i}`} className="w-full h-full object-cover" />
+                                  <div key={i} className="relative group">
+                                    <div
+                                      onClick={() => setCampaignForm({ ...campaignForm, selectedImage: url } as any)}
+                                      className={`rounded-lg h-20 overflow-hidden cursor-pointer border-2 transition-all ${(campaignForm as any).selectedImage === url ? "border-blue-500" : "border-transparent"}`}>
+                                      <img src={url} alt={`img-${i}`} className="w-full h-full object-cover" />
+                                    </div>
+                                    <button
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        const updated = ((campaignForm as any).uploadedImages || []).filter((_: string, idx: number) => idx !== i);
+                                        setCampaignForm({ ...campaignForm, uploadedImages: updated, selectedImage: (campaignForm as any).selectedImage === url ? null : (campaignForm as any).selectedImage } as any);
+                                      }}
+                                      className="absolute top-1 right-1 w-5 h-5 bg-black/60 text-white rounded-full text-xs flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-500">
+                                      ×
+                                    </button>
                                   </div>
                                 ))}
                               </div>
@@ -3162,10 +3173,21 @@ export default function AdsPage() {
                               <p className="text-xs text-gray-500">Suggested logos ⓘ</p>
                               <div className="grid grid-cols-2 gap-2">
                                 {((campaignForm as any).uploadedLogos || []).map((url: string, i: number) => (
-                                  <div key={i}
-                                    onClick={() => setCampaignForm({ ...campaignForm, selectedLogo: url } as any)}
-                                    className={`rounded-lg h-20 overflow-hidden cursor-pointer border-2 transition-all ${(campaignForm as any).selectedLogo === url ? "border-blue-500" : "border-transparent"}`}>
-                                    <img src={url} alt={`logo-${i}`} className="w-full h-full object-cover" />
+                                  <div key={i} className="relative group">
+                                    <div
+                                      onClick={() => setCampaignForm({ ...campaignForm, selectedLogo: url } as any)}
+                                      className={`rounded-lg h-20 overflow-hidden cursor-pointer border-2 transition-all ${(campaignForm as any).selectedLogo === url ? "border-blue-500" : "border-transparent"}`}>
+                                      <img src={url} alt={`logo-${i}`} className="w-full h-full object-cover" />
+                                    </div>
+                                    <button
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        const updated = ((campaignForm as any).uploadedLogos || []).filter((_: string, idx: number) => idx !== i);
+                                        setCampaignForm({ ...campaignForm, uploadedLogos: updated, selectedLogo: (campaignForm as any).selectedLogo === url ? null : (campaignForm as any).selectedLogo } as any);
+                                      }}
+                                      className="absolute top-1 right-1 w-5 h-5 bg-black/60 text-white rounded-full text-xs flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-500">
+                                      ×
+                                    </button>
                                   </div>
                                 ))}
                               </div>
