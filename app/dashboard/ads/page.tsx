@@ -2889,17 +2889,15 @@ export default function AdsPage() {
                             <p className="text-sm font-semibold text-gray-900">Campaign dates</p>
                             <div className="flex items-center gap-3">
                               <div className="relative">
-                                <select className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none appearance-none bg-white pr-8">
-                                  <option>Jun 13, 2026</option>
-                                </select>
-                                <span className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none text-xs">▼</span>
+                                <input type="date"
+                                  className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none appearance-none bg-white text-gray-700 cursor-pointer"
+                                  placeholder="Select a date" />
                               </div>
                               <span className="text-gray-400">—</span>
                               <div className="relative">
-                                <select className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none appearance-none bg-white pr-8">
-                                  <option>Select a date</option>
-                                </select>
-                                <span className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none text-xs">▼</span>
+                                <input type="date"
+                                  className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none appearance-none bg-white text-gray-700 cursor-pointer"
+                                  placeholder="Select a date" />
                               </div>
                             </div>
                           </div>
