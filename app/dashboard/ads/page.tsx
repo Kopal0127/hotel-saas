@@ -3323,11 +3323,53 @@ export default function AdsPage() {
                     <p className="text-sm font-semibold text-gray-900">Search themes</p>
                     <span className="text-gray-400">{showSearchThemes ? "∧" : "∨"}</span>
                   </div>
-                  {showSearchThemes && (
+                 {showSearchThemes && (
                     <div className="p-4">
                       <p className="text-xs text-gray-500 mb-2">Add your business related keywords ⓘ</p>
-                      <input type="text" placeholder="Add search themes (up to 50)"
-                        className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none" />
+                      <div className="border border-gray-300 rounded-lg px-3 py-2 focus-within:border-blue-500">
+                        <div className="flex flex-wrap gap-2 mb-2">
+                          {((campaignForm as any).searchKeywords || []).map((kw: string, i: number) => (
+                            <span key={i} className="flex items-center gap-1 bg-blue-50 text-blue-700 text-xs px-2 py-1 rounded-full border border-blue-200">
+                              {kw}
+                              <button
+                                onClick={() => {
+                                  const updated = ((campaignForm as any).searchKeywords || []).filter((_: string, idx: number) => idx !== i);
+                                  setCampaignForm({ ...campaignForm, searchKeywords: updated } as any);
+                                }}
+                                className="ml-1 text-blue-400 hover:text-red-500">×</button>
+                            </span>
+                          ))}
+                        </div>
+                        <input
+                          type="text"
+                          placeholder={((campaignForm as any).searchKeywords || []).length === 0 ? "Add search themes (up to 50)" : ""}
+                          className="w-full text-sm focus:outline-none"
+                          onKeyDown={(e) => {
+                            const input = e.currentTarget;
+                            const val = input.value.trim().replace(/,$/, "");
+                            if ((e.key === "Enter" || e.key === ",") && val) {
+                              e.preventDefault();
+                              const current: string[] = (campaignForm as any).searchKeywords || [];
+                              if (current.length < 50 && !current.includes(val)) {
+                                setCampaignForm({ ...campaignForm, searchKeywords: [...current, val] } as any);
+                              }
+                              input.value = "";
+                            }
+                          }}
+                          onChange={(e) => {
+                            if (e.target.value.endsWith(",")) {
+                              const val = e.target.value.replace(/,$/, "").trim();
+                              if (val) {
+                                const current: string[] = (campaignForm as any).searchKeywords || [];
+                                if (current.length < 50 && !current.includes(val)) {
+                                  setCampaignForm({ ...campaignForm, searchKeywords: [...current, val] } as any);
+                                }
+                                e.target.value = "";
+                              }
+                            }
+                          }}
+                        />
+                      </div>
                     </div>
                   )}
                 </div>
