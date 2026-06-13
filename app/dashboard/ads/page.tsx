@@ -3266,17 +3266,20 @@ export default function AdsPage() {
                                   <div className="p-3 space-y-2">
                                     <div>
                                       <input type="text" placeholder="Sitelink text" maxLength={25}
-                                        className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none" />
+                                        className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none"
+                                        onChange={(e) => { e.target.nextElementSibling!.textContent = `${e.target.value.length} / 25`; }} />
                                       <p className="text-xs text-gray-400 text-right mt-0.5">0 / 25</p>
                                     </div>
                                     <div>
                                       <input type="text" placeholder="Description line 1 (recommended)" maxLength={35}
-                                        className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none" />
+                                        className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none"
+                                        onChange={(e) => { e.target.nextElementSibling!.textContent = `${e.target.value.length} / 35`; }} />
                                       <p className="text-xs text-gray-400 text-right mt-0.5">0 / 35</p>
                                     </div>
                                     <div>
                                       <input type="text" placeholder="Description line 2 (recommended)" maxLength={35}
-                                        className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none" />
+                                        className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none"
+                                        onChange={(e) => { e.target.nextElementSibling!.textContent = `${e.target.value.length} / 35`; }} />
                                       <p className="text-xs text-gray-400 text-right mt-0.5">0 / 35</p>
                                     </div>
                                     <div>
