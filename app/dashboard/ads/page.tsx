@@ -3024,7 +3024,7 @@ export default function AdsPage() {
 
                     </div>
 
-                    {/* Row 1: Headlines + Long headlines */}
+                   {/* Row 1: Headlines + Long headlines */}
                     <div className="grid grid-cols-2 gap-4">
                       {/* Headlines */}
                       <div className="border border-gray-200 rounded-xl overflow-hidden">
@@ -3036,13 +3036,17 @@ export default function AdsPage() {
                           <span className="text-gray-400">∧</span>
                         </div>
                         <div className="p-3 space-y-2">
-                          {[0, 1, 2].map(i => (
+                          {[0, 1, 2, 3, 4].map(i => (
                             <div key={i} className="relative">
-                              <input type="text" placeholder="Headline" className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none" />
+                              <input type="text" placeholder="Headline" maxLength={30}
+                                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none pr-12"
+                                onChange={(e) => {
+                                  const counter = e.target.nextElementSibling;
+                                  if (counter) counter.textContent = `${e.target.value.length}/30`;
+                                }} />
                               <span className="absolute right-2 top-2 text-xs text-gray-400">0/30</span>
-                              </div>
+                            </div>
                           ))}
-                          <button className="text-sm text-blue-600 hover:underline">+ Headline</button>
                         </div>
                       </div>
 
@@ -3056,11 +3060,17 @@ export default function AdsPage() {
                           <span className="text-gray-400">∧</span>
                         </div>
                         <div className="p-3 space-y-2">
-                          <div className="relative">
-                            <input type="text" placeholder="Long headline" className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none" />
-                            <span className="absolute right-2 top-2 text-xs text-gray-400">0/40</span>
-                          </div>
-                          <button className="text-sm text-blue-600 hover:underline">+ Long headline</button>
+                          {[0, 1, 2, 3, 4].map(i => (
+                            <div key={i} className="relative">
+                              <input type="text" placeholder="Long headline" maxLength={90}
+                                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none pr-14"
+                                onChange={(e) => {
+                                  const counter = e.target.nextElementSibling;
+                                  if (counter) counter.textContent = `${e.target.value.length}/90`;
+                                }} />
+                              <span className="absolute right-2 top-2 text-xs text-gray-400">0/90</span>
+                            </div>
+                          ))}
                         </div>
                       </div>
                     </div>
