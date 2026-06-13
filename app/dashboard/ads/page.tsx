@@ -2966,19 +2966,62 @@ export default function AdsPage() {
                   </div>
                   <div className="p-4 space-y-4">
 
-                    {/* Calls */}
-                    <div className="border border-gray-200 rounded-xl overflow-hidden">
-                      <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200">
-                        <div className="flex items-center gap-2">
-                          <input type="radio" name="calls" />
-                          <p className="text-sm font-medium text-gray-900">Calls</p>
+                   {/* Calls + Business name ek row mein */}
+                    <div className="grid grid-cols-2 gap-4">
+
+                      {/* Calls */}
+                      <div className="border border-gray-200 rounded-xl overflow-hidden">
+                        <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200">
+                          <div className="flex items-center gap-2">
+                            <input type="radio" name="calls" defaultChecked className="accent-blue-600" />
+                            <p className="text-sm font-medium text-gray-900">Calls</p>
+                          </div>
+                          <span className="text-gray-400">∧</span>
                         </div>
-                        <span className="text-gray-400">∧</span>
+                        <div className="p-3 space-y-2">
+                          <p className="text-xs text-gray-500">Add a phone number</p>
+                          <button
+                            className="text-sm text-blue-600 hover:underline"
+                            onClick={() => setShowMoreAssetTypes(!showMoreAssetTypes)}>
+                            + Calls
+                          </button>
+                          {showMoreAssetTypes && (
+                            <div className="border border-gray-200 rounded-lg p-3 space-y-2 mt-2">
+                              <p className="text-sm font-medium text-gray-900">Add new call</p>
+                              <div className="flex items-start gap-2">
+                                <select className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none">
+                                  <option>India (+91)</option>
+                                  <option>United States (+1)</option>
+                                  <option>United Kingdom (+44)</option>
+                                  <option>Australia (+61)</option>
+                                </select>
+                                <div>
+                                  <input type="text" placeholder="Phone number"
+                                    className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none w-52" />
+                                  <p className="text-xs text-gray-400 mt-1">Example: 98765 43210</p>
+                                </div>
+                              </div>
+                            </div>
+                          )}
+                        </div>
                       </div>
-                      <div className="p-3">
-                        <p className="text-xs text-gray-500 mb-2">Add a phone number</p>
-                        <button className="text-sm text-blue-600 hover:underline">+ Calls</button>
+
+                      {/* Business name */}
+                      <div className="border border-gray-200 rounded-xl overflow-hidden">
+                        <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200">
+                          <div className="flex items-center gap-2">
+                            <input type="radio" name="business-name-asset" className="accent-blue-600" />
+                            <p className="text-sm font-medium text-gray-900">Business name</p>
+                            <span className="text-gray-400 text-xs">ⓘ</span>
+                          </div>
+                          <span className="text-gray-400">∧</span>
+                        </div>
+                        <div className="p-3">
+                          <input type="text" placeholder="Business name"
+                            className="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none" />
+                        </div>
                       </div>
+
                     </div>
 
                     {/* Row 1: Headlines + Long headlines */}
