@@ -3188,9 +3188,10 @@ export default function AdsPage() {
 
                      {/* Videos */}
                       <div className="border border-gray-200 rounded-xl overflow-hidden">
-                        <div className="flex items-center justify-between px-3 py-2 border-b border-gray-200">
+                        <div className="flex items-center justify-between px-3 py-2 border-b border-gray-200 cursor-pointer"
+                          onClick={() => setCampaignForm({ ...campaignForm, videosSelected: !(campaignForm as any).videosSelected } as any)}>
                           <div className="flex items-center gap-2">
-                            <input type="radio" name="videos" />
+                            <input type="checkbox" className="w-4 h-4 accent-blue-600" checked={!!(campaignForm as any).videosSelected} onChange={() => {}} />
                             <p className="text-xs font-medium text-gray-900">Videos (0) ⓘ</p>
                           </div>
                           <span className="text-gray-400">∨</span>
@@ -3226,12 +3227,12 @@ export default function AdsPage() {
                      {/* Sitelinks */}
                       <div className="border border-gray-200 rounded-xl overflow-hidden">
                         <div className="flex items-center justify-between px-3 py-2 border-b border-gray-200 cursor-pointer"
-                         onClick={() => setCampaignForm({ ...campaignForm, showSitelinks: (campaignForm as any).showSitelinks === false ? true : false } as any)}>
+                         onClick={() => setCampaignForm({ ...campaignForm, showSitelinks: (campaignForm as any).showSitelinks === false ? true : false, sitelinksSelected: !(campaignForm as any).sitelinksSelected } as any)}>
                           <div className="flex items-center gap-2">
-                            <input type="radio" name="sitelinks" />
+                            <input type="checkbox" className="w-4 h-4 accent-blue-600" checked={!!(campaignForm as any).sitelinksSelected} onChange={() => {}} />
                             <p className="text-xs font-medium text-gray-900">Sitelinks ⓘ</p>
                           </div>
-                          <span className="text-gray-400">{(campaignForm as any).showSitelinks ? "∧" : "∨"}</span>
+                          <span className="text-gray-400">{(campaignForm as any).showSitelinks !== false ? "∧" : "∨"}</span>
                         </div>
                         {(campaignForm as any).showSitelinks !== false && (
                           <div className="p-3 space-y-2">
