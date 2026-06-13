@@ -1874,15 +1874,33 @@ export default function AdsPage() {
                                   </label>
                                 ))}
                               </div>
-                              <label className="flex items-center gap-2 cursor-pointer">
-                                <input type="checkbox" className="w-4 h-4" />
-                                <span className="text-sm text-gray-700">Add locations in bulk</span>
-                              </label>
-                              <div className="border border-gray-300 rounded-lg px-3 py-2">
-                                <input type="text" placeholder="Enter a location to include or exclude"
-                                  className="w-full text-sm focus:outline-none" />
-                              </div>
-                              <p className="text-xs text-gray-400">For example, a country, city, region, or postal code</p>
+                              {locationSearchType === "Location" && (
+                                <>
+                                  <label className="flex items-center gap-2 cursor-pointer">
+                                    <input type="checkbox" className="w-4 h-4" />
+                                    <span className="text-sm text-gray-700">Add locations in bulk</span>
+                                  </label>
+                                  <div className="border border-gray-300 rounded-lg px-3 py-2">
+                                    <input type="text" placeholder="Enter a location to include or exclude"
+                                      className="w-full text-sm focus:outline-none" />
+                                  </div>
+                                  <p className="text-xs text-gray-400">For example, a country, city, region, or postal code</p>
+                                </>
+                              )}
+                              {locationSearchType === "Radius" && (
+                                <div className="flex items-center gap-2">
+                                  <div className="border border-gray-300 rounded-lg px-3 py-2 flex-1">
+                                    <input type="text" placeholder="Enter a place name, address or coordinates"
+                                      className="w-full text-sm focus:outline-none" />
+                                  </div>
+                                  <input type="number" defaultValue={20}
+                                    className="border border-gray-300 rounded-lg px-3 py-2 text-sm w-16 focus:outline-none" />
+                                  <select className="border border-gray-300 rounded-lg px-2 py-2 text-sm focus:outline-none">
+                                    <option>mi</option>
+                                    <option>km</option>
+                                  </select>
+                                </div>
+                              )}
                             </div>
                           )}
                         </div>
