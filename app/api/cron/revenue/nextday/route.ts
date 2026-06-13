@@ -12,9 +12,9 @@ export async function GET(req: NextRequest) {
       if (!settings || !settings.isActive) continue;
 
       const now = new Date();
-const tomorrow = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() + 1));
-const tomorrowEnd = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() + 1, 23, 59, 59, 999));
-const today = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
+      const tomorrow = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() + 1));
+      const tomorrowEnd = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() + 1, 23, 59, 59, 999));
+      const today = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
 
       const rooms = await prisma.room.findMany({ where: { hotelId: hotel.id } });
       const roomTypes = [...new Set(rooms.map(r => r.type))];
@@ -44,7 +44,7 @@ const today = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.get
         const unsoldPercent = (unsoldCount / totalRooms) * 100;
         const bookedPercent = (bookedCount / totalRooms) * 100;
 
-        for (const room of typeRooms) {
+       await Promise.all(typeRooms.map(async (room) => {
           let finalPrice = room.price;
 
           if (unsoldPercent >= settings.nextDayUnsold && settings.nextDayDiscount > 0) {
@@ -53,7 +53,7 @@ const today = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.get
             finalPrice = room.price + (room.price * settings.nextDayMarkup) / 100;
           }
 
-         const existing = await prisma.ratePlan.findFirst({
+          const existing = await prisma.ratePlan.findFirst({
             where: { channelId: null, roomId: room.id, date: tomorrow }
           });
 
@@ -67,7 +67,7 @@ const today = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.get
               data: { channelId: null, roomId: room.id, date: tomorrow, price: finalPrice, available: unsoldCount, isBlocked: false }
             });
           }
-        }
+        }));
       }
     }
 
