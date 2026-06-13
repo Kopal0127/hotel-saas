@@ -1938,13 +1938,48 @@ export default function AdsPage() {
                       <p className="text-xs text-gray-500">Select the languages your customers speak. ⓘ</p>
                       <div className="flex items-center border border-gray-300 rounded-lg px-3 py-2">
                         <span className="text-gray-400 mr-2">🔍</span>
-                        <input type="text" placeholder="Start typing or select a language"
-                          className="flex-1 text-sm focus:outline-none" />
+                        <input
+                          type="text"
+                          placeholder="Type a language and press Enter or comma"
+                          className="flex-1 text-sm focus:outline-none"
+                          onKeyDown={(e) => {
+                            const input = e.currentTarget;
+                            const val = input.value.trim().replace(/,$/, "");
+                            if ((e.key === "Enter" || e.key === ",") && val) {
+                              e.preventDefault();
+                              const current: string[] = (campaignForm as any).languages || ["English"];
+                              if (!current.map(l => l.toLowerCase()).includes(val.toLowerCase())) {
+                                setCampaignForm({ ...campaignForm, languages: [...current, val] } as any);
+                              }
+                              input.value = "";
+                            }
+                          }}
+                          onChange={(e) => {
+                            if (e.target.value.endsWith(",")) {
+                              const val = e.target.value.replace(/,$/, "").trim();
+                              if (val) {
+                                const current: string[] = (campaignForm as any).languages || ["English"];
+                                if (!current.map(l => l.toLowerCase()).includes(val.toLowerCase())) {
+                                  setCampaignForm({ ...campaignForm, languages: [...current, val] } as any);
+                                }
+                                e.target.value = "";
+                              }
+                            }
+                          }}
+                        />
                       </div>
                       <div className="flex flex-wrap gap-2 mt-1">
-                        <span className="flex items-center gap-1 bg-gray-100 text-gray-700 text-xs px-2 py-1 rounded-full">
-                          English <button className="ml-1 text-gray-400 hover:text-gray-600">×</button>
-                        </span>
+                        {((campaignForm as any).languages || ["English"]).map((lang: string, i: number) => (
+                          <span key={i} className="flex items-center gap-1 bg-gray-100 text-gray-700 text-xs px-2 py-1 rounded-full">
+                            {lang}
+                            <button
+                              className="ml-1 text-gray-400 hover:text-gray-600"
+                              onClick={() => {
+                                const current: string[] = (campaignForm as any).languages || ["English"];
+                                setCampaignForm({ ...campaignForm, languages: current.filter((_, idx) => idx !== i) } as any);
+                              }}>×</button>
+                          </span>
+                        ))}
                       </div>
                     </div>
                   </div>
