@@ -2923,30 +2923,37 @@ export default function AdsPage() {
                   </div>
                 </div>
 
-               {/* Asset Group Header */}
+              {/* Asset Group Header */}
                 <div>
                   <h3 className="text-lg font-semibold text-gray-900">Asset group</h3>
                 </div>
 
-                {/* Asset group name */}
-                <div className="border border-gray-200 rounded-xl overflow-hidden">
-                  <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200 bg-gray-50">
-                    <p className="text-sm font-semibold text-gray-900">Asset group name</p>
-                    <span className="text-gray-400">∧</span>
+                {/* Asset group name + Final URL ek row mein */}
+                <div className="grid grid-cols-2 gap-4">
+                  {/* Asset group name */}
+                  <div className="border border-gray-200 rounded-xl overflow-hidden">
+                    <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200 bg-gray-50">
+                      <p className="text-sm font-semibold text-gray-900">Asset group name</p>
+                      <span className="text-gray-400">∧</span>
+                    </div>
+                    <div className="p-4">
+                      <input type="text" defaultValue="Asset Group 1"
+                        className="border border-gray-300 rounded-lg px-3 py-2 text-sm w-64 focus:outline-none" />
+                    </div>
                   </div>
-                  <div className="p-4">
-                    <input type="text" defaultValue="Asset Group 1"
-                      className="border border-gray-300 rounded-lg px-3 py-2 text-sm w-64 focus:outline-none" />
-                  </div>
-                </div>
 
-                {/* Final URL */}
-                <div className="border border-gray-200 rounded-xl overflow-hidden">
-                  <div className="flex items-center justify-between px-4 py-3 bg-gray-50">
-                    <p className="text-sm font-semibold text-gray-900">Final URL</p>
-                    <div className="flex items-center gap-4">
-                      <span className="text-xs text-gray-500">http://ktwebcreations.com</span>
-                      <span className="text-gray-400">∨</span>
+                  {/* Final URL */}
+                  <div className="border border-gray-200 rounded-xl overflow-hidden">
+                    <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200 bg-gray-50">
+                      <p className="text-sm font-semibold text-gray-900">Final URL</p>
+                      <span className="text-gray-400">∧</span>
+                    </div>
+                    <div className="p-4">
+                      <div className="flex items-center border border-gray-300 rounded-lg px-3 py-2.5">
+                        <span className="text-gray-400 mr-2">🔗</span>
+                        <input type="text" placeholder="Final URL"
+                          className="flex-1 text-sm focus:outline-none" />
+                      </div>
                     </div>
                   </div>
                 </div>
