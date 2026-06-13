@@ -1122,7 +1122,6 @@ export default function AdsPage() {
                   <div className="p-4 flex gap-6">
                     <div className="flex-1 space-y-2">
                       <p className="text-sm text-gray-700">Does your campaign have European Union political ads?</p>
-                      <p className="text-xs text-red-500">Required</p>
                       {["Yes, this campaign has EU political ads", "No, this campaign doesn't have EU political ads"].map((opt, i) => (
                         <label key={i} className="flex items-center gap-2 cursor-pointer">
                           <input type="radio" name="display-eu-political" />
@@ -1296,7 +1295,6 @@ export default function AdsPage() {
                   <div className="p-4 flex gap-6">
                     <div className="flex-1 space-y-2">
                       <p className="text-sm text-gray-700">Does your campaign have European Union political ads?</p>
-                      <p className="text-xs text-red-500">Required</p>
                       {["Yes, this campaign has EU political ads", "No, this campaign doesn't have EU political ads"].map((opt, i) => (
                         <label key={i} className="flex items-center gap-2 cursor-pointer">
                           <input type="radio" name="search-eu-political" />
@@ -1432,7 +1430,6 @@ export default function AdsPage() {
                           <span className="text-gray-500 mr-1">₹</span>
                           <input type="number" className="flex-1 text-sm focus:outline-none" />
                         </div>
-                        <p className="text-xs text-red-500 mt-1">Required</p>
                       </div>
                     </div>
                    <div className="border border-gray-200 rounded-lg p-4 space-y-4">
@@ -1991,7 +1988,6 @@ export default function AdsPage() {
                     </div>
                     <div className="p-4 space-y-2">
                       <p className="text-sm text-gray-700">Does your campaign have European Union political ads?</p>
-                      <p className="text-xs text-red-500">Required</p>
                       {["Yes, this campaign has EU political ads", "No, this campaign doesn't have EU political ads"].map((opt, i) => (
                         <label key={i} className="flex items-center gap-2 cursor-pointer">
                           <input type="radio" name="eu-political" />
@@ -2462,8 +2458,7 @@ export default function AdsPage() {
                     <p className="text-sm font-medium text-gray-700 mb-1">Final URL ⓘ <span className="text-red-500">*</span></p>
                     <input type="text" placeholder="https://www.example.com"
                       className="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-blue-500" />
-                    <p className="text-xs text-red-400 mt-0.5">Required</p>
-                  </div>
+                      </div>
 
                   {/* Row 1: Business name, Images, Logos */}
                   <div className="grid grid-cols-3 gap-4">
@@ -2473,7 +2468,6 @@ export default function AdsPage() {
                       <input type="text" placeholder="Business name"
                         className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none" />
                       <div className="flex justify-between mt-1">
-                        <p className="text-xs text-red-400">Required</p>
                         <p className="text-xs text-gray-400">0/25</p>
                       </div>
                     </div>
@@ -2518,7 +2512,6 @@ export default function AdsPage() {
                           className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none" />
                         <span className="absolute right-2 top-2 text-xs text-gray-400">0/30</span>
                       </div>
-                      <p className="text-xs text-red-400 mb-1">Required</p>
                       <button className="text-sm text-blue-600 hover:underline">+ Headline</button>
                     </div>
                     {/* Long headline */}
@@ -2529,8 +2522,7 @@ export default function AdsPage() {
                           className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none" />
                         <span className="absolute right-2 top-2 text-xs text-gray-400">0/90</span>
                       </div>
-                      <p className="text-xs text-red-400">Required</p>
-                    </div>
+                      </div>
                   </div>
 
                   {/* Descriptions full width */}
@@ -2547,7 +2539,6 @@ export default function AdsPage() {
                         className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none" />
                       <span className="absolute right-2 top-2 text-xs text-gray-400">0/90</span>
                     </div>
-                    <p className="text-xs text-red-400 mb-1">Required</p>
                     <button className="text-sm text-blue-600 hover:underline">+ Description</button>
                   </div>
 
@@ -2683,7 +2674,6 @@ export default function AdsPage() {
                               className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none" />
                             <span className="absolute right-2 top-2 text-xs text-gray-400">0/30</span>
                           </div>
-                          {i < 3 && <p className="text-xs text-red-400">Required</p>}
                         </div>
                       ))}
                       <button className="text-sm text-blue-600 hover:underline">+ Headline</button>
@@ -2707,8 +2697,7 @@ export default function AdsPage() {
                               className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none" />
                             <span className="absolute right-2 top-2 text-xs text-gray-400">0/90</span>
                           </div>
-                          <p className="text-xs text-red-400">Required</p>
-                        </div>
+                          </div>
                       ))}
                       <button className="text-sm text-blue-600 hover:underline">+ Description</button>
                     </div>
@@ -3001,8 +2990,7 @@ export default function AdsPage() {
                             <div key={i} className="relative">
                               <input type="text" placeholder="Headline" className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none" />
                               <span className="absolute right-2 top-2 text-xs text-gray-400">0/30</span>
-                              <p className="text-xs text-red-400">Required</p>
-                            </div>
+                              </div>
                           ))}
                           <button className="text-sm text-blue-600 hover:underline">+ Headline</button>
                         </div>
@@ -3041,8 +3029,7 @@ export default function AdsPage() {
                           <div key={i} className="relative">
                             <input type="text" placeholder="Description" className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none" />
                             <span className="absolute right-2 top-2 text-xs text-gray-400">0/90</span>
-                            <p className="text-xs text-red-400">Required</p>
-                          </div>
+                            </div>
                         ))}
                         <button className="text-sm text-blue-600 hover:underline">+ Description</button>
                       </div>
