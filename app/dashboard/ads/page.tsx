@@ -3512,8 +3512,8 @@ export default function AdsPage() {
 
             <div className="space-y-5">
 
-              {/* Row 1: Buying Type + Campaign Name */}
-              <div className="grid grid-cols-2 gap-4">
+              {/* Row 1: Buying Type + Campaign Name + Ad Set Name */}
+              <div className="grid grid-cols-3 gap-4">
                 <div>
                   <label className="text-xs font-medium text-gray-500 mb-1.5 flex items-center gap-1 block">
                     Choose a buying type
@@ -3543,6 +3543,16 @@ export default function AdsPage() {
                       type="text"
                       value={campaignForm.name || `New ${(campaignForm as any).metaObjective || "Awareness"} campaign`}
                       onChange={(e) => setCampaignForm({ ...campaignForm, name: e.target.value })}
+                      className="w-full border border-gray-200 rounded-lg pl-8 pr-3 py-2 text-sm focus:outline-none focus:border-blue-500" />
+                  </div>
+                </div>
+                <div>
+                  <label className="text-xs font-medium text-gray-500 mb-1.5 block">Ad set name</label>
+                  <div className="relative">
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-green-500 text-sm">✓</span>
+                    <input
+                      type="text"
+                      defaultValue={`New ${(campaignForm as any).metaObjective || "Awareness"} ad set`}
                       className="w-full border border-gray-200 rounded-lg pl-8 pr-3 py-2 text-sm focus:outline-none focus:border-blue-500" />
                   </div>
                 </div>
@@ -3583,22 +3593,6 @@ export default function AdsPage() {
            {/* ==================== STEP 2 ==================== */}
             {campaignStep === 2 && (
               <div className="space-y-5 mt-5 border-t border-gray-100 pt-5">
-
-                {/* Ad Set Name — SABKE LIYE COMMON */}
-                <div className="border border-gray-200 rounded-xl p-4">
-                  <div className="flex items-center gap-2 mb-3">
-                    <span className="text-green-500 text-lg">✅</span>
-                    <p className="text-sm font-semibold text-gray-900">Ad set name</p>
-                  </div>
-                  <div className="flex gap-2">
-                    <input type="text"
-                      defaultValue={`New ${(campaignForm as any).metaObjective || "Awareness"} ad set`}
-                      className="flex-1 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-500" />
-                    <button className="border border-gray-200 rounded-lg px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">
-                      Create template
-                    </button>
-                  </div>
-                </div>
 
                 {/* ===== AUCTION - AWARENESS ===== */}
                 {((campaignForm as any).metaBuyingType !== "Reservation") && ((campaignForm as any).metaObjective === "Awareness" || !(campaignForm as any).metaObjective) && (
