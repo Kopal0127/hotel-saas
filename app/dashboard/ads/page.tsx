@@ -3639,8 +3639,6 @@ export default function AdsPage() {
                         <div className="relative">
                           <select className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none appearance-none bg-white">
                             <option value="">Select Page</option>
-                            <option>HotelPro Official</option>
-                            <option>HotelPro Deals</option>
                           </select>
                           <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none text-xs">▼</span>
                         </div>
@@ -3757,8 +3755,6 @@ export default function AdsPage() {
                         <div className="relative">
                           <select className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none appearance-none bg-white">
                             <option value="">Select Page</option>
-                            <option>HotelPro Official</option>
-                            <option>HotelPro Deals</option>
                           </select>
                           <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none text-xs">▼</span>
                         </div>
