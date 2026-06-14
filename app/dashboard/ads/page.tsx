@@ -3597,6 +3597,7 @@ export default function AdsPage() {
                 {/* ===== AUCTION - AWARENESS ===== */}
                 {((campaignForm as any).metaBuyingType !== "Reservation") && ((campaignForm as any).metaObjective === "Awareness" || !(campaignForm as any).metaObjective) && (
                   <div className="space-y-4">
+                   <div className="grid grid-cols-2 gap-4">
                     <div className="border border-gray-200 rounded-xl p-4 space-y-4">
                       <div className="flex items-center gap-2">
                         <span className="text-green-500 text-lg">✅</span>
@@ -3668,6 +3669,7 @@ export default function AdsPage() {
                         <span className="text-sm text-gray-600">days</span>
                       </div>
                       <p className="text-xs text-gray-400">As a maximum, we'll aim to stay under 2 impressions every 7 days.</p>
+                    </div>
                     </div>
                   </div>
                 )}
