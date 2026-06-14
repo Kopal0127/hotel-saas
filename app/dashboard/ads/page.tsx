@@ -3666,8 +3666,131 @@ export default function AdsPage() {
                         <input type="number" defaultValue={7} min={1} className="border border-gray-200 rounded-lg px-3 py-2 text-sm w-20 focus:outline-none text-center" />
                         <span className="text-sm text-gray-600">days</span>
                       </div>
-                      <p className="text-xs text-gray-400">As a maximum, we'll aim to stay under 2 impressions every 7 days.</p>
+                     <p className="text-xs text-gray-400">As a maximum, we'll aim to stay under 2 impressions every 7 days.</p>
                     </div>
+                    </div>
+
+                    {/* Budget & Schedule + Locations */}
+                    <div className="grid grid-cols-2 gap-4">
+
+                      {/* Budget & Schedule */}
+                      <div className="border border-gray-200 rounded-xl p-4 space-y-4">
+                        <div className="flex items-center gap-2">
+                          <span className="text-green-500 text-lg">✅</span>
+                          <p className="text-sm font-semibold text-gray-900">Budget & schedule</p>
+                        </div>
+                        <div>
+                          <p className="text-sm font-semibold text-gray-900 mb-1">Budget <span className="w-4 h-4 rounded-full border border-gray-400 text-gray-400 text-[9px] inline-flex items-center justify-center">i</span></p>
+                          <div className="flex items-center gap-2">
+                            <div className="relative">
+                              <select className="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none appearance-none bg-white pr-8">
+                                <option>Daily budget</option>
+                                <option>Lifetime budget</option>
+                              </select>
+                              <span className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none text-xs">▼</span>
+                            </div>
+                            <div className="flex items-center border border-gray-200 rounded-lg px-3 py-2 flex-1">
+                              <span className="text-gray-500 mr-1">₹</span>
+                              <input type="number" defaultValue={200} className="flex-1 text-sm focus:outline-none" />
+                              <span className="text-gray-400 text-xs ml-2">INR</span>
+                            </div>
+                          </div>
+                          <p className="text-xs text-gray-500 mt-2">You are using ad set budget sharing and we'll aim to spend an average of ₹200. Your maximum daily spend is ₹350 and your maximum weekly spend is ₹1400. Go to <span className="text-blue-500 cursor-pointer hover:underline">campaign level</span> to make updates.</p>
+                        </div>
+                        <div>
+                          <p className="text-sm font-semibold text-gray-900 mb-3">Schedule</p>
+                          <div className="space-y-3">
+                            <div>
+                              <p className="text-xs font-medium text-gray-700 mb-1">Start date</p>
+                              <div className="flex items-center gap-2">
+                                <div className="flex items-center border border-gray-200 rounded-lg px-3 py-2 flex-1 gap-2">
+                                  <span className="text-gray-400">📅</span>
+                                  <input type="date" defaultValue={new Date().toISOString().split('T')[0]} className="flex-1 text-sm focus:outline-none bg-transparent" />
+                                </div>
+                                <div className="flex items-center border border-gray-200 rounded-lg px-3 py-2 flex-1 gap-2">
+                                  <span className="text-gray-400">🕐</span>
+                                  <input type="time" defaultValue="20:19" className="flex-1 text-sm focus:outline-none bg-transparent" />
+                                  <span className="text-xs text-gray-400">GMT+5:30</span>
+                                </div>
+                              </div>
+                            </div>
+                            <div>
+                              <p className="text-xs font-medium text-gray-700 mb-1">End date</p>
+                              <label className="flex items-center gap-2 cursor-pointer mb-2">
+                                <input type="checkbox"
+                                  checked={!!(campaignForm as any).metaEndDate}
+                                  onChange={(e) => setCampaignForm({ ...campaignForm, metaEndDate: e.target.checked } as any)}
+                                  className="w-4 h-4 accent-blue-600" />
+                                <span className="text-sm text-gray-700">Set an end date</span>
+                              </label>
+                              {(campaignForm as any).metaEndDate && (
+                                <div className="flex items-center gap-2">
+                                  <div className="relative">
+                                    <select className="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none appearance-none bg-white pr-8">
+                                      <option>30 days</option>
+                                      <option>60 days</option>
+                                      <option>90 days</option>
+                                    </select>
+                                    <span className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none text-xs">▼</span>
+                                  </div>
+                                  <div className="flex items-center border border-gray-200 rounded-lg px-3 py-2 flex-1 gap-2">
+                                    <span className="text-gray-400">📅</span>
+                                    <input type="date" className="flex-1 text-sm focus:outline-none bg-transparent" />
+                                  </div>
+                                  <div className="flex items-center border border-gray-200 rounded-lg px-3 py-2 flex-1 gap-2">
+                                    <span className="text-gray-400">🕐</span>
+                                    <input type="time" defaultValue="20:19" className="flex-1 text-sm focus:outline-none bg-transparent" />
+                                    <span className="text-xs text-gray-400">GMT+5:30</span>
+                                  </div>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Locations */}
+                      <div className="border border-gray-200 rounded-xl p-4 space-y-4">
+                        <p className="text-sm font-semibold text-gray-900">* Locations <span className="w-4 h-4 rounded-full border border-gray-400 text-gray-400 text-[9px] inline-flex items-center justify-center">i</span></p>
+                        <div className="border border-gray-200 rounded-lg p-3 space-y-2">
+                          <p className="text-sm font-medium text-gray-700">India</p>
+                          <div className="flex items-center gap-2">
+                            <div className="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center text-sm">📍</div>
+                            <div className="relative">
+                              <select className="border border-gray-200 rounded-lg px-3 py-1.5 text-sm focus:outline-none appearance-none bg-white pr-8">
+                                <option>India</option>
+                                <option>United States</option>
+                                <option>United Kingdom</option>
+                                <option>Australia</option>
+                                <option>Canada</option>
+                              </select>
+                              <span className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none text-xs">▼</span>
+                            </div>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <div className="relative">
+                            <select className="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none appearance-none bg-white pr-8">
+                              <option>Include</option>
+                              <option>Exclude</option>
+                            </select>
+                            <span className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none text-xs">▼</span>
+                          </div>
+                          <div className="flex items-center border border-gray-200 rounded-lg px-3 py-2 flex-1 gap-2">
+                            <span className="text-gray-400">🔍</span>
+                            <input type="text" placeholder="Search locations" className="flex-1 text-sm focus:outline-none" />
+                          </div>
+                          <div className="relative">
+                            <select className="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none appearance-none bg-white pr-8">
+                              <option>Browse</option>
+                              <option>Bulk</option>
+                            </select>
+                            <span className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none text-xs">▼</span>
+                          </div>
+                          <button className="border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-600 hover:bg-gray-50">∧</button>
+                        </div>
+                      </div>
+
                     </div>
                   </div>
                 )}
