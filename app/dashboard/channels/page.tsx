@@ -496,8 +496,11 @@ export default function ChannelsPage() {
   const [connectModal, setConnectModal] = useState<string | null>(null)
   const [form, setForm] = useState({ apiKey: '', apiSecret: '', propertyId: '' })
   const [activeTab, setActiveTab] = useState<'channels' | 'ranking' | 'promotions'>('channels')
+  const [providerModal, setProviderModal] = useState(false)
+  const [providerForm, setProviderForm] = useState({ apiKey: '', apiSecret: '', accountId: '' })
+  const [providerConnected, setProviderConnected] = useState(false)
 
-  useEffect(() => { fetchChannels() }, [])
+  useEffect(() => { fetchChannels(); fetchProvider() }, [])
 
   async function fetchChannels() {
     setLoading(true)
@@ -509,6 +512,35 @@ export default function ChannelsPage() {
       showToast("Channels load nahi ho sake!", "error")
     }
     setLoading(false)
+  }
+  async function fetchProvider() {
+    try {
+      const res = await fetch('/api/channels/provider', { credentials: 'include' })
+      const data = await res.json()
+      setProviderConnected(!!data.provider?.isConnected)
+    } catch(e) {
+      // silent fail
+    }
+  }
+  async function connectProvider() {
+    try {
+      const res = await fetch('/api/channels/provider', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(providerForm)
+      })
+      if (res.ok) {
+        showToast("Connectivity Provider connect ho gaya! ✅", "success")
+        setProviderConnected(true)
+        addLog('✅ Connectivity Provider connected!')
+      } else {
+        showToast("Provider connect nahi ho saka!", "error")
+      }
+    } catch(e) {
+      showToast("Kuch galat hua, dobara try karo!", "error")
+    }
+    setProviderModal(false)
+    setProviderForm({ apiKey: '', apiSecret: '', accountId: '' })
   }
 
   async function connectChannel(name: string) {
@@ -624,6 +656,26 @@ export default function ChannelsPage() {
         {/* ✅ OTA Channels Tab */}
         {activeTab === 'channels' && (
           <>
+          <div className="bg-white rounded-xl border border-gray-200 p-4 md:p-6 shadow-sm mb-6">
+              <div className="flex justify-between items-center">
+                <div className="flex items-center gap-3">
+                  <span className="text-3xl">🔌</span>
+                  <div>
+                    <h3 className="font-semibold text-gray-800 text-sm md:text-base">Connectivity Provider</h3>
+                    <p className="text-xs text-gray-500">Channel manager service se connect karo</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-3">
+                  <span className={`text-xs px-2 py-1 rounded-full font-medium ${providerConnected ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}`}>
+                    {providerConnected ? '● Connected' : '○ Not Connected'}
+                  </span>
+                  <button onClick={() => setProviderModal(true)}
+                    className={`px-4 py-2 rounded-lg text-sm font-medium ${providerConnected ? 'bg-gray-100 text-gray-700' : 'bg-blue-600 text-white hover:bg-blue-700'}`}>
+                    {providerConnected ? '⚙️ Update' : '🔌 Connect Provider'}
+                  </button>
+                </div>
+              </div>
+            </div>
             {loading ? (
               <p className="text-gray-400">Loading channels...</p>
             ) : (
@@ -642,9 +694,10 @@ export default function ChannelsPage() {
                           {isConnected ? '● Connected' : '○ Not Connected'}
                         </span>
                       </div>
-                      <button onClick={() => setConnectModal(ota.name)}
-                        className={`w-full py-2 rounded-lg text-sm font-medium ${isConnected ? 'bg-gray-100 text-gray-700' : 'bg-blue-600 text-white hover:bg-blue-700'}`}>
-                        {isConnected ? '⚙️ Update' : '🔌 Connect'}
+                      <button onClick={() => providerConnected && setConnectModal(ota.name)}
+                        disabled={!providerConnected}
+                        className={`w-full py-2 rounded-lg text-sm font-medium ${!providerConnected ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : isConnected ? 'bg-gray-100 text-gray-700' : 'bg-blue-600 text-white hover:bg-blue-700'}`}>
+                        {!providerConnected ? '🔒 Provider Connect Karo Pehle' : isConnected ? '⚙️ Update' : '🔌 Enable'}
                       </button>
                     </div>
                   )
@@ -773,6 +826,34 @@ export default function ChannelsPage() {
             </div>
           </div>
         </div>
+      )}
+
+      {providerModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 px-4">
+          <div className="bg-white rounded-xl p-6 w-full max-w-sm shadow-xl">
+            <h3 className="font-bold text-lg mb-4">Connect Connectivity Provider</h3>
+            <div className="space-y-3">
+              <input placeholder="API Key" value={providerForm.apiKey}
+                onChange={e => setProviderForm({ ...providerForm, apiKey: e.target.value })}
+                className="w-full border rounded-lg px-3 py-2 text-sm" />
+              <input placeholder="API Secret" value={providerForm.apiSecret}
+                onChange={e => setProviderForm({ ...providerForm, apiSecret: e.target.value })}
+                className="w-full border rounded-lg px-3 py-2 text-sm" />
+              <input placeholder="Account ID" value={providerForm.accountId}
+                onChange={e => setProviderForm({ ...providerForm, accountId: e.target.value })}
+                className="w-full border rounded-lg px-3 py-2 text-sm" />
+              <p className="text-xs text-blue-600 bg-blue-50 p-2 rounded">
+                💡 Fields blank chhod sakte ho — mock mode mein kaam karega
+              </p>
+            </div>
+            <div className="flex gap-3 mt-4">
+              <button onClick={() => setProviderModal(false)}
+                className="flex-1 py-2 border rounded-lg text-sm">Cancel</button>
+              <button onClick={connectProvider}
+                className="flex-1 py-2 bg-blue-600 text-white rounded-lg text-sm">Connect</button>
+            </div>
+          </div>
+       </div>
       )}
 
       {toast && <Toast message={toast.message} type={toast.type} onClose={hideToast} />}

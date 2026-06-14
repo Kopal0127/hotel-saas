@@ -39,6 +39,7 @@ model Hotel {
   purchases         Purchase[]
   expenses          Expense[]
   pettyCash         PettyCash[]
+  connectivityProvider  ConnectivityProvider?
 }
 
 model Room {
@@ -130,6 +131,19 @@ model OtaChannel {
   ratePlans   RatePlan[]
 
   @@unique([hotelId, name])
+}
+model ConnectivityProvider {
+  id            String   @id @default(cuid())
+  hotelId       String   @unique
+  hotel         Hotel    @relation(fields: [hotelId], references: [id])
+  providerName  String?
+  apiKey        String?
+  apiSecret     String?
+  accountId     String?
+  isConnected   Boolean  @default(false)
+  connectedAt   DateTime?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 }
 
 model RatePlan {
