@@ -3737,12 +3737,7 @@ export default function AdsPage() {
                                     <span className="text-gray-400">📅</span>
                                     <input type="date" className="flex-1 text-sm focus:outline-none bg-transparent" />
                                   </div>
-                                  <div className="flex items-center border border-gray-200 rounded-lg px-3 py-2 flex-1 gap-2">
-                                    <span className="text-gray-400">🕐</span>
-                                    <input type="time" defaultValue="20:19" className="flex-1 text-sm focus:outline-none bg-transparent" />
-                                    <span className="text-xs text-gray-400">GMT+5:30</span>
                                   </div>
-                                </div>
                               )}
                             </div>
                           </div>
