@@ -3781,6 +3781,94 @@ export default function AdsPage() {
                         </div>
                       </div>
 
+                   {/* Audience Section */}
+                    <div className="grid grid-cols-2 gap-4">
+
+                      {/* Include custom audiences */}
+                      <div className="border border-gray-200 rounded-xl p-4 space-y-4">
+                        <div className="flex items-center justify-between">
+                          <p className="text-sm font-semibold text-gray-900">Include these custom audiences <span className="w-4 h-4 rounded-full border border-gray-400 text-gray-400 text-[9px] inline-flex items-center justify-center ml-1">i</span></p>
+                        </div>
+                        <div className="flex items-center border border-gray-200 rounded-lg px-3 py-2 gap-2">
+                          <span className="text-gray-400">🔍</span>
+                          <input type="text" placeholder="Search existing audiences" className="flex-1 text-sm focus:outline-none" />
+                        </div>
+                        <div>
+                          <p className="text-sm font-semibold text-gray-900 mb-2">Age <span className="w-4 h-4 rounded-full border border-gray-400 text-gray-400 text-[9px] inline-flex items-center justify-center ml-1">i</span></p>
+                          <div className="flex items-center gap-2">
+                           <div className="relative">
+                              <select defaultValue="65+" className="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none appearance-none bg-white pr-8">
+                                {["18","19","20","21","22","23","24","25","26","27","28","29","30","31","32","33","34","35","36","37","38","39","40","41","42","43","44","45","46","47","48","49","50","51","52","53","54","55","56","57","58","59","60","61","62","63","64","65+"].map(a => <option key={a}>{a}</option>)}
+                              </select>
+                              <span className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none text-xs">▼</span>
+                            </div>
+                          </div>
+                        </div>
+                        <div>
+                          <p className="text-sm font-semibold text-gray-900 mb-2">Gender <span className="w-4 h-4 rounded-full border border-gray-400 text-gray-400 text-[9px] inline-flex items-center justify-center ml-1">i</span></p>
+                          <div className="flex items-center gap-4">
+                            {["All", "Men", "Women"].map((g) => (
+                              <label key={g} className="flex items-center gap-2 cursor-pointer">
+                                <input type="radio" name="meta-gender" defaultChecked={g === "All"} className="accent-blue-600" />
+                                <span className="text-sm text-gray-700">{g}</span>
+                              </label>
+                            ))}
+                          </div>
+                        </div>
+                        <div>
+                          <p className="text-sm font-semibold text-gray-900 mb-1">Detailed targeting</p>
+                          <p className="text-xs font-medium text-gray-700 mb-2">Include people who match <span className="w-4 h-4 rounded-full border border-gray-400 text-gray-400 text-[9px] inline-flex items-center justify-center ml-1">i</span></p>
+                          <div className="flex items-center border border-gray-200 rounded-lg px-3 py-2 gap-2">
+                            <span className="text-gray-400">🔍</span>
+                            <input type="text" placeholder="Add demographics, interests or behaviours" className="flex-1 text-sm focus:outline-none" />
+                            <button className="text-sm text-blue-600 hover:underline font-medium">Browse</button>
+                          </div>
+                          <div className="mt-3">
+                            <p className="text-sm font-semibold text-gray-900 mb-2">Create new</p>
+                            <div className="space-y-2">
+                              <button className="w-full text-left px-3 py-2 border border-gray-200 rounded-lg text-sm text-gray-700 hover:bg-gray-50 hover:border-blue-400 transition-all">
+                                Custom audience source
+                              </button>
+                              <button className="w-full text-left px-3 py-2 border border-gray-200 rounded-lg text-sm text-gray-700 hover:bg-gray-50 hover:border-blue-400 transition-all">
+                                Lookalike audience
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Exclude + Languages */}
+                      <div className="border border-gray-200 rounded-xl p-4 space-y-4">
+                        <div>
+                          <p className="text-sm font-semibold text-gray-900 mb-1">Minimum age <span className="w-4 h-4 rounded-full border border-gray-400 text-gray-400 text-[9px] inline-flex items-center justify-center ml-1">i</span></p>
+                          <div className="relative w-24">
+                            <select className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none appearance-none bg-white pr-8">
+                              {["18","21","25"].map(a => <option key={a}>{a}</option>)}
+                            </select>
+                            <span className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none text-xs">▼</span>
+                          </div>
+                          <label className="flex items-center gap-2 cursor-pointer mt-2">
+                            <input type="checkbox" className="w-4 h-4 accent-blue-600" />
+                            <span className="text-xs text-gray-700">Include people on WhatsApp whose age is unknown</span>
+                          </label>
+                        </div>
+                        <div>
+                          <p className="text-sm font-semibold text-gray-900 mb-2">Exclude these custom audiences <span className="w-4 h-4 rounded-full border border-gray-400 text-gray-400 text-[9px] inline-flex items-center justify-center ml-1">i</span></p>
+                          <div className="flex items-center border border-gray-200 rounded-lg px-3 py-2 gap-2">
+                            <span className="text-gray-400">🔍</span>
+                            <input type="text" placeholder="Search existing audiences" className="flex-1 text-sm focus:outline-none" />
+                          </div>
+                        </div>
+                        <div>
+                          <p className="text-sm font-semibold text-gray-900 mb-1">Languages <span className="w-4 h-4 rounded-full border border-gray-400 text-gray-400 text-[9px] inline-flex items-center justify-center ml-1">i</span></p>
+                          <div className="flex items-center border border-gray-200 rounded-lg px-3 py-2 gap-2">
+                            <span className="text-gray-400">🔍</span>
+                            <input type="text" placeholder="Search languages" className="flex-1 text-sm focus:outline-none" />
+                          </div>
+                        </div>
+                      </div>
+
+                    </div>
                     </div>
                   </div>
                 )}
