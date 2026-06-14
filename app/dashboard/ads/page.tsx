@@ -1847,13 +1847,65 @@ export default function AdsPage() {
                           <span className="text-sm text-gray-700">{opt}</span>
                         </label>
                       ))}
-                      {locationOption === "Enter another location" && (
+                     {locationOption === "Enter another location" && (
                         <div className="mt-2 space-y-2">
-                          <div className="flex items-center border border-gray-300 rounded-lg px-3 py-2">
-                            <span className="text-gray-400 mr-2">🔍</span>
-                            <input type="text" placeholder="Enter a location to include or exclude"
-                              className="flex-1 text-sm focus:outline-none" />
+                          <div className="relative">
+                            <div className="flex items-center border border-gray-300 rounded-lg px-3 py-2">
+                              <span className="text-gray-400 mr-2">🔍</span>
+                              <input type="text" placeholder="Enter a location to include or exclude"
+                                className="flex-1 text-sm focus:outline-none"
+                                onChange={async (e) => {
+                                  const val = e.target.value.trim();
+                                  if (val.length < 2) {
+                                    setCampaignForm({ ...campaignForm, locationResults: [], locationQuery: val } as any);
+                                    return;
+                                  }
+                                  setCampaignForm({ ...campaignForm, locationQuery: val } as any);
+                                  try {
+                                    const res = await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(val)}&format=json&limit=5`);
+                                    const data = await res.json();
+                                    setCampaignForm((prev: any) => ({ ...prev, locationResults: data }));
+                                  } catch {
+                                    setCampaignForm((prev: any) => ({ ...prev, locationResults: [] }));
+                                  }
+                                }}
+                              />
+                            </div>
+                            {((campaignForm as any).locationResults || []).length > 0 && (
+                              <div className="absolute z-10 w-full bg-white border border-gray-200 rounded-lg shadow-lg mt-1 max-h-48 overflow-y-auto">
+                                {((campaignForm as any).locationResults || []).map((result: any, i: number) => (
+                                  <div key={i}
+                                    className="px-3 py-2 text-sm text-gray-700 hover:bg-blue-50 cursor-pointer border-b border-gray-100"
+                                    onClick={() => {
+                                      const selected = result.display_name;
+                                      const current: string[] = (campaignForm as any).selectedLocations || [];
+                                      if (!current.includes(selected)) {
+                                        setCampaignForm({ ...campaignForm, selectedLocations: [...current, selected], locationResults: [], locationQuery: "" } as any);
+                                      } else {
+                                        setCampaignForm({ ...campaignForm, locationResults: [], locationQuery: "" } as any);
+                                      }
+                                    }}>
+                                    📍 {result.display_name}
+                                  </div>
+                                ))}
+                              </div>
+                            )}
                           </div>
+                          {((campaignForm as any).selectedLocations || []).length > 0 && (
+                            <div className="flex flex-wrap gap-2 mt-2">
+                              {((campaignForm as any).selectedLocations || []).map((loc: string, i: number) => (
+                                <span key={i} className="flex items-center gap-1 bg-blue-50 text-blue-700 text-xs px-2 py-1 rounded-full border border-blue-200">
+                                  📍 {loc}
+                                  <button
+                                    onClick={() => {
+                                      const updated = ((campaignForm as any).selectedLocations || []).filter((_: string, idx: number) => idx !== i);
+                                      setCampaignForm({ ...campaignForm, selectedLocations: updated } as any);
+                                    }}
+                                    className="ml-1 text-blue-400 hover:text-red-500">×</button>
+                                </span>
+                              ))}
+                            </div>
+                          )}
                           <p className="text-xs text-gray-400">For example, a country, city, region, or postal code</p>
                           <button onClick={() => setShowAdvancedSearch(!showAdvancedSearch)}
                             className="text-sm text-blue-600 hover:underline">
@@ -1884,18 +1936,59 @@ export default function AdsPage() {
                                   <p className="text-xs text-gray-400">For example, a country, city, region, or postal code</p>
                                 </>
                               )}
-                              {locationSearchType === "Radius" && (
-                                <div className="flex items-center gap-2">
-                                  <div className="border border-gray-300 rounded-lg px-3 py-2 flex-1">
-                                    <input type="text" placeholder="Enter a place name, address or coordinates"
-                                      className="w-full text-sm focus:outline-none" />
+                             {locationSearchType === "Radius" && (
+                                <div className="space-y-2">
+                                  <div className="flex items-center gap-2">
+                                    <div className="relative flex-1">
+                                      <div className="flex items-center border border-gray-300 rounded-lg px-3 py-2">
+                                        <input type="text" placeholder="Enter a place name, address or coordinates"
+                                          className="w-full text-sm focus:outline-none"
+                                          onChange={async (e) => {
+                                            const val = e.target.value.trim();
+                                            if (val.length < 2) {
+                                              setCampaignForm({ ...campaignForm, radiusResults: [], radiusQuery: val } as any);
+                                              return;
+                                            }
+                                            setCampaignForm({ ...campaignForm, radiusQuery: val } as any);
+                                            try {
+                                              const res = await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(val)}&format=json&limit=5`);
+                                              const data = await res.json();
+                                              setCampaignForm((prev: any) => ({ ...prev, radiusResults: data }));
+                                            } catch {
+                                              setCampaignForm((prev: any) => ({ ...prev, radiusResults: [] }));
+                                            }
+                                          }}
+                                        />
+                                      </div>
+                                      {((campaignForm as any).radiusResults || []).length > 0 && (
+                                        <div className="absolute z-10 w-full bg-white border border-gray-200 rounded-lg shadow-lg mt-1 max-h-48 overflow-y-auto">
+                                          {((campaignForm as any).radiusResults || []).map((result: any, i: number) => (
+                                            <div key={i}
+                                              className="px-3 py-2 text-sm text-gray-700 hover:bg-blue-50 cursor-pointer border-b border-gray-100"
+                                              onClick={() => {
+                                                setCampaignForm({ ...campaignForm, radiusLocation: result.display_name, radiusResults: [], radiusQuery: result.display_name } as any);
+                                              }}>
+                                              📍 {result.display_name}
+                                            </div>
+                                          ))}
+                                        </div>
+                                      )}
+                                    </div>
+                                    <input type="number" defaultValue={20}
+                                      className="border border-gray-300 rounded-lg px-3 py-2 text-sm w-16 focus:outline-none" />
+                                    <select className="border border-gray-300 rounded-lg px-2 py-2 text-sm focus:outline-none">
+                                      <option>mi</option>
+                                      <option>km</option>
+                                    </select>
                                   </div>
-                                  <input type="number" defaultValue={20}
-                                    className="border border-gray-300 rounded-lg px-3 py-2 text-sm w-16 focus:outline-none" />
-                                  <select className="border border-gray-300 rounded-lg px-2 py-2 text-sm focus:outline-none">
-                                    <option>mi</option>
-                                    <option>km</option>
-                                  </select>
+                                  {(campaignForm as any).radiusLocation && (
+                                    <div className="flex items-center gap-2 bg-blue-50 border border-blue-200 rounded-lg px-3 py-2">
+                                      <span className="text-blue-500">📍</span>
+                                      <span className="text-xs text-blue-700 flex-1 truncate">{(campaignForm as any).radiusLocation}</span>
+                                      <button onClick={() => setCampaignForm({ ...campaignForm, radiusLocation: null, radiusQuery: "" } as any)}
+                                        className="text-blue-400 hover:text-red-500 text-xs">×</button>
+                                    </div>
+                                  )}
                                 </div>
                               )}
                             </div>
