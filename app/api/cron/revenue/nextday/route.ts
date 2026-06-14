@@ -50,7 +50,7 @@ export async function GET(req: NextRequest) {
         const unsoldPercent = (unsoldCount / totalRooms) * 100;
         const bookedPercent = (bookedCount / totalRooms) * 100;
 
-       await Promise.all(typeRooms.map(async (room) => {
+       for (const room of typeRooms) {
           let finalPrice = room.price;
 
           if (unsoldPercent >= settings.nextDayUnsold && settings.nextDayDiscount > 0) {
@@ -73,7 +73,7 @@ export async function GET(req: NextRequest) {
               data: { channelId: null, roomId: room.id, date: tomorrow, price: finalPrice, available: unsoldCount, isBlocked: false }
             });
           }
-        }));
+        }
       }
     }
 
