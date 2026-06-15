@@ -787,8 +787,7 @@ export default function AdsPage() {
                 {campaignForm.goal === "Leads" && (campaignForm.type === "Performance Max" || campaignForm.type === "Search") && (
                   <div className="border border-gray-200 rounded-xl p-4">
                     <p className="text-sm font-semibold text-gray-900 mb-1">Choose your leads conversion goals</p>
-                    <p className="text-xs text-gray-500 mb-3">Pick the most important leads goals that you would like to focus on. Based on your selection, Smart Bidding will then optimize for delivering your ads to the right people to meet the goals. <span className="text-blue-600 cursor-pointer hover:underline">Learn more about smart bidding</span></p>
-                    <div className="grid grid-cols-4 gap-2">
+                    <div className="grid grid-cols-2 gap-2">
                       {[
                         "Form submissions from your ads",
                         "Form submissions from your website",

@@ -11,6 +11,20 @@ const OTA_LIST = [
   { name: 'GOOGLE_HOTEL_CENTRE', label: 'Google Hotel Centre', logo: '🔍' },
 ]
 
+// ✅ Mock: Provider se milne wali poori OTA list (real API baad mein)
+const PROVIDER_OTA_LIST = [
+  { name: 'BOOKING_COM', label: 'Booking.com', logo: '🏨' },
+  { name: 'MAKEMYTRIP', label: 'MakeMyTrip', logo: '✈️' },
+  { name: 'GOOGLE_HOTEL_CENTRE', label: 'Google Hotel Centre', logo: '🔍' },
+  { name: 'AGODA', label: 'Agoda', logo: '🌴' },
+  { name: 'EXPEDIA', label: 'Expedia', logo: '🌍' },
+  { name: 'GOIBIBO', label: 'Goibibo', logo: '🚆' },
+  { name: 'AIRBNB', label: 'Airbnb', logo: '🏠' },
+  { name: 'TRIVAGO', label: 'Trivago', logo: '🔎' },
+  { name: 'HOSTELWORLD', label: 'Hostelworld', logo: '🎒' },
+  { name: 'CLEARTRIP', label: 'Cleartrip', logo: '🧳' },
+]
+
 // ✅ Mock Promotions Data — Real API baad mein
 const MOCK_PROMOTIONS: Record<string, any[]> = {
   BOOKING_COM: [
@@ -499,6 +513,9 @@ export default function ChannelsPage() {
   const [providerModal, setProviderModal] = useState(false)
   const [providerForm, setProviderForm] = useState({ apiKey: '', apiSecret: '', accountId: '' })
   const [providerConnected, setProviderConnected] = useState(false)
+  const [addedOtas, setAddedOtas] = useState<string[]>(['BOOKING_COM', 'MAKEMYTRIP', 'GOOGLE_HOTEL_CENTRE'])
+  const [showOtaDropdown, setShowOtaDropdown] = useState(false)
+  const [otaSearch, setOtaSearch] = useState('')
 
   useEffect(() => { fetchChannels(); fetchProvider() }, [])
 
@@ -676,11 +693,55 @@ export default function ChannelsPage() {
                 </div>
               </div>
             </div>
+
+            {providerConnected && (
+              <div className="mb-4 relative">
+                <button onClick={() => setShowOtaDropdown(!showOtaDropdown)}
+                  className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700">
+                  + Add OTA Channel
+                </button>
+
+                {showOtaDropdown && (
+                  <div className="absolute z-10 mt-2 w-72 bg-white border border-gray-200 rounded-xl shadow-lg overflow-hidden">
+                    <div className="p-2 border-b border-gray-100">
+                      <input
+                        type="text"
+                        placeholder="🔍 OTA search karo..."
+                        value={otaSearch}
+                        onChange={e => setOtaSearch(e.target.value)}
+                        className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-400"
+                        autoFocus
+                      />
+                    </div>
+                    <div className="max-h-60 overflow-y-auto">
+                      {PROVIDER_OTA_LIST
+                        .filter(o => o.label.toLowerCase().includes(otaSearch.toLowerCase()))
+                        .filter(o => !addedOtas.includes(o.name))
+                        .map(o => (
+                          <button key={o.name}
+                            onClick={() => {
+                              setAddedOtas(prev => [...prev, o.name])
+                              setShowOtaDropdown(false)
+                              setOtaSearch('')
+                            }}
+                            className="w-full text-left px-4 py-2.5 text-sm hover:bg-gray-50 flex items-center gap-2">
+                            <span className="text-lg">{o.logo}</span> {o.label}
+                          </button>
+                        ))}
+                      {PROVIDER_OTA_LIST.filter(o => o.label.toLowerCase().includes(otaSearch.toLowerCase())).filter(o => !addedOtas.includes(o.name)).length === 0 && (
+                        <p className="text-center text-xs text-gray-400 py-4">Koi OTA nahi mila</p>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
             {loading ? (
               <p className="text-gray-400">Loading channels...</p>
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 md:gap-6 mb-6">
-                {OTA_LIST.map(ota => {
+                {PROVIDER_OTA_LIST.filter(ota => addedOtas.includes(ota.name)).map(ota => {
                   const status = getChannelStatus(ota.name)
                   const isConnected = status?.isConnected
                   return (
@@ -690,9 +751,15 @@ export default function ChannelsPage() {
                           <span className="text-3xl md:text-4xl">{ota.logo}</span>
                           <h3 className="font-semibold text-gray-800 mt-2 text-sm md:text-base">{ota.label}</h3>
                         </div>
-                        <span className={`text-xs px-2 py-1 rounded-full font-medium ${isConnected ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}`}>
-                          {isConnected ? '● Connected' : '○ Not Connected'}
-                        </span>
+                        <div className="flex flex-col items-end gap-1">
+                          <span className={`text-xs px-2 py-1 rounded-full font-medium ${isConnected ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}`}>
+                            {isConnected ? '● Connected' : '○ Not Connected'}
+                          </span>
+                          <button onClick={() => setAddedOtas(prev => prev.filter(n => n !== ota.name))}
+                            className="text-xs text-red-400 hover:text-red-600">
+                            ✕ Remove
+                          </button>
+                        </div>
                       </div>
                       <button onClick={() => providerConnected && setConnectModal(ota.name)}
                         disabled={!providerConnected}
