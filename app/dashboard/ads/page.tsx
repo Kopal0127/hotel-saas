@@ -634,6 +634,7 @@ export default function AdsPage() {
 
                 {/* Search — Leads / Without guidance: Website visits, Store visits */}
                {campaignForm.type === "Search" && (campaignForm.goal === "Leads" || campaignForm.goal === "Create a campaign without guidance") && (
+                  <div className="grid grid-cols-2 gap-4">
                   <div className="border border-gray-200 rounded-xl p-4">
                     <p className="text-sm font-semibold text-gray-900 mb-3">Select the ways you'd like to reach your goal ⓘ</p>
                     <div className="space-y-3">
@@ -707,12 +708,13 @@ export default function AdsPage() {
 
                     </div>
 
-                    {/* Campaign name */}
-                    <div className="mt-4 pt-4 border-t border-gray-100">
-                      <p className="text-sm font-semibold text-gray-900 mb-2">Campaign name</p>
-                      <input type="text" defaultValue={`${campaignForm.goal}-${campaignForm.type}-1`}
-                        className="border border-gray-300 rounded-lg px-4 py-2.5 text-sm w-72 focus:outline-none focus:border-blue-500" />
-                    </div>
+                   </div>
+
+                  <div className="border border-gray-200 rounded-xl p-4">
+                    <p className="text-sm font-semibold text-gray-900 mb-2">Campaign name</p>
+                    <input type="text" defaultValue={`${campaignForm.goal}-${campaignForm.type}-1`}
+                      className="border border-gray-300 rounded-lg px-4 py-2.5 text-sm w-full focus:outline-none focus:border-blue-500" />
+                  </div>
 
                   </div>
                 )}

@@ -3,6 +3,8 @@ import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
+export const maxDuration = 60;
+
 export async function GET(req: NextRequest) {
   const secret = req.nextUrl.searchParams.get('secret');
   if (secret !== process.env.CRON_SECRET) {
