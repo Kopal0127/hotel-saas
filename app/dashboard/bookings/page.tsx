@@ -808,13 +808,14 @@ const validate = () => {
               </button>
             </div>
 
-            {showMoreOptions && (
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+           {showMoreOptions && (
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
                 {!showFinalPayment ? (
-                  <div className="md:col-span-3">
+                  <div>
+                    <label className="text-sm font-medium text-transparent mb-1 block select-none">.</label>
                     <button type="button" onClick={() => { setShowFinalPayment(true); setForm({ ...form, finalPaymentMode: "CHECKOUT_PAYMENT" }); }}
-                      className="w-full border-2 border-dashed border-blue-300 text-blue-600 rounded-lg px-4 py-3 text-sm hover:bg-blue-50">
-                      + Add Final Payment Mode
+                      className="w-full border-2 border-dashed border-blue-300 text-blue-600 rounded-lg px-4 py-3 text-sm hover:bg-blue-50 h-[46px]">
+                      + Final Payment
                     </button>
                   </div>
                 ) : (
@@ -823,7 +824,7 @@ const validate = () => {
                       <div className="flex items-center justify-between mb-1">
                         <label className="text-sm font-medium text-gray-700">Final Payment Mode</label>
                         <button type="button" onClick={() => { setShowFinalPayment(false); setForm({ ...form, finalPaymentMode: "", finalPaymentAmount: "" }); }}
-                          className="text-xs text-red-400 hover:text-red-600">✕ Remove</button>
+                          className="text-xs text-red-400 hover:text-red-600">✕</button>
                       </div>
                       <select value={form.finalPaymentMode} onChange={(e) => setForm({ ...form, finalPaymentMode: e.target.value })}
                         className="w-full border border-blue-300 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-blue-500 bg-blue-50">
@@ -831,25 +832,24 @@ const validate = () => {
                       </select>
                     </div>
                     <div>
-                      <label className="text-sm font-medium text-gray-700 mb-1 block">Final Payment Amount (₹)</label>
+                      <label className="text-sm font-medium text-gray-700 mb-1 block">Final Amount (₹)</label>
                       <input type="number" value={form.finalPaymentAmount}
                         readOnly={form.finalPaymentMode === "CHECKOUT_PAYMENT"}
                         onChange={(e) => setForm({ ...form, finalPaymentAmount: e.target.value })}
                         className={`w-full border rounded-lg px-4 py-3 text-sm focus:outline-none ${form.finalPaymentMode === "CHECKOUT_PAYMENT" ? "bg-green-50 border-green-300 text-green-700" : "border-blue-300 bg-blue-50"}`} />
                     </div>
-                    <div></div>
                   </>
                 )}
-               <div className="md:col-span-1">
+                <div>
                   <label className="text-sm font-medium text-gray-700 mb-1 block">Special Requests</label>
                   <input type="text" placeholder="Optional" value={form.specialRequests}
                     onChange={(e) => setForm({ ...form, specialRequests: e.target.value })}
                     className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-blue-500" />
                 </div>
-                <div className="md:col-span-2">
+                <div>
                   <label className="text-sm font-medium text-gray-700 mb-1 block">Notes</label>
                   <textarea placeholder="Internal notes" value={form.notes}
-                    onChange={(e) => setForm({ ...form, notes: e.target.value })} rows={2}
+                    onChange={(e) => setForm({ ...form, notes: e.target.value })} rows={1}
                     className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-blue-500" />
                 </div>
               </div>
