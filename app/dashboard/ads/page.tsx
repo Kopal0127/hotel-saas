@@ -3797,7 +3797,13 @@ export default function AdsPage() {
                         <div>
                           <p className="text-sm font-semibold text-gray-900 mb-2">Age <span className="w-4 h-4 rounded-full border border-gray-400 text-gray-400 text-[9px] inline-flex items-center justify-center ml-1">i</span></p>
                           <div className="flex items-center gap-2">
-                           <div className="relative">
+                            <div className="relative">
+                              <select defaultValue="18" className="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none appearance-none bg-white pr-8">
+                                {["18","19","20","21","22","23","24","25","26","27","28","29","30","31","32","33","34","35","36","37","38","39","40","41","42","43","44","45","46","47","48","49","50","51","52","53","54","55","56","57","58","59","60","61","62","63","64","65+"].map(a => <option key={a}>{a}</option>)}
+                              </select>
+                              <span className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none text-xs">▼</span>
+                            </div>
+                            <div className="relative">
                               <select defaultValue="65+" className="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none appearance-none bg-white pr-8">
                                 {["18","19","20","21","22","23","24","25","26","27","28","29","30","31","32","33","34","35","36","37","38","39","40","41","42","43","44","45","46","47","48","49","50","51","52","53","54","55","56","57","58","59","60","61","62","63","64","65+"].map(a => <option key={a}>{a}</option>)}
                               </select>
