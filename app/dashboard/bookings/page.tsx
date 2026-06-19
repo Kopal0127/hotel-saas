@@ -840,13 +840,13 @@ const validate = () => {
                     <div></div>
                   </>
                 )}
-                <div className="md:col-span-3">
+               <div className="md:col-span-1">
                   <label className="text-sm font-medium text-gray-700 mb-1 block">Special Requests</label>
                   <input type="text" placeholder="Optional" value={form.specialRequests}
                     onChange={(e) => setForm({ ...form, specialRequests: e.target.value })}
                     className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-blue-500" />
                 </div>
-                <div className="md:col-span-3">
+                <div className="md:col-span-2">
                   <label className="text-sm font-medium text-gray-700 mb-1 block">Notes</label>
                   <textarea placeholder="Internal notes" value={form.notes}
                     onChange={(e) => setForm({ ...form, notes: e.target.value })} rows={2}
