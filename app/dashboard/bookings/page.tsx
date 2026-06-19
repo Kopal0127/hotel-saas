@@ -332,6 +332,38 @@ const validate = () => {
     if (form.guestPhone && form.guestPhone.length !== 10) { showToast("Phone number 10 digits ka hona chahiye!", "error"); return false; }
     if (!form.amount || parseFloat(form.amount) <= 0) { showToast("Amount daalo!", "error"); return false; }
     if (!form.paymentAmount || parseFloat(form.paymentAmount) <= 0) { showToast("Payment amount daalo!", "error"); return false; }
+
+    // ✅ Payment amount validation — total amount ke against
+    const totalAmount = parseFloat(form.amount);
+    const paidAmount = parseFloat(form.paymentAmount);
+
+    if (form.paymentMode.startsWith("PARTIAL")) {
+      // Partial payment select kiya hai — final payment mandatory hai
+      if (!form.finalPaymentMode) {
+        showToast("Partial payment ke saath Final Payment Mode select karna zaroori hai!", "error");
+        return false;
+      }
+      if (form.finalPaymentMode !== "CHECKOUT_PAYMENT") {
+        // Checkout payment ke alawa — amount daalna aur match hona zaroori hai
+        if (!form.finalPaymentAmount || parseFloat(form.finalPaymentAmount) <= 0) {
+          showToast("Final Payment Amount daalo!", "error");
+          return false;
+        }
+        const finalAmount = parseFloat(form.finalPaymentAmount);
+        if (Math.abs((paidAmount + finalAmount) - totalAmount) > 0.01) {
+          showToast(`❌ Amount match nahi ho raha! Partial (₹${paidAmount}) + Final (₹${finalAmount}) = ₹${paidAmount + finalAmount}, lekin Total Amount ₹${totalAmount} hai!`, "error");
+          return false;
+        }
+      }
+      // CHECKOUT_PAYMENT case mein amount required nahi — guest checkout pe pay karega
+    } else {
+      // Non-partial mode — paidAmount poora total amount ke barabar hona chahiye
+      if (Math.abs(paidAmount - totalAmount) > 0.01) {
+        showToast(`❌ Payment Amount (₹${paidAmount}) Total Amount (₹${totalAmount}) ke barabar hona chahiye!`, "error");
+        return false;
+      }
+    }
+
     return true;
   };
 

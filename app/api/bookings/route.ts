@@ -84,6 +84,34 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Sab fields bharo!" }, { status: 400 });
     }
 
+    // ✅ Payment amount validation — total amount ke against
+    const totalAmountNum = parseFloat(amount);
+    const paidAmountNum = parseFloat(paymentAmount) || 0;
+    const mode = paymentMode || "CASH";
+
+    if (mode.startsWith("PARTIAL")) {
+      if (!finalPaymentMode) {
+        return NextResponse.json({ error: "Partial payment ke saath Final Payment Mode zaroori hai!" }, { status: 400 });
+      }
+      if (finalPaymentMode !== "CHECKOUT_PAYMENT") {
+        const finalAmountNum = parseFloat(finalPaymentAmount) || 0;
+        if (finalAmountNum <= 0) {
+          return NextResponse.json({ error: "Final Payment Amount zaroori hai!" }, { status: 400 });
+        }
+        if (Math.abs((paidAmountNum + finalAmountNum) - totalAmountNum) > 0.01) {
+          return NextResponse.json({
+            error: `Amount match nahi ho raha! Partial (₹${paidAmountNum}) + Final (₹${finalAmountNum}) ≠ Total (₹${totalAmountNum})`
+          }, { status: 400 });
+        }
+      }
+    } else {
+      if (Math.abs(paidAmountNum - totalAmountNum) > 0.01) {
+        return NextResponse.json({
+          error: `Payment Amount (₹${paidAmountNum}) Total Amount (₹${totalAmountNum}) ke barabar hona chahiye!`
+        }, { status: 400 });
+      }
+    }
+
     const checkInDate = new Date(checkIn);
     const checkOutDate = new Date(checkOut);
 
