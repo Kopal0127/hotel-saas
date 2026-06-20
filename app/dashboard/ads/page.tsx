@@ -1152,11 +1152,17 @@ export default function AdsPage() {
                     <p className="text-sm font-semibold text-gray-900">Networks</p>
                     <span className="text-gray-400">∧</span>
                   </div>
-                  <div className="p-4 space-y-3">
+                 <div className="p-4 space-y-3">
                     <label className="flex items-start gap-2 cursor-pointer">
                       <input type="checkbox" className="w-4 h-4 mt-0.5 accent-blue-600" />
                       <div>
-                        <p className="text-sm font-medium text-gray-900">Google Search Partners Network (recommended)</p>
+                        <p className="text-sm font-medium text-gray-900">Google Search Partners Network</p>
+                      </div>
+                    </label>
+                    <label className="flex items-start gap-2 cursor-pointer">
+                      <input type="checkbox" className="w-4 h-4 mt-0.5 accent-blue-600" />
+                      <div>
+                        <p className="text-sm font-medium text-gray-900">Google Display Network</p>
                       </div>
                     </label>
                   </div>
