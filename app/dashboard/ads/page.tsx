@@ -1145,7 +1145,8 @@ export default function AdsPage() {
                   <p className="text-xs text-gray-500 mt-1">To reach the right people, start by defining key settings for your campaign</p>
                 </div>
 
-                {/* Networks */}
+               {/* Networks + Locations */}
+                <div className="grid grid-cols-2 gap-4">
                 <div className="border border-gray-200 rounded-xl overflow-hidden">
                   <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200 bg-gray-50">
                     <p className="text-sm font-semibold text-gray-900">Networks</p>
@@ -1156,20 +1157,11 @@ export default function AdsPage() {
                       <input type="checkbox" className="w-4 h-4 mt-0.5 accent-blue-600" />
                       <div>
                         <p className="text-sm font-medium text-gray-900">Google Search Partners Network (recommended)</p>
-                        <p className="text-xs text-gray-500 mt-0.5">Ads can appear near Google Search results and on other <span className="text-blue-600 cursor-pointer hover:underline">Google Search Partners</span> websites when people search for terms that are relevant to your keywords. Search Partners can include hundreds of non-Google websites, Parked Domains, as well as YouTube and other Google sites.</p>
                       </div>
                     </label>
-                    <div className="flex items-center justify-between border border-orange-200 bg-orange-50 rounded-lg px-3 py-2">
-                      <div className="flex items-center gap-2">
-                        <span className="text-orange-500">🔍</span>
-                        <p className="text-xs text-gray-700"><span className="font-medium">Expand your reach with Google search partners:</span> Reach additional customers on partner sites ⓘ</p>
-                      </div>
-                      <button className="text-sm text-blue-600 font-medium hover:underline ml-4">Apply</button>
-                    </div>
                   </div>
                 </div>
 
-                {/* Locations */}
                 <div className="border border-gray-200 rounded-xl overflow-hidden">
                   <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200 bg-gray-50">
                     <p className="text-sm font-semibold text-gray-900">Locations</p>
@@ -1265,8 +1257,10 @@ export default function AdsPage() {
                     )}
                   </div>
                 </div>
+                </div>
 
-                {/* Languages */}
+                {/* Languages + EU Political Ads */}
+                <div className="grid grid-cols-2 gap-4">
                 <div className="border border-gray-200 rounded-xl overflow-hidden">
                   <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200 bg-gray-50">
                     <p className="text-sm font-semibold text-gray-900">Languages</p>
@@ -1287,27 +1281,22 @@ export default function AdsPage() {
                   </div>
                 </div>
 
-                {/* EU Political Ads */}
                 <div className="border border-gray-200 rounded-xl overflow-hidden">
                   <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200 bg-gray-50">
                     <p className="text-sm font-semibold text-gray-900">EU political ads</p>
                     <span className="text-gray-400">∧</span>
                   </div>
-                  <div className="p-4 flex gap-6">
-                    <div className="flex-1 space-y-2">
-                      <p className="text-sm text-gray-700">Does your campaign have European Union political ads?</p>
-                      {["Yes, this campaign has EU political ads", "No, this campaign doesn't have EU political ads"].map((opt, i) => (
-                        <label key={i} className="flex items-center gap-2 cursor-pointer">
-                          <input type="radio" name="search-eu-political" />
-                          <span className="text-sm text-gray-700">{opt}</span>
-                        </label>
-                      ))}
-                      <p className="text-xs text-blue-600 cursor-pointer hover:underline mt-1">Confirm if your campaign has EU political ads</p>
-                    </div>
-                    <div className="text-xs text-gray-500 max-w-xs">
-                      EU regulation requires Google to ask this question. <span className="text-blue-600 cursor-pointer hover:underline">Learn how an EU political ad is defined</span>
-                    </div>
+                  <div className="p-4 space-y-2">
+                    <p className="text-sm text-gray-700">Does your campaign have European Union political ads?</p>
+                    {["Yes, this campaign has EU political ads", "No, this campaign doesn't have EU political ads"].map((opt, i) => (
+                      <label key={i} className="flex items-center gap-2 cursor-pointer">
+                        <input type="radio" name="search-eu-political" />
+                        <span className="text-sm text-gray-700">{opt}</span>
+                      </label>
+                    ))}
+                    <p className="text-xs text-blue-600 cursor-pointer hover:underline mt-1">Confirm if your campaign has EU political ads</p>
                   </div>
+                </div>
                 </div>
 
               </div>
