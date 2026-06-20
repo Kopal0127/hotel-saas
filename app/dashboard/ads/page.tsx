@@ -731,9 +731,9 @@ export default function AdsPage() {
                   </div>
                 )}
 
-                {/* Display */}
+               {/* Display */}
                 {campaignForm.type === "Display" && (
-                  <div className="space-y-4">
+                  <div className="grid grid-cols-2 gap-4">
                     <div className="border border-gray-200 rounded-xl p-4">
                       <p className="text-sm font-semibold text-gray-900 mb-3">This is the web page people will go to after clicking your ad ⓘ</p>
                       <div className="flex items-center border border-gray-300 rounded-lg px-3 py-2.5">
@@ -744,7 +744,7 @@ export default function AdsPage() {
                     <div className="border border-gray-200 rounded-xl p-4">
                       <p className="text-sm font-semibold text-gray-900 mb-3">Campaign name</p>
                       <input type="text" defaultValue={`${campaignForm.goal}-Display-1`}
-                        className="border border-gray-300 rounded-lg px-3 py-2.5 text-sm w-64 focus:outline-none" />
+                        className="border border-gray-300 rounded-lg px-3 py-2.5 text-sm w-full focus:outline-none" />
                     </div>
                   </div>
                 )}
@@ -809,12 +809,11 @@ export default function AdsPage() {
                   </div>
                 )}
 
-                {/* Leads — Display: 7 options */}
+               {/* Leads — Display: 7 options */}
                 {campaignForm.goal === "Leads" && campaignForm.type === "Display" && (
                   <div className="border border-gray-200 rounded-xl p-4">
                     <p className="text-sm font-semibold text-gray-900 mb-1">Choose your leads conversion goals</p>
-                    <p className="text-xs text-gray-500 mb-3">Pick the most important leads goals that you would like to focus on. Based on your selection, Smart Bidding will then optimize for delivering your ads to the right people to meet the goals. <span className="text-blue-600 cursor-pointer hover:underline">Learn more about smart bidding</span></p>
-                    <div className="grid grid-cols-4 gap-2">
+                    <div className="grid grid-cols-3 gap-2">
                       {[
                         "Form submissions from your website",
                         "Sign up",
@@ -997,6 +996,7 @@ export default function AdsPage() {
                   <h3 className="text-lg font-semibold text-gray-900">Campaign settings</h3>
                 </div>
 
+                <div className="grid grid-cols-2 gap-4">
                 {/* Locations */}
                 <div className="border border-gray-200 rounded-xl overflow-hidden">
                   <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200 bg-gray-50">
@@ -1005,6 +1005,7 @@ export default function AdsPage() {
                   </div>
                   <div className="p-4 space-y-2">
                     <p className="text-xs text-gray-500">Select locations for this campaign ⓘ</p>
+                    <div className="flex items-center gap-4">
                     {["All countries and territories", "India", "Enter another location"].map(opt => (
                       <label key={opt} className="flex items-center gap-2 cursor-pointer">
                         <input type="radio" name="display-location" value={opt}
@@ -1013,6 +1014,7 @@ export default function AdsPage() {
                         <span className="text-sm text-gray-700">{opt}</span>
                       </label>
                     ))}
+                    </div>
 
                     {locationOption === "Enter another location" && (
                       <div className="mt-2 space-y-2">
@@ -1088,9 +1090,28 @@ export default function AdsPage() {
                             <span className="text-xs text-gray-700">{opt}</span>
                           </label>
                         ))}
-                      </div>
+                     </div>
                     )}
                   </div>
+                </div>
+
+                {/* Choose your leads conversion goals */}
+                <div className="border border-gray-200 rounded-xl p-4">
+                  <p className="text-sm font-semibold text-gray-900 mb-1">Choose your leads conversion goals</p>
+                  <div className="grid grid-cols-2 gap-2">
+                    {[
+                      "Form submissions from your website",
+                      "Sign up",
+                      "Book appointments",
+                      "Quote request",
+                    ].map((item, i) => (
+                      <label key={i} className="flex items-center gap-2 border border-gray-200 rounded-lg p-3 cursor-pointer hover:border-blue-400">
+                        <input type="radio" name="leads-goal-display-step3" />
+                        <span className="text-xs font-medium text-gray-900">{item}</span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
                 </div>
 
                 {/* Languages */}
