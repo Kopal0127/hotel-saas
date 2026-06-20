@@ -1095,7 +1095,7 @@ export default function AdsPage() {
                   </div>
                 </div>
 
-                {/* Choose your leads conversion goals */}
+               {/* Choose your leads conversion goals */}
                 <div className="border border-gray-200 rounded-xl p-4">
                   <p className="text-sm font-semibold text-gray-900 mb-1">Choose your leads conversion goals</p>
                   <div className="grid grid-cols-2 gap-2">
@@ -1104,6 +1104,7 @@ export default function AdsPage() {
                       "Sign up",
                       "Book appointments",
                       "Quote request",
+                      ...(showSeeMore ? ["Get directions", "Outbound click", "Contact"] : [])
                     ].map((item, i) => (
                       <label key={i} className="flex items-center gap-2 border border-gray-200 rounded-lg p-3 cursor-pointer hover:border-blue-400">
                         <input type="radio" name="leads-goal-display-step3" />
@@ -1111,6 +1112,9 @@ export default function AdsPage() {
                       </label>
                     ))}
                   </div>
+                  <button onClick={() => setShowSeeMore(!showSeeMore)} className="text-sm text-blue-600 hover:underline mt-2">
+                    {showSeeMore ? "See less" : "See more"}
+                  </button>
                 </div>
                 </div>
 
