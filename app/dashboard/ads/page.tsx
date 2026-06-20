@@ -2822,10 +2822,6 @@ export default function AdsPage() {
                   </div>
                   <div className="p-4 space-y-3">
                     <p className="text-xs text-gray-500">Add a phone number</p>
-                    <div className="border border-red-300 bg-red-50 rounded-lg p-3 flex items-start gap-2">
-                      <span className="text-red-500 mt-0.5">⚠️</span>
-                      <p className="text-xs text-red-700">Because you selected <strong>phone calls</strong> as a campaign goal, add a call asset to use with your ads.</p>
-                    </div>
                     <button onClick={() => setShowMoreAssetTypes(!showMoreAssetTypes)}
                       className="text-sm text-blue-600 hover:underline">+ Calls</button>
                     {showMoreAssetTypes && (
@@ -2859,10 +2855,6 @@ export default function AdsPage() {
                   </div>
                   <div className="p-4 grid grid-cols-2 gap-6">
                     <div className="space-y-4">
-                      <div className="bg-blue-50 border border-blue-100 rounded-lg p-3 flex items-start gap-2">
-                        <span className="text-blue-500 mt-0.5">ℹ️</span>
-                        <p className="text-xs text-gray-600">Your budget type (daily or campaign total) can't be changed once this campaign has started. You can change your budget amount at any time.</p>
-                      </div>
                       <p className="text-sm font-semibold text-gray-900">Select budget type</p>
                       <div className="space-y-4">
                         <label className="flex items-start gap-2 cursor-pointer">
@@ -2900,11 +2892,7 @@ export default function AdsPage() {
                         </label>
                       </div>
                     </div>
-                    <div className="text-xs text-gray-500 space-y-2">
-                      <p>For the month, you won't pay more than your daily budget times the average number of days in a month. Some days you might spend less than your daily budget, and on others you might spend up to twice as much.</p>
-                      <button className="text-blue-600 hover:underline text-xs">Learn more about average daily budget</button>
-                    </div>
-                  </div>
+                   </div>
                 </div>
 
               </div>
