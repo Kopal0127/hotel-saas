@@ -2811,7 +2811,8 @@ export default function AdsPage() {
                   </div>
                 </div>
 
-                {/* Calls */}
+               {/* Calls + Budget */}
+                <div className="grid grid-cols-2 gap-4">
                 <div className="border border-red-300 rounded-xl overflow-hidden">
                   <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200 bg-gray-50">
                     <div className="flex items-center gap-2">
@@ -2844,55 +2845,50 @@ export default function AdsPage() {
                   </div>
                 </div>
 
-                {/* Budget */}
-                <div>
-                  <h3 className="text-lg font-semibold text-gray-900">Budget</h3>
-                  <p className="text-xs text-gray-500 mt-1">Decide how much you want to spend.</p>
-                </div>
                 <div className="border border-gray-200 rounded-xl overflow-hidden">
                   <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200 bg-gray-50">
+                    <p className="text-sm font-semibold text-gray-900">Budget</p>
                     <span className="text-gray-400">∧</span>
                   </div>
-                  <div className="p-4 grid grid-cols-2 gap-6">
+                  <div className="p-4 space-y-4">
+                    <p className="text-sm font-semibold text-gray-900">Select budget type</p>
                     <div className="space-y-4">
-                      <p className="text-sm font-semibold text-gray-900">Select budget type</p>
-                      <div className="space-y-4">
-                        <label className="flex items-start gap-2 cursor-pointer">
-                          <input type="radio" name="search-budget-type" defaultChecked className="mt-1" />
-                          <div className="space-y-2">
-                            <div>
-                              <p className="text-sm font-medium text-gray-900">Average daily budget</p>
-                              <p className="text-xs text-gray-500">Set your average daily budget for this campaign</p>
-                            </div>
-                            <div className="flex items-center border border-blue-400 rounded-lg px-3 py-2 w-40">
-                              <span className="text-gray-500 mr-1">₹</span>
-                              <input type="number" className="flex-1 text-sm focus:outline-none" />
-                            </div>
+                      <label className="flex items-start gap-2 cursor-pointer">
+                        <input type="radio" name="search-budget-type" defaultChecked className="mt-1" />
+                        <div className="space-y-2">
+                          <div>
+                            <p className="text-sm font-medium text-gray-900">Average daily budget</p>
+                            <p className="text-xs text-gray-500">Set your average daily budget for this campaign</p>
                           </div>
-                        </label>
-                        <label className="flex items-start gap-2 cursor-pointer">
-                          <input type="radio" name="search-budget-type" className="mt-1" />
-                          <div className="space-y-2">
-                            <div>
-                              <p className="text-sm font-medium text-gray-900">Campaign total budget</p>
-                              <p className="text-xs text-gray-500">Set a budget for the duration of your campaign</p>
-                            </div>
-                            <div className="flex items-center border border-gray-300 rounded-lg px-3 py-2 w-40">
-                              <span className="text-gray-500 mr-1">₹</span>
-                              <input type="number" className="flex-1 text-sm focus:outline-none" />
-                            </div>
-                            <div className="flex items-center justify-between border border-gray-200 rounded-lg px-4 py-3 w-72">
-                              <div>
-                                <p className="text-xs text-gray-700">Start date: June 2, 2026</p>
-                                <p className="text-xs text-gray-700">End date: None</p>
-                              </div>
-                              <button className="text-sm text-blue-600 hover:underline">Edit</button>
-                            </div>
+                          <div className="flex items-center border border-blue-400 rounded-lg px-3 py-2 w-40">
+                            <span className="text-gray-500 mr-1">₹</span>
+                            <input type="number" className="flex-1 text-sm focus:outline-none" />
                           </div>
-                        </label>
-                      </div>
+                        </div>
+                      </label>
+                      <label className="flex items-start gap-2 cursor-pointer">
+                        <input type="radio" name="search-budget-type" className="mt-1" />
+                        <div className="space-y-2">
+                          <div>
+                            <p className="text-sm font-medium text-gray-900">Campaign total budget</p>
+                            <p className="text-xs text-gray-500">Set a budget for the duration of your campaign</p>
+                          </div>
+                          <div className="flex items-center border border-gray-300 rounded-lg px-3 py-2 w-40">
+                            <span className="text-gray-500 mr-1">₹</span>
+                            <input type="number" className="flex-1 text-sm focus:outline-none" />
+                          </div>
+                          <div className="flex items-center justify-between border border-gray-200 rounded-lg px-4 py-3 w-72">
+                            <div>
+                              <p className="text-xs text-gray-700">Start date: June 2, 2026</p>
+                              <p className="text-xs text-gray-700">End date: None</p>
+                            </div>
+                            <button className="text-sm text-blue-600 hover:underline">Edit</button>
+                          </div>
+                        </div>
+                      </label>
                     </div>
-                   </div>
+                  </div>
+                </div>
                 </div>
 
               </div>
