@@ -2634,7 +2634,8 @@ export default function AdsPage() {
             {campaignStep === 4 && isGoogle && campaignForm.type === "Search" && (campaignForm.goal === "Leads" || campaignForm.goal === "Website traffic" || campaignForm.goal === "Create a campaign without guidance") && (
               <div className="space-y-4">
 
-                {/* Bidding */}
+               {/* Bidding + Keywords */}
+                <div className="grid grid-cols-2 gap-4">
                 <div className="border border-gray-200 rounded-xl overflow-hidden">
                   <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200 bg-gray-50">
                     <p className="text-sm font-semibold text-gray-900">Bidding</p>
@@ -2672,7 +2673,6 @@ export default function AdsPage() {
                   </div>
                 </div>
 
-                {/* Keywords */}
                 <div className="border border-gray-200 rounded-xl overflow-hidden">
                   <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200 bg-gray-50">
                     <p className="text-sm font-semibold text-gray-900">Keywords</p>
@@ -2680,25 +2680,12 @@ export default function AdsPage() {
                   </div>
                   <div className="p-4 space-y-4">
                     <div>
-                      <p className="text-sm font-semibold text-gray-900">Get keyword suggestions (optional)</p>
-                      <p className="text-xs text-gray-500 mt-0.5">Google Ads can find keywords for you by scanning a web page or seeing what's working for similar products or services</p>
-                    </div>
-                    <div className="flex items-center border border-gray-300 rounded-lg px-3 py-2.5">
-                      <span className="text-gray-400 mr-2">🔗</span>
-                      <input type="text" placeholder="Final URL" className="flex-1 text-sm focus:outline-none" />
-                    </div>
-                    <div className="flex items-center border border-gray-300 rounded-lg px-3 py-2.5">
-                      <span className="text-gray-400 mr-2">🏪</span>
-                      <input type="text" placeholder="Enter products or services to advertise" className="flex-1 text-sm focus:outline-none" />
-                    </div>
-                    <button className="text-sm text-gray-400 cursor-not-allowed">Get keyword suggestions</button>
-                    <div>
                       <p className="text-sm font-semibold text-gray-900">Enter keywords</p>
-                      <p className="text-xs text-gray-500 mt-0.5">Keywords are words or phrases that are used to match your ads with the terms people are searching for ⓘ</p>
                       <textarea rows={6} placeholder="Enter or paste keywords. You can separate each keyword by commas or enter one per line."
                         className="w-full mt-2 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none resize-none" />
                     </div>
                   </div>
+                </div>
                 </div>
 
                 {/* Final URL + Display path */}
@@ -2711,7 +2698,6 @@ export default function AdsPage() {
                     <div>
                       <input type="text" placeholder="Final URL"
                         className="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none" />
-                      <p className="text-xs text-gray-400 mt-1">This will be used to suggest assets for your ad</p>
                     </div>
                     <div>
                       <p className="text-sm font-medium text-gray-700 mb-1">Display path ⓘ</p>
