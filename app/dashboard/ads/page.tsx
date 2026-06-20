@@ -3773,6 +3773,8 @@ export default function AdsPage() {
                         </div>
                       </div>
 
+                    </div>
+
                    {/* Audience Section */}
                     <div className="grid grid-cols-2 gap-4">
 
@@ -3863,10 +3865,9 @@ export default function AdsPage() {
                             <span className="text-gray-400">🔍</span>
                             <input type="text" placeholder="Search languages" className="flex-1 text-sm focus:outline-none" />
                           </div>
-                        </div>
+                       </div>
                       </div>
 
-                    </div>
                     </div>
                   </div>
                 )}
