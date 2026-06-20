@@ -1175,6 +1175,7 @@ export default function AdsPage() {
                   </div>
                   <div className="p-4 space-y-2">
                     <p className="text-xs text-gray-500">Select locations for this campaign ⓘ</p>
+                    <div className="flex items-center gap-4">
                     {["All countries and territories", "India", "Custom locations"].map(opt => (
                       <label key={opt} className="flex items-center gap-2 cursor-pointer">
                         <input type="radio" name="search-location" value={opt}
@@ -1183,6 +1184,7 @@ export default function AdsPage() {
                         <span className="text-sm text-gray-700">{opt}</span>
                       </label>
                     ))}
+                    </div>
 
                     {locationOption === "Custom locations" && (
                       <div className="mt-2 space-y-2">
@@ -1247,7 +1249,7 @@ export default function AdsPage() {
                       onClick={() => setShowLocationOptions(!showLocationOptions)}>
                       {showLocationOptions ? "∧" : "∨"} Location options
                     </button>
-                   {showLocationOptions && (
+                 {showLocationOptions && (
                       <div className="space-y-2 mt-1">
                         {[
                           "Presence or interest: People in, regularly in, or who've shown interest in your included locations (recommended)",
