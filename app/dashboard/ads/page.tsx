@@ -809,31 +809,7 @@ export default function AdsPage() {
                   </div>
                 )}
 
-               {/* Leads — Display: 7 options */}
-                {campaignForm.goal === "Leads" && campaignForm.type === "Display" && (
-                  <div className="border border-gray-200 rounded-xl p-4">
-                    <p className="text-sm font-semibold text-gray-900 mb-1">Choose your leads conversion goals</p>
-                    <div className="grid grid-cols-3 gap-2">
-                      {[
-                        "Form submissions from your website",
-                        "Sign up",
-                        "Book appointments",
-                        "Quote request",
-                        ...(showSeeMore ? ["Get directions", "Outbound click", "Contact"] : [])
-                      ].map((item, i) => (
-                        <label key={i} className="flex items-center gap-2 border border-gray-200 rounded-lg p-3 cursor-pointer hover:border-blue-400">
-                          <input type="radio" name="leads-goal-display" />
-                          <span className="text-xs font-medium text-gray-900">{item}</span>
-                        </label>
-                      ))}
-                    </div>
-                    <button onClick={() => setShowSeeMore(!showSeeMore)} className="text-sm text-blue-600 hover:underline mt-2">
-                      {showSeeMore ? "See less" : "See more"}
-                    </button>
-                  </div>
-                )}
-
-                {/* Website Traffic — Performance Max, Search, Display: Page view */}
+              {/* Website Traffic — Performance Max, Search, Display: Page view */}
                 {campaignForm.goal === "Website traffic" && (campaignForm.type === "Performance Max" || campaignForm.type === "Search" || campaignForm.type === "Display") && (
                   <div className="border border-gray-200 rounded-xl p-4">
                     <p className="text-sm font-semibold text-gray-900 mb-1">Choose your website traffic conversion goals</p>
