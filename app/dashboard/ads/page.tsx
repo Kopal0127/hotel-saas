@@ -2142,27 +2142,23 @@ export default function AdsPage() {
            {campaignStep === 4 && isGoogle && campaignForm.type === "Display" && (campaignForm.goal === "Leads" || campaignForm.goal === "Website traffic" || campaignForm.goal === "Create a campaign without guidance") && (
               <div className="space-y-4">
 
-                {/* Budget and Bidding */}
+               {/* Budget and Bidding */}
                 <div>
                   <h3 className="text-lg font-semibold text-gray-900">Budget and bidding</h3>
                 </div>
 
+                <div className="grid grid-cols-2 gap-4">
                 {/* Budget */}
                 <div className="border border-gray-200 rounded-xl overflow-hidden">
                   <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200 bg-gray-50">
                     <p className="text-sm font-semibold text-gray-900">Budget</p>
                     <span className="text-gray-400">∧</span>
                   </div>
-                  <div className="p-4 grid grid-cols-2 gap-6">
-                    <div>
-                      <p className="text-sm text-gray-700 mb-2">Set your average daily budget for this campaign</p>
-                      <div className="flex items-center border border-blue-400 rounded-lg px-3 py-2 w-48">
-                        <span className="text-gray-500 mr-1">₹</span>
-                        <input type="number" className="flex-1 text-sm focus:outline-none" />
-                      </div>
-                    </div>
-                    <div className="text-xs text-gray-500">
-                      <p>The most you'll pay per month is your daily budget times 30.4 (the average number of days in a month). Some days you might spend more or less than your daily budget. <span className="text-blue-600 cursor-pointer hover:underline">Learn more</span></p>
+                  <div className="p-4">
+                    <p className="text-sm text-gray-700 mb-2">Set your average daily budget for this campaign</p>
+                    <div className="flex items-center border border-blue-400 rounded-lg px-3 py-2 w-48">
+                      <span className="text-gray-500 mr-1">₹</span>
+                      <input type="number" className="flex-1 text-sm focus:outline-none" />
                     </div>
                   </div>
                 </div>
@@ -2186,7 +2182,6 @@ export default function AdsPage() {
                           <option>Viewable impressions</option>
                         </optgroup>
                       </select>
-                      <p className="text-xs text-gray-400 mt-1">Recommended for your campaign goal</p>
                     </div>
                    {/* How do you want to get conversions */}
                     <div>
@@ -2235,10 +2230,6 @@ export default function AdsPage() {
                             </div>
                           </div>
                         )}
-                        <div className="border border-green-200 bg-green-50 rounded-lg px-3 py-2 flex items-center gap-2">
-                          <span className="text-green-600">✅</span>
-                          <p className="text-xs text-gray-700">This campaign will use the <strong>Maximize conversions</strong> bid strategy to help you get the most conversions for your budget</p>
-                        </div>
                       </>
                     )}
 
@@ -2319,6 +2310,7 @@ export default function AdsPage() {
                       </>
                     )}
                   </div>
+                </div>
                 </div>
 
                 {/* Targeting */}
